@@ -1,0 +1,185 @@
+##################################################
+#
+#       CONFIGURATION OF PIPELINE
+#
+##################################################
+
+# root directory of the evaluation pipeline
+#rootpath <- "/home/alf/projects/NucDat/pipeline-joachim/fresh/eval-fe56-singularity/workdir"
+#rootpath <- "/home/username/eval-fe56/"
+#setwd(rootpath)
+
+# working directory
+workdir <- "/home/alf/projects/NucDat/pipeline-joachim/fresh/eval-fe56-singularity/workdir/"
+setwd(workdir)
+
+source("/opt/pipeline/eval-fe56/required_packages.R")
+source("/opt/pipeline/eval-fe56/required_sourcefiles.R")
+
+# should pipeline be executed with a very 
+# small number of adjustable model parameters
+# for testing purposes
+fewParameterTest <- TRUE
+
+# should TALYS calculations be performed
+# within the Docker container
+containerTest <- FALSE
+
+# number of CPUs limiting the number of 
+# TALYS calculations performed in parallel
+maxNumCPU <- as.numeric(Sys.getenv('maxNumCPU'))
+if (is.na(maxNumCPU)) maxNumCPU <- 32
+
+# settings needed to connect to the cluster
+# and run TALYS calculations in parallel
+ssh_login <- "alfgo462@galactica.physics.uu.se"
+ssh_pw <- "tmp737GMA"
+
+# a valid path on the remote machine and the
+# local machine, respectively, to store
+# result files 
+calcdir_rem <- "/TMC/alf/eval-fe56-singularity/remCalcDir"
+calcdir_loc <- "/home/alf/projects/NucDat/pipeline-joachim/fresh/eval-fe56-singularity/workdir/localCalcDir"
+
+# time interval to check for completed
+# TALYS calculation in seconds
+pollTime <- 10
+
+# settings to retrieve EXFOR entries from
+# the MongoDb database
+mongo_dbname <- "exfor"
+mongo_colname <- "entries"
+
+# energy grid for TALYS calculations
+energyGrid <- seq(1, 2, length = 2)
+
+# default threshold energy for reaction channels
+# if automatic determination fails
+# (because of vanishing reaction cross section at all energies)
+defaultThresEn <- 1 
+
+# energy grid for energy-dependent TALYS parameters
+energyGridForParams <- seq(1, 2, length = 2)
+
+# specification of the TALYS input file used as template
+#param_template_path <- file.path(rootpath, "indata/n_Fe_056.inp")
+param_template_path <- "/opt/pipeline/eval-fe56/indata/n_Fe_056.inp"
+
+# instantiate the transformation used for all parameters of the form ...adjust
+# parameters are restricted to the interval (0.5, 1.5), in other words:
+# the maximal deviation from the default values is 50%
+paramTrafo <- generateTrafo(1, 0.5, 4) 
+
+# random generator seed for optimization of experimental uncertainties
+# impacts the initial extra uncertainties in the optimization setup
+tuneExpUncSeed <- 11
+
+# only use experimental data in that energy range
+minExpEn <- 1
+maxExpEn <- 2
+
+# set up the handlers to map TALYS results to EXFOR entries
+subentHandler <- createSubentHandler(createDefaultSubentHandlerList())
+exforHandler <- createExforHandler(subentHandler)
+# abuAgent <- createAbuAgent("talys/structure/abundance/")
+# subentHandler$getHandlerByName("handler_ntot_nat")$configure(list(abuAgent = abuAgent))
+
+# maximum number of iterations for Levenberg-Marquardt algorithm
+maxitLM <- 30
+
+# if the relative difference between subsequent iterations of the
+# Levenberg-Marquardt algorithm falls below this value,
+# the optimization procedure terminates
+reltolLM <- 1e-5
+
+# where to save output data
+#outdataPath <- file.path(rootpath, "outdata_test")
+outdataPath <- file.path(workdir, "outdata_test")
+dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
+
+# specify the directory were status information and plots during the 
+# optimization using the Levenberg-Marquardt algorithm should be stored
+#savePathLM <- file.path(rootpath, "outdata/log/LMalgo")
+savePathLM <- file.path(workdir, "outdata/log/LMalgo")
+
+# random seed to create TALYS randomfiles
+talysFilesSeed <- 13
+
+# number of TALYS randomfiles to be created
+numTalysFiles <- 5
+
+# where to store the TALYS results on the remote machine
+# content of TALYS result directories is stored as tar archives
+# needed for the creation of ENdf randomfiles using modified TASMAN
+savePathTalys <- "savePathTalys"
+
+# where to save plots produced by the scripts in eval-fe56/script/visualization
+#plotPath <- file.path(rootpath, 'outdata/plots')
+plotPath <- file.path(workdir, 'outdata/plots')
+
+
+createTalysHandlers <- function() {
+
+    # wait to avoid some problem due to connecting
+    # too quickly in sequence
+    Sys.sleep(1)
+
+    # set up the connection to the cluster
+    # and the functionality to run TALYS in parallel
+    remHnd <- initSSH(ssh_login, ssh_pw,
+                      tempdir.loc = calcdir_loc,
+                      tempdir.rem = calcdir_rem)
+
+    clustHnd <- initCluster(functions_multinode, remFun = remHnd) 
+
+    # Important note: TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
+    #                 resides in main memory. TALYS produces many thousand files per run
+    #                 and normal disks and shared file systems cannot deal with this load
+    #                 so it is a good idea to store them in main memory.
+    talysHnd <- initClusterTALYS(clustHnd, talysExe = "talys", calcsPerJob = 1000,
+                                 runOpts = list(TMPDIR = "/dev/shm/talysTemp"))
+
+    # initialize an alternative TALYS handler
+    talysOptHnd <- createTalysFun(talysHnd)
+
+    # Difference between talysHnd and talysOptHnd:
+    #   talysHnd is a lower-level interface that provides
+    #            the functions run, isRunning, and result.
+    #            The input specification is passed as a list
+    #            with input keywords and values and the output
+    #            specification as a datatable enumerating the
+    #            observables of interest
+
+    #   talysOptHnd provides the functions fun and jac which 
+    #               take a vector x as input and return either
+    #               a vector of observables (fun) or the Jacobian 
+    #               matrix (jac). Default parameter values and
+    #               which values are present in x is specified
+    #               via additional setter functions. Functions
+    #               provided by talysOptHnd rely on those 
+    #               provided by talysHnd.
+    list(remHnd = remHnd,
+         clustHnd = clustHnd,
+         talysHnd = talysHnd,
+         talysOptHnd = talysOptHnd)
+}
+
+
+# function that copies worker controller script to cluster
+# and returns the command that needs to be run on worker nodes
+# to watch for and execute transmitted jobs
+slaveSetupCmd <- function(nohup = TRUE, launch = FALSE) {
+  con <- createTalysHandlers()
+  cmdstr <- con$clustHnd$startNodeController(con$clustHnd, maxNumCpus=maxNumCPU)
+  con$clustHnd$closeCon()
+  if (isTRUE(launch))
+      system(cmdstr, wait = FALSE, ignore.stderr = TRUE)
+  if (isTRUE(nohup))
+      cmdstr <- paste0("nohup ", cmdstr, " &")
+  cmdstr
+}
+
+if (isTRUE(containerTest)) {
+    slaveSetupCmd(nohup = FALSE, launch = TRUE)
+}
+
