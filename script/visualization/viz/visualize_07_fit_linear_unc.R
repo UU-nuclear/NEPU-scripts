@@ -1,5 +1,16 @@
-setwd("/home/joape785/eval-fe56")
-source("config.R")
+#################################################
+#       SCRIPT Setup
+##################################################
+args = commandArgs(trailingOnly=TRUE)
+
+if (length(args)==1) {
+  print(paste0("Setting as config file: ", args[1]))
+  source(args[1])
+}
+
+
+#setwd("/home/joape785/eval-fe56")
+#source("config.R")
 #source("config/config_2-30_fullParset_gp_obs.R")
 #source("config/config_2-30_fullParset_gp_obs_2.R")
 #source("config/config_2-55_fullParset_gp_obs.R")
@@ -10,7 +21,8 @@ library(ggplot2)
 library(stringr)
 
 
-plot_path <- file.path(rootpath, outdataDir, "plots")
+#plot_path <- file.path(rootpath, outdataDir, "plots")
+plot_path <- plotPath
 
 
 origSysDt <- read_object(4, "origSysDt")
@@ -56,8 +68,8 @@ D = Diagonal(x = statUnc^2)
 P <- updX
 updCov <- diag(statUnc^2) + S %*% updX %*% t(S)
 d <- expDt[,DATA-XSECTFIT]
-updCovInv <- inv_cov(D, S, updX)
-#updCovInv <- solve(updCov)
+#updCovInv <- inv_cov(D, S, updX)
+updCovInv <- solve(updCov)
 redchi2tot <- t(d) %*% updCovInv %*% d / nrow(expDt)
 redchi2tot <- chisquare(d, D, S, P, cholZ = NULL) / nrow(expDt)
 redchi2tot_diag <- t(d) %*% diag(1/updUnc) %*% d / nrow(expDt)

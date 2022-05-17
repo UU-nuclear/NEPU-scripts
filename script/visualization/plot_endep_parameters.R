@@ -1,3 +1,14 @@
+#################################################
+#       SCRIPT Setup
+##################################################
+args = commandArgs(trailingOnly=TRUE)
+
+if (length(args)==1) {
+  print(paste0("Setting as config file: ", args[1]))
+  source(args[1])
+}
+
+
 library(ggplot2)
 
 ##################################################
