@@ -41,8 +41,7 @@ mongo_dbname <- "exfor"
 mongo_colname <- "entries"
 
 # energy grid for TALYS calculations
-energyGrid <- seq(0.1, 30.001, length = 50)
-#energyGrid <- c(seq(0.1,10,by=0.3),seq(10.6,20,by=0.6),seq(20.2,30.001,length=11))
+energyGrid <- c(seq(0.1, 30.00, by = 0.5),30)
 
 # Option to specify different grid for the final random files created i step 9. 
 # For example an extrapolation from data region.
@@ -56,7 +55,8 @@ energyGridrandomFiles <- energyGrid
 defaultThresEn <- 1 
 
 # energy grid for energy-dependent TALYS parameters
-energyGridForParams <- seq(0,31,by=2)
+#energyGridForParams <- seq(0,30,by=1)
+energyGridForParams <- energyGrid
 
 # specification of the TALYS input file used as template
 # param_template_path <- "/opt/pipeline/eval-fe56/indata/n_Fe_056.inp"
@@ -65,7 +65,12 @@ param_template_path <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/wor
 # instantiate the transformation used for all parameters of the form ...adjust
 # parameters are restricted to the interval (0.5, 1.5), in other words:
 # the maximal deviation from the default values is 50%
-paramTrafo <- generateTrafo(1, 0.5, 4) 
+# changing this: to be a bit less restrictive
+# talys accepts optical model parameters in the range [0.1,10]
+# so let's try to use as much of this range as possible
+# i.e let the limits be [0.11,1.89] to have some distnace to talys minimum
+# the trafoFun should be fixed
+paramTrafo <- generateTrafo(1, 0.89, 4) 
 
 # random generator seed for optimization of experimental uncertainties
 # impacts the initial extra uncertainties in the optimization setup
@@ -90,8 +95,7 @@ maxitLM <- 30
 reltolLM <- 1e-5
 
 # where to save output data
-outdataPath <- file.path(workdir, "/outdata")
-#outdataPath <- file.path(workdir, "/outdata_new_grid")
+outdataPath <- file.path(workdir, "/outdata_grid3")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 

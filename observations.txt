@@ -1,0 +1,6 @@
+Comparing the denser and less dense grid, the chi-square is better with the less dense grid in all cases, except (n,tot) and (n,el). These channels are clearly closely related and the imporved chi-square seems to mainly come from the cincks introduced at low energies (1-2 MeV) in the denser grid. I would expect that these cincks are introduced by the energy depenendent parameters which have a less dense grid in both cases (2 MeV equidistnant grid).
+
+denser grid: energyGrid <- c(seq(0.1,10,by=0.3),seq(10.6,20,by=0.6),seq(20.2,30.001,length=11))
+less dense grid: energyGrid <- seq(0.1, 30.001, length = 50)
+
+There is an error in the parameter transformation. Although the formula should return the limits as x approaches +-inf it returns NaN for abs(x) > 170. In practice probably not much of a problem, but it could be.
