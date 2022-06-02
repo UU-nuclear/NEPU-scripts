@@ -58,7 +58,7 @@ rescuefile 103 rescue.103     1.00000   0.05000
 #                                                                               
 # tasman                                                                        
 #                                                                               
-bins 60                                                                         
+bins 100                                                                         
 #change                                                                         
 #liso 0                                                                         
 #talysversion talys                                                             

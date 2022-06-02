@@ -97,6 +97,7 @@ if (length(idcsToRemove) > 0)
 
 # add the energy dependent parameter specifications
 endepParnames <- expand.grid(tmpPar,'(',energyGridForParams,') ', tmpProj) 
+#endepParnames <- expand.grid(tmpPar, tmpProj,'(',energyGridForParams,') ') 
 endepParnames <- do.call(paste0, endepParnames)
 endepInpList <- as.list(rep(1, length(endepParnames)))
 names(endepInpList) <- endepParnames
@@ -116,10 +117,28 @@ refParamDt <- data.table(PROJECTILE = toupper(refInpList$projectile),
 # remove the redundant information about the reaction system
 refParamDt <- refParamDt[! PARNAME %in% c("projectile", "element", "mass")]
 
+parUncDf <- read.table(paste0(workdir,"indata/par_unc.txt"),skip=1,head=TRUE,sep=',')
+parUncPrior <- function(par_name) {
+    if(startsWith(par_name,"aadjust")) {
+        lst <- strsplit(par_name,"[ ]{1,}")
+        ZZ <- strtoi(lst[[1]][2])
+        AA <- strtoi(lst[[1]][3])
+        unc <- 11.25 - 0.03125*AA
+        return(unc*2./100.)
+    }
+    #par_name <- gsub("_","",par_name,fixed=TRUE) # remove '_'
+    #par_name <- gsub("\\([^()]*\\)","",par_name) # remove energy specification in ()
+    #par_name <- gsub(" ","",par_name,fixed=TRUE) # remove white spaces
+    #par_name <- gsub("^\\d+|\\d+$", "", par_name) # remove leading and trailing numbers
+    #parUncDf[parUncDf$NAME==par_name,2]*2./100.
+
+    lst <- strsplit(par_name,"[ ]{1,}")
+}
 # only parameters with "adjust" in the parameter name 
 # are considered as adjustable
 refParamDt[, ADJUSTABLE := grepl("adjust", PARNAME)]
-refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
+#refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
+refParamDt$PARUNC <- lapply(refParamDt$PARNAME,parUncPrior)
 
 # index is needed for the sensitivity calculations later
 refParamDt[, IDX := seq_len(.N)]

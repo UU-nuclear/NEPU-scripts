@@ -124,7 +124,7 @@ setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
 lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 2
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3
 lowerLims <- lowerLims[gpDt$ADJUSTABLE]
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
@@ -132,7 +132,11 @@ upperLims <- upperLims[gpDt$ADJUSTABLE]
 
 # initial configuration
 #initPars <- lowerLims + runif(length(lowerLims)) * abs(upperLims - lowerLims)
-initPars <- lowerLims
+#initPars <- lowerLims
+initPars <- rep(NA_real_, nrow(gpDt))
+initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.2
+initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 6
+initPars <- initPars[gpDt$ADJUSTABLE]
 
 # optimize hyperparameters
 # this may take a few minutes

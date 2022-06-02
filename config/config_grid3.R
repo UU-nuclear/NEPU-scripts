@@ -43,9 +43,9 @@ mongo_colname <- "entries"
 # energy grid for TALYS calculations
 energyGrid <- c(seq(0.1, 30.00, by = 0.5),30)
 
-# Option to specify different grid for the final random files created i step 9. 
+# Option to specify different grid for the final random files created in step 9. 
 # For example an extrapolation from data region.
-# Note that for proper error propagation the energy dependent paramters should cover the same range.
+# Note that for proper error propagation the energy dependent parameters should cover the same range.
 # energyGridrandomFiles <- seq(0.1, 30.001, length = 100)
 energyGridrandomFiles <- energyGrid
 
@@ -56,7 +56,7 @@ defaultThresEn <- 1
 
 # energy grid for energy-dependent TALYS parameters
 #energyGridForParams <- seq(0,30,by=1)
-energyGridForParams <- energyGrid
+energyGridForParams <- c(0,seq(5.0, 30.00, by = 1.5))
 
 # specification of the TALYS input file used as template
 # param_template_path <- "/opt/pipeline/eval-fe56/indata/n_Fe_056.inp"
@@ -68,9 +68,10 @@ param_template_path <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/wor
 # changing this: to be a bit less restrictive
 # talys accepts optical model parameters in the range [0.1,10]
 # so let's try to use as much of this range as possible
-# i.e let the limits be [0.11,1.89] to have some distnace to talys minimum
+# i.e let the limits be [0.11,1.89] to have some distance to talys minimum
 # the trafoFun should be fixed
-paramTrafo <- generateTrafo(1, 0.89, 4) 
+#paramTrafo <- generateTrafo(1, 0.89, 4) 
+paramTrafo <- generateTrafo(1, 0.75, 4) 
 
 # random generator seed for optimization of experimental uncertainties
 # impacts the initial extra uncertainties in the optimization setup

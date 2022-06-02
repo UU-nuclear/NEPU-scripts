@@ -250,14 +250,16 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-#pinit <- read_object(7, "optRes")$par
-pinit <- read_object(7, "pref_last")
+pinit <- read_object(7, "optRes")$par
+#pinit <- read_object(7, "pref_last")
 
 #pinit <- refPar
 
+cat("Started calculations at", as.character(Sys.time()), "\n")  
 optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
                  control = list(maxit = maxitLM, reltol = reltolLM, acc = TRUE, alpha=0.75, acc_step = 1e-1, mu=5e3))
+cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)

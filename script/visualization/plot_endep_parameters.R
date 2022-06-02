@@ -8,7 +8,6 @@ if (length(args)==1) {
   source(args[1])
 }
 
-
 library(ggplot2)
 
 ##################################################

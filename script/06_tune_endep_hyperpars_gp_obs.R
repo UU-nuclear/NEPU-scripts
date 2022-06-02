@@ -44,7 +44,7 @@ expDt <- read_object(3, "expDt")
 updSysDt <- read_object(4, "updSysDt")
 fullSensDt <- read_object(5, "fullSensDt") 
 modDt <- read_object(3, "modDt")
-priorDt <- read_object(4, "priorDt")
+#priorDt <- read_object(4, "priorDt")
 ##################################################
 #       START OF SCRIPT
 ##################################################

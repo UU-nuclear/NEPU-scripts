@@ -219,7 +219,6 @@ S <- sysCompHandler$map(optExpDt, optSysDt, ret.mat = TRUE)
 # parameters are constructed by a Gaussian process and contain
 # therefore correlations.
 P <- sysCompHandler$cov(optSysDt, optGpDt, ret.mat = TRUE)
-
 # The Levenberg-Marquardt routine assumes that systematic
 # components in optSysDt are only related to experiments
 # and not to model parameters. The latter were introduced
