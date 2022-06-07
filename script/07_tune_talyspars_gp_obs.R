@@ -251,9 +251,9 @@ loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
 #pinit <- read_object(7, "optRes")$par
-pinit <- read_object(7, "pref_last")
+#pinit <- read_object(7, "pref_last")
 
-#pinit <- refPar
+pinit <- refPar
 
 optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
