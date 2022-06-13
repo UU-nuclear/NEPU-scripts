@@ -77,7 +77,14 @@ refInpHeader <- list(projectile = "n",
 #                 template = paramTemplate)
 
 adjParList <- extractAdjustedTalysParameters(paramTemplate)
-if (isTRUE(fewParameterTest)) adjParList <- adjParList[1:3]
+if (isTRUE(fewParameterTest)) {
+    if(exists("max_number_of_free_pars")) {
+        print(paste("limiting the number of free parameters to",max_number_of_free_pars))
+        adjParList <- adjParList[1:max_number_of_free_pars]
+    } else {
+        adjParList <- adjParList[1:3]
+    }
+}
 
 # augment parameter list with energy dependent parameters
 tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc'),'adjust')

@@ -3,12 +3,7 @@
 ##################################################
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)==0) {
-  source("./config/config.R")
-  stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if (length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
 }
@@ -31,10 +26,11 @@ refParamDt <- read_object(2, "refParamDt")
 optSysDt_allpars <- read_object(7, "optSysDt_allpars")
 optParamDt <- read_object(7, "optParamDt")
 
-par_selection <- optParamDt[, ADJUSTABLE==TRUE] 
+par_selection <- finalParamDt[, ADJUSTABLE==TRUE] 
+#par_selection <- optParamDt[, ADJUSTABLE==TRUE] 
 
-#paramDt <- finalParamDt[par_selection]
-paramDt <- optParamDt[par_selection]
+paramDt <- finalParamDt[par_selection]
+#paramDt <- optParamDt[par_selection]
 
 paramDt[, OPTPARVAL_ref := as.numeric(paramDt$PARVAL)]
 paramDt[, OPTPARUNC_ref := as.numeric(as.vector(sqrt(diag(P0))))]

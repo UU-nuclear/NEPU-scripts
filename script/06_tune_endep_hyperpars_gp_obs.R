@@ -214,12 +214,11 @@ gpDt[grepl("TALYS-",EXPID)  & PARNAME == "nugget", UPPERLIMS := 1000]
 
 
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , LOWERLIMS := 1] # Set different upper limit for GPs on the observable
-gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , LOWERLIMS := 0.01]# Set different upper limit for GPs on the observable
+gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , LOWERLIMS := 1e-6]# Set different upper limit for GPs on the observable
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "nugget" , LOWERLIMS := 1e-3] # Set different upper limit for GPs on the observable
 
 #gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , UPPERLIMS := 3*PARVAL]
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , UPPERLIMS := 2000]
-
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , UPPERLIMS := 5] # Set different upper limit for GPs on the observable
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "nugget" , UPPERLIMS := 10] # Set different upper limit for GPs on the observable
 gpDt[,INITVAL:=PARVAL]

@@ -430,7 +430,7 @@ plot_gp_prior <- function(expDt, optGpDt){
   , by=REAC]
 }
 
-source("config.R")
+#source("config.R")
 subents <- read_object(1, "subents")
 modList <- read_object(3, "modList")
 optSysDt <- read_object(6, "optSysDt")

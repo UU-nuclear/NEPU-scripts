@@ -1,17 +1,17 @@
 #################################################
 #       SCRIPT Setup
 ##################################################
-args = commandArgs(trailingOnly=TRUE)
-
-if (length(args)==0) {
-  source("./config/config.R")
-  stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
-  print(paste0("Setting as config file: ", args[1]))
-  source(args[1])
-}
+#args = commandArgs(trailingOnly=TRUE)
+#
+#if (length(args)==0) {
+#  source("./config/config.R")
+#  stop("No config file supplied, using default file config.R", call.=FALSE)
+#} else if (length(args) > 1) {
+#  stop("Script only accepts one argument.", call.=FALSE)
+#} else {
+#  print(paste0("Setting as config file: ", args[1]))
+#  source(args[1])
+#}
 
 library(ggplot2)
 library(stringr)
@@ -28,11 +28,12 @@ plotPath <- paste0(outdataPathRun, "/plots")
 
 subents <- read_object(1, "subents", outdata_path = outdataPathRun)
 modList <- read_object(3, "modList", outdata_path = outdataPathRun)
-optSysDt <- read_object(7, "optSysDt", outdata_path = outdataPathRun)
-optGpDt <- read_object(7, "optGpDt", outdata_path = outdataPathRun)
-optExpDt <- read_object(7, "optExpDt", outdata_path = outdataPathRun)
-mapAssignment <- read_object(7, "mapAssignment", outdata_path = outdataPathRun)
-sysCompHandler <- read_object(7, "sysCompHandler", outdata_path = outdataPathRun)
+optSysDt <- read_object(6, "optSysDt", outdata_path = outdataPathRun)
+optGpDt <- read_object(6, "optGpDt", outdata_path = outdataPathRun)
+optExpDt <- read_object(6, "optExpDt", outdata_path = outdataPathRun)
+#mapAssignment <- read_object(7, "mapAssignment", outdata_path = outdataPathRun)
+mapAssignment <- read_object(6, "mapAssignment", outdata_path = outdataPathRun)
+sysCompHandler <- read_object(6, "sysCompHandler", outdata_path = outdataPathRun)
 origSysDt <- read_object(4, "origSysDt", outdata_path = outdataPathRun)
 updSysDt <- read_object(4, "updSysDt", outdata_path = outdataPathRun)
 expDt <- read_object(3, "expDt", outdata_path = outdataPathRun)
@@ -73,6 +74,9 @@ gpObsPrior <- sqrt(diag(Sk %*% K %*% t(Sk)))
 optExpDt[, GPPRIOR := gpObsPrior]
 #expDtBay[, ORIGUNC := optExpDt$UNC]
 #expDtBay[, ORIGDATA := optExpDt$DATA]
+optExpDt[, ORIGUNC := optExpDt$UNC]
+optExpDt[, ORIGDATA := optExpDt$DATA]
+
 
 #optExpDtShort <- optExpDt[REAC=="(26-FE-56(N,2N)26-FE-55,,SIG)"]
 

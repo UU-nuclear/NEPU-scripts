@@ -1,6 +1,6 @@
 
 
-source("config.R")
+#source("config.R")
 library(ggplot2)
 #outdataPathRun <- paste0(outdataPath, "_2-200_MeV_100_files_small_lenght_good")
 outdataPathRun <- paste0(outdataPath)
