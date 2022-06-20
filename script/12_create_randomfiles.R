@@ -13,15 +13,11 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-
-if (length(args)==0) {
-  source("./config/config.R")
-  stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if(length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
+} else if (length(args) > 1) {
+  stop("Script only accepts one argument.", call.=FALSE)
 }
 
 
@@ -93,7 +89,9 @@ variedParsets <- sample_mvn(numTalysFiles, finalPars, finalParCovmat)
 allParsets <- cbind(finalPars, variedParsets)
 
 # perform calculations and save the result
-talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
+#talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
+dir.create(savePathTalys, showWarnings=TRUE)
+print(paste0("Storing talys results in: ", savePathTalys))
 
 allResults <- talys$fun(allParsets, applySexp = FALSE, ret.dt=FALSE, saveDir = savePathTalys)
 

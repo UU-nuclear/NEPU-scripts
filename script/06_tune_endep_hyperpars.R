@@ -124,10 +124,10 @@ setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
 lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 2
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3
 lowerLims <- lowerLims[gpDt$ADJUSTABLE]
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 5
 upperLims <- upperLims[gpDt$ADJUSTABLE]
 
 # initial configuration
