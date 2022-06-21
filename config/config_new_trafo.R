@@ -66,8 +66,8 @@ param_template_path <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/wor
 
 # instantiate the transformation used for all parameters of the form ...adjust
 # parameters are restricted to the interval (0.5, 1.5), in other words:
-# the maximal deviation from the default values is 50%
-paramTrafo <- generateTrafo(1, 0.5, 4) 
+# the maximal deviation from the default values is 80%
+paramTrafo <- generateTrafo(1, 0.8, 4) 
 
 # random generator seed for optimization of experimental uncertainties
 # impacts the initial extra uncertainties in the optimization setup
@@ -93,7 +93,7 @@ reltolLM <- 1e-5
 
 # where to save output data
 #outdataPath <- file.path(workdir, "/outdata")
-outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try2")
+outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try4")
 #outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try3")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 

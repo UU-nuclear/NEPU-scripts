@@ -132,7 +132,8 @@ upperLims <- upperLims[gpDt$ADJUSTABLE]
 
 # initial configuration
 #initPars <- lowerLims + runif(length(lowerLims)) * abs(upperLims - lowerLims)
-initPars <- lowerLims
+#initPars <- lowerLims
+initPars <- upperLims
 
 # optimize hyperparameters
 # this may take a few minutes
