@@ -133,7 +133,8 @@ talys$setSexp(Sexp)
 talys$setMask(mask)
 # the finite difference used to calculate numerically the
 # Jacobian matrix
-talys$setEps(0.001)
+if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
+talys$setEps(talys_finite_diff)
 
 # sanity check: check if we have set up the model correctly
 # refPar <- optParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)]

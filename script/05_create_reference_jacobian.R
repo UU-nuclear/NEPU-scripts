@@ -62,7 +62,8 @@ stopifnot(all.equal(refParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)], origPars))
 # be in the original parameter space. Also generated input lists in jacInputsDt
 # contain untransformed parameters. However, the eps specification refers to 
 # adjustments in the transformed! parameter space
-jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = 0.001, trafo = paramTrafo)
+if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
+jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff, trafo = paramTrafo)
 
 ###############################
 # perform the calculation

@@ -82,7 +82,8 @@ talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp)
 talys$setMask(mask)
-talys$setEps(0.001)
+if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
+talys$setEps(talys_finite_diff)
 
 # set the seed for the random number generator
 # to have a reproducible creation of TALYS parameter sets

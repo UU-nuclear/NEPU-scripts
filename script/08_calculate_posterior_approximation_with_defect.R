@@ -74,7 +74,8 @@ talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp)
 talys$setMask(mask)
-talys$setEps(0.001)
+if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
+talys$setEps(talys_finite_diff)
 
 # construct an object that contains functions to
 # evaluate the log posterior density (up to a constant)
