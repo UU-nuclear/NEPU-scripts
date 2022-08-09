@@ -25,10 +25,10 @@ updSysDt <- read_object(4, "updSysDt", outdata_path=outdataPathRun)
 sysDt <- updSysDt[grepl('^EXPID-', EXPID)]
 sysDt[, IDX:=seq_len(.N)]
 needsDt <- read_object(1, "needsDt", outdata_path=outdataPathRun)
-optRes <- read_object(7, "optRes", outdata_path=outdataPathRun)
-P0 <- read_object(7, "P0", outdata_path=outdataPathRun)
-X <- read_object(7, "X", outdata_path=outdataPathRun)
-SX <- read_object(7, "S0", outdata_path=outdataPathRun)
+optRes <- read_object(10, "optRes", outdata_path=outdataPathRun)
+P0 <- read_object(10, "P0", outdata_path=outdataPathRun)
+X <- read_object(10, "X", outdata_path=outdataPathRun)
+SX <- read_object(10, "S0", outdata_path=outdataPathRun)
 
 fitResult <- as.numeric(as.vector(optRes$fn))
 fitUnc <- as.numeric(as.vector(optRes$stdAsyFitErrLM))
@@ -89,7 +89,7 @@ ggp
 
 
 #dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-#ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=17.8, height=10)
+ggsave(file.path(plotPath, 'plot_posterior_xs_after_gp_obs.png'), ggp, units='cm', width=17.8, height=10)
 
 
 

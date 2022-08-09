@@ -6,6 +6,10 @@
 # non-linear Generalized-Least-Squares problem
 # with the Levenberg-Marquardt algorithm.
 #
+# This script is the same as 07_tune_talyspars_gp_obs.R but testing what difference it makes if
+# there is one free energy dependent parameter to set all of the free. I.e. if at least one energy
+# is free force all the energies to be free.
+
 
 #################################################
 #       SCRIPT Setup
@@ -15,8 +19,8 @@ args = commandArgs(trailingOnly=TRUE)
 
 
 if (length(args)==0) {
-  #source("./config/config.R")
-  #stop("No config file supplied, using default file config.R", call.=FALSE)
+  source("./config/config.R")
+  stop("No config file supplied, using default file config.R", call.=FALSE)
 } else if (length(args) > 1) {
   stop("Script only accepts one argument.", call.=FALSE)
 } else {
@@ -30,7 +34,7 @@ if (length(args)==0) {
 ##################################################
 
 scriptnr <- 7L
-overwrite <- FALSE
+overwrite <- TRUE
 
 ##################################################
 #       OUTPUT FROM PREVIOUS STEPS
@@ -44,19 +48,16 @@ fullSensDt <- read_object(5, "fullSensDt")
 optExpDt <- read_object(6, "optExpDt")
 optSysDt <- read_object(6, "optSysDt")
 optGpDt <- read_object(6, "optGpDt")
-
+reacHandlerGPobs <- read_object(6, "reacHandlerGPobs")
 ##################################################
 #       START OF SCRIPT
 ##################################################
-print("-----------------------------------------------------")
-print("----------------------script 07----------------------")
-print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
                        "refPar", "P0", "yexp", "D", "S0", "X",
                        "optSysDt_allpars", "optSysDt_optpars")
-check_output_objects(scriptnr, outputObjectNames)
+check_output_objects(scriptnr, outputObjectNames, overwrite = TRUE)
 
 # convert the sparse matrix given as data.table 
 # into a spase matrix type as defined in package Matrix
@@ -106,6 +107,13 @@ optParamDt[J(adjParIdcs), ADJUSTABLE := TRUE]
 
 # safeguard
 stopifnot(sum(optParamDt$ADJUSTABLE) == length(adjParIdcs))
+
+# find all energy dependent parameters whcih have at least on point that is adjustbale
+adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
+adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.\\)"))
+optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
+optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
+optParamDt[,tmp:=NULL] # remove the temporary column from the data table
 
 talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
@@ -204,9 +212,9 @@ talysHandler$setRef(extNeedsDt, fullSensDt, refParamDt,
                     exforHandler, c(subents, modList$SUBENT))
 talysHandler$setPrior(refParamDt)
 
-
 # create global handler and register the individual handlers
 sysCompHandler <- createSysCompHandler()
+sysCompHandler$addHandler(reacHandlerGPobs)
 sysCompHandler$addHandler(normHandler)
 sysCompHandler$addHandler(talysHandler)
 sysCompHandler$addGPHandler(gpHandler)
@@ -222,7 +230,6 @@ S <- sysCompHandler$map(optExpDt, optSysDt, ret.mat = TRUE)
 # parameters are constructed by a Gaussian process and contain
 # therefore correlations.
 P <- sysCompHandler$cov(optSysDt, optGpDt, ret.mat = TRUE)
-
 # The Levenberg-Marquardt routine assumes that systematic
 # components in optSysDt are only related to experiments
 # and not to model parameters. The latter were introduced
@@ -255,20 +262,24 @@ loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
 #pinit <- read_object(7, "optRes")$par
+#pinit <- read_object(7, "pref_last")
+
 pinit <- refPar
 
-#cat("Started calculations at", as.character(Sys.time()), "\n")  
+#optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
+#                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
+#                 control = list(maxit = maxitLM, reltol = reltolLM, acc = TRUE, alpha=0.75, acc_step = 1e-1, mu=5e3))
+
+cat("Started calculations at", as.character(Sys.time()), "\n")  
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
 #                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1))
-#cat("Finished calculations at", as.character(Sys.time()), "\n")
-
-cat("Started calculations at", as.character(Sys.time()), "\n")  
 source("LMalgo_parallel/LMalgo_parallel.R")
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 32, strategy = "gain"))
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
+

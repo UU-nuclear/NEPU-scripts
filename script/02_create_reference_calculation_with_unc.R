@@ -55,6 +55,10 @@ needsDt <- read_object(1, "needsDt")
 #       START OF SCRIPT
 ##################################################
 
+print("-----------------------------------------------------")
+print("----------------------script 02----------------------")
+print("-----------------------------------------------------")
+
 # define the objects that should be returned
 outputObjectNames <- c("refInpList", "refParamDt", "extNeedsDt", "rawRes") 
 check_output_objects(scriptnr, outputObjectNames) 
@@ -129,18 +133,23 @@ refParamDt[, ADJUSTABLE := grepl("adjust", PARNAME)]
 refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
 
 # set the prior parameter uncertainties according to Nuclear Data Sheets 113 (2012) 2841–2934
-# multiplied with a factor (here 2) and maximum prior uncertainty 1.0
+# multiplied with a factor (here 2) and maximum prior uncertainty 0.5
 library(stringi)
 unc_multiplier <- 2.0
 par_unc <- read.csv("indata/par_unc.txt",comment.char='#')
 for(i in 1:nrow(par_unc)) {
     name <- as.character(par_unc$NAME[i])
     particle <- as.character(par_unc$PARTICLE[i])
-    unc <- par_unc$UNC[i]*0.01*unc_multiplier
+    #unc <- par_unc$UNC[i]*0.01*unc_multiplier
+
+    # set a minimum uncertainty on the prior parameter to 10%
+    unc <- max(par_unc$UNC[i]*0.01*unc_multiplier,0.1)
+    # the uncertainy should be smaller than the parameter transformation
+    # unc <- min(unc,0.8) 
     if(is.na(particle)) {
-        refParamDt[grepl(name,refParamDt$PARNAME),PARUNC := unc]
+        refParamDt[grepl(name,refParamDt$PARNAME),PARUNC := min(unc,0.5)]
     } else {
-        refParamDt[grepl(name,refParamDt$PARNAME) & stri_sub(refParamDt$PARNAME,-1)==particle ,PARUNC := min(unc,1)]
+        refParamDt[grepl(name,refParamDt$PARNAME) & stri_sub(refParamDt$PARNAME,-1)==particle ,PARUNC := min(unc,0.5)]
     }
 }
 

@@ -15,6 +15,7 @@ library(latex2exp)
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
+subents <- read_object(1, "subents")
 extNeedsDt <- read_object(2, "extNeedsDt")
 origSysDt <- read_object(4, "origSysDt")
 updSysDt <- read_object(4, "updSysDt")
@@ -22,6 +23,7 @@ expDt <- read_object(3, "expDt")
 modDt <- read_object(3,"modDt")
 allResults <- read_object(9, 'allResults')
 
+optExpDt <- read_object(6, "optExpDt")
 optParamDt <- read_object(7,"optParamDt")
 optRes <- read_object(7, "optRes")
 P0 <- read_object(7, "P0")
@@ -48,49 +50,6 @@ setkey(expDt, IDX)
 expDt[, ORIGUNC := origUnc]
 expDt[, UPDUNC := updUnc]
 
-# ----------Calculate the Chi-squares -----------
-fitResult <- as.numeric(as.vector(optRes$fn))
-J <- optRes$jac
-finalPars <- optRes$par
-finalParCovmat <- optRes$parCovLM
-fit_unc <- as.vector(optRes$stdAsyFitErrLM)
-
-expDt[, FITUNC := fit_unc]
-expDt[, XSECTFIT := fitResult]
-
-D <- Diagonal(x = statUnc^2)
-P <- updX
-d <- expDt[,DATA-XSECTFIT]
-chi2_tot <- chisquare(d,D,S,P)
-
-getChi2reaction <- function(reaction_string) {
-  normHandler <- createSysCompNormHandler("DATAREF")
-  normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
-
-  sysCompHandler <- createSysCompHandler()
-  sysCompHandler$addHandler(normHandler)
-
-  reaction.expDt <- expDt[REAC==reaction_string]
-  reaction.expDt[, IDX := seq_len(.N)]
-  reaction.stat_unc <- getDt_UNC(reaction.expDt)
-  reaction.D <- Diagonal(x = reaction.stat_unc^2)
-
-  reaction.S <- sysCompHandler$map(reaction.expDt, origSysDt, ret.mat = TRUE)
-  reaction.P <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
-  reaction.d <- reaction.expDt[,DATA-XSECTFIT]
-  chisquare(reaction.d,reaction.D,reaction.S,reaction.P)
-}
-
-getNDFreaction <- function(reaction_string) {
-  n_points <- length(expDt[REAC==reaction_string]$IDX)
-  n_pars <- length(optParamDt[ADJUSTABLE==TRUE]$IDX)
-  #n_points - n_pars
-  n_points
-}
-
-chi2dt <- data.table(reaction=reactions,chisquare=lapply(reactions,getChi2reaction),ndf=lapply(reactions,getNDFreaction))
-# -------------------------------------------
-
 # create model grid for experimental data
 modSubents <- lapply(reactions, createSubentStub, en=energyGrid)
 #modSubents <- lapply(reactions, createSubentStub, en=energyGridrandomFiles)
@@ -110,6 +69,93 @@ postDt[, DATA:=as.vector(Smod %*% tmpDt$V1)]
 postDt[, UNC:=as.vector(diag(Smod %*% diag(tmpDt$UNC) %*% t(Smod)))]
 # --------------------------------------
 
+# -------------------------------------------
+# transform allResults (the result from the random sampling in step9) to the energies of the experiments
+Sexp <- exforHandler$getJac(optExpDt,extNeedsDt,subents)
+transform_function <- function(x) { as.vector(Sexp%*%x) }
+allResults_transform <- apply(allResults,2,FUN=transform_function)
+
+uncinfo_transform <- cov.wt(t(allResults_transform))
+
+model_covariance <- uncinfo_transform$cov
+model_predictions <- uncinfo_transform$center
+model_uncertainties <- sqrt(diag(model_covariance))
+
+fitResult <- as.numeric(as.vector(optRes$fn))
+# update the expDt with the model predictions
+expDt[, FITUNC:= model_uncertainties]
+expDt[, XSECTFIT := model_predictions]
+expDt[, XSECTFIT_MAP := model_predictions] # maximum aposterior
+
+# ----------Calculate the Chi-squares -----------
+
+D <- Diagonal(x = statUnc^2)
+P <- updX
+d <- expDt[,DATA-XSECTFIT]
+chi2_tot <- chisquare(d,D,S,P)
+
+getChi2reaction <- function(reaction_string) {
+  normHandler <- createSysCompNormHandler("DATAREF")
+  normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
+
+  sysCompHandler <- createSysCompHandler()
+  sysCompHandler$addHandler(normHandler)
+
+  reaction.expDt <- copy(expDt[REAC==reaction_string])
+  reaction.expDt[, IDX := seq_len(.N)]
+  reaction.stat_unc <- getDt_UNC(reaction.expDt)
+  reaction.D <- Diagonal(x = reaction.stat_unc^2)
+
+  reaction.S <- sysCompHandler$map(reaction.expDt, origSysDt, ret.mat = TRUE)
+  reaction.P <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
+  reaction.d <- reaction.expDt[,DATA-XSECTFIT]
+  chisquare(reaction.d,reaction.D,reaction.S,reaction.P)
+  # chisquare(d,D,S,P) calculates d^(transpose) x Covariance_exp^(-1) x d here
+}
+
+getNDFreaction <- function(reaction_string) {
+  n_points <- length(expDt[REAC==reaction_string]$IDX)
+  n_pars <- length(optParamDt[ADJUSTABLE==TRUE]$IDX)
+  #n_points - n_pars
+  n_points
+}
+
+getChi2reaction_with_model_unc <- function(reaction_string) {
+  normHandler <- createSysCompNormHandler("DATAREF")
+  normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
+
+  sysCompHandler <- createSysCompHandler()
+  sysCompHandler$addHandler(normHandler)
+
+  reaction.expDt <- copy(expDt[REAC==reaction_string])
+  reaction.model_cov <- model_covariance[reaction.expDt$IDX,reaction.expDt$IDX]
+
+  reaction.expDt[, IDX := seq_len(.N)]
+  reaction.stat_unc <- reaction.expDt$UNC # == getDt_UNC(reaction.expDt)
+  #reaction.stat_unc <- getDt_UNC(reaction.expDt)
+  #reaction.D <- Diagonal(x = reaction.stat_unc^2)
+  reaction.D <- Diagonal(x = (reaction.stat_unc^2 + reaction.expDt$FITUNC^2))
+
+  reaction.S <- sysCompHandler$map(reaction.expDt, origSysDt, ret.mat = TRUE)
+  reaction.P <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
+  reaction.d <- reaction.expDt[,DATA-XSECTFIT]
+
+  # this should be the proper way? but cov is singular so it can't be solved
+  #t(reaction.d)%*%solve(reaction.model_cov,reaction.d) 
+
+   chisquare(reaction.d,reaction.D,reaction.S,reaction.P)
+}
+
+chi2dt <- data.table(reaction=reactions,
+                      chisquare=lapply(reactions,getChi2reaction),
+                      chisquare_mod=lapply(reactions,getChi2reaction_with_model_unc),
+                      ndf=lapply(reactions,getNDFreaction))
+
+
+# -------------------------------------------
+
+
+
 for (curReac in reactions) {
 
     curExpDt <- expDt[REAC == curReac]
@@ -117,10 +163,12 @@ for (curReac in reactions) {
     curPostDt <- postDt[REAC == curReac]
 
     # label with chi2 information
-    tex_label <- TeX(paste0("$\\Chi^2$ / n = ",format(chi2dt[reaction==curReac]$chisquare,digit=3)," / ",chi2dt[reaction==curReac]$ndf))
+    Chi2_exp_str <- paste0("$\\Chi^2_{exp}$ / n = ",format(chi2dt[reaction==curReac]$chisquare,digit=3)," / ",chi2dt[reaction==curReac]$ndf)
+    Chi2_fit_str <- paste0("$\\Chi^2_{exp+fit}$ / n = ",format(chi2dt[reaction==curReac]$chisquare_mod,digit=3)," / ",chi2dt[reaction==curReac]$ndf)
+    tex_label <- TeX(paste0(Chi2_exp_str," | ",Chi2_fit_str))
 
     ggp <- ggplot(curExpDt,aes(x = L1, y = DATA)) + theme_bw()
-    ggp <- ggp + scale_x_continuous(breaks=seq(0,30,5))
+    ggp <- ggp + scale_x_continuous(breaks=seq(0,30,2))
     ggp <- ggp + theme(axis.text=element_text(size=9),
                        axis.title=element_text(size=10),
                        plot.title=element_text(size=12),
@@ -142,8 +190,11 @@ for (curReac in reactions) {
     ggp <- ggp + geom_ribbon(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC), alpha=0.3, data=curPostDt,fill="green")
     #ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
+    # and the model MAP
+    #ggp <- ggp + geom_line(aes(x=L1, y=XSECTFIT_MAP), col="blue", size=0.2)
 
-    print(ggp)
+
+    #print(ggp)
     dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
     filepath <- file.path(plotPath, paste0('posterior_TALYS_', curReac,'.png'))
     ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)

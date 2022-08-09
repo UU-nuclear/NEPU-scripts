@@ -1,12 +1,7 @@
 #
 # DESCRIPTION OF STEP
 #
-# Calculate the sensitivity matrix of TALYS
-# taking all adjustable model parameters into
-# account. This matrix is required for step 06
-# to tune the hyperparameters of the Gaussian
-# processes defined on energy-dependent TALYS
-# parameters.
+# 
 #
 
 #################################################
@@ -26,49 +21,46 @@ if (length(args)==0) {
   source(args[1])
 }
 
-
 #################################################
 #       SCRIPT PARAMETERS
 ##################################################
 
-scriptnr <- 5L
+scriptnr <- 7L
 overwrite <- FALSE
 
 ##################################################
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-refInpList <- read_object(2, "refInpList")
+subents <- read_object(1, "subents")
 refParamDt <- read_object(2, "refParamDt")
-extNeedsDt <- read_object(2, "extNeedsDt") 
+extNeedsDt <- read_object(2, "extNeedsDt")
+modList <- read_object(3, "modList")
+#fullSensDt <- read_object(5, "fullSensDt") 
+optExpDt <- read_object(6, "optExpDt")
+optSysDt <- read_object(6, "optSysDt")
+optGpDt <- read_object(6, "optGpDt")
 
-##################################################
-#       START OF SCRIPT
-##################################################
-
-
-
-print("-----------------------------------------------------")
-print("----------------------script 05----------------------")
-print("-----------------------------------------------------")
+optParamDt <- read_object(7, "optParamDt")
+finalParamDt <- read_object(8, "finalParamDt")
 
 # define objects to be returned
-outputObjectNames <- c("fullSensDt")
+outputObjectNames <- c("fullSensDtPost")
 check_output_objects(scriptnr, outputObjectNames)
 
-# sanity check: are all parameters within the restricted
-# range allowed by the transformation
-# (check near end in config.R for details about the transformation)
-trafoPars <- paramTrafo$invfun(refParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)])
-origPars <- paramTrafo$fun(trafoPars)
-stopifnot(all.equal(refParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)], origPars))
+# create a data.table witht he same struct as refParamDt but with the final parameter values and uncertainties
+refParamDt_post <- copy(refParamDt)
+refParamDt_post$PARVAL <- finalParamDt$POSTVAL
+refParamDt_post$PARUNC <- finalParamDt$POSTUNC
 
 # create the inputs for the calculation of the Jacobian (aka sensitivity matrix)
 # Note concerning parameter transformation: values in refParamDt are assumed to
 # be in the original parameter space. Also generated input lists in jacInputsDt
 # contain untransformed parameters. However, the eps specification refers to 
 # adjustments in the transformed! parameter space
-jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = 0.001, trafo = paramTrafo)
+#jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = 0.001, trafo = paramTrafo)
+#jacInputsDt <- createInputsForJacobian(optParamDt, extNeedsDt, eps = 0.001, trafo = paramTrafo)
+jacInputsDt <- createInputsForJacobian(refParamDt_post, extNeedsDt, eps = 0.001, trafo = paramTrafo)
 
 ###############################
 # perform the calculation
@@ -87,8 +79,10 @@ jacRes <- talysHnd$result(runObj)
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 #talysHnds$clustHnd$closeCon()
 
+save_output_objects(scriptnr, "jacRes", overwrite)
+
 jacInputsDt$outspecs <- lapply(jacRes, function(x) x$result)
-fullSensDt <- computeJacobian(jacInputsDt, drop0=TRUE)
+fullSensDtPost <- computeJacobian(jacInputsDt, drop0=TRUE)
 
 # save the needed files for reference
-save_output_objects(scriptnr, outputObjectNames, overwrite)
+save_output_objects(scriptnr, "fullSensDtPost", overwrite)

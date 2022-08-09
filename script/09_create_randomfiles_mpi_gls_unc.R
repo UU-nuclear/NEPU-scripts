@@ -25,7 +25,7 @@ if(length(args)==1) {
 #       SCRIPT PARAMETERS
 ##################################################
 
-scriptnr <- 12L
+scriptnr <- 9L
 overwrite <- FALSE
 
 ##################################################
@@ -33,18 +33,23 @@ overwrite <- FALSE
 ##################################################
 
 extNeedsDt <- read_object(2, "extNeedsDt")
-optParamDt <- read_object(10, "optParamDt")
+optParamDt <- read_object(7, "optParamDt")
 needsDt <- read_object(1, "needsDt")
-Sexp <- read_object(10, "Sexp")
-mask <- read_object(10, "mask")
-optSysDt_allpars <- read_object(10, "optSysDt_allpars")
-finalPars <- read_object(11, "finalPars")
-finalParCovmat <- read_object(11, "finalParCovmat")
-
+Sexp <- read_object(7, "Sexp")
+mask <- read_object(7, "mask")
+optSysDt_allpars <- read_object(7, "optSysDt_allpars")
+optRes <- read_object(7, "optRes")
+#finalPars <- read_object(8, "finalPars")
+#finalParCovmat <- read_object(8, "finalParCovmat")
+finalPars <- optRes$par
+finalParCovmat <- optRes$parCov
 
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 09----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("allParsets", "allResults")
@@ -61,9 +66,9 @@ extNeedsDt[, IDX := seq_len(.N)]
 
 # now consider also the insensitive parameters
 # available for variations
-optParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
+#optParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
 
-# set ener gygrid for random-files
+# set energy grid for random-files
 parval <- as.list(optParamDt[, PARVAL])
 parval[[1]] <- as.vector(energyGridrandomFiles)
 optParamDt[, PARVAL:= parval]

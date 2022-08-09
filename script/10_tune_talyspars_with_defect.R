@@ -50,6 +50,7 @@ D <- read_object(7, "D")
 S0 <- read_object(7, "S0k")
 X <- read_object(7, "Xk")
 finalPars <- read_object(8, "finalPars")
+refPar <- read_object(7,"refPar")
 ##################################################
 #       START OF SCRIPT
 ##################################################
@@ -133,7 +134,7 @@ talys$setSexp(Sexp)
 talys$setMask(mask)
 # the finite difference used to calculate numerically the
 # Jacobian matrix
-talys$setEps(0.01)
+talys$setEps(0.001)
 
 # sanity check: check if we have set up the model correctly
 # refPar <- optParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)]
@@ -242,7 +243,7 @@ talysSel <- !expSel
 #yexp <- getDt_DATA(optExpDt)
 setkey(optParamDt, IDX)
 #refPar <- optParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)]
-refPar <- finalPars[optParamDt[PARUNC > 0, ADJUSTABLE]]
+#refPar <- finalPars[optParamDt[PARUNC > 0, ADJUSTABLE]]
 # because we removed rows from optSysDt, we need to restore
 # a continuous index which is required for functions that create
 # matrices and rely on a continuous and complete set of
@@ -255,13 +256,14 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-#pinit <- read_object(7, "optRes")$par
-#pinit <- read_object(10, "pref_last")
-pinit <- refPar
+pinit <- read_object(7, "optRes")$par
 
-optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
+cat("Started calculations at", as.character(Sys.time()), "\n")  
+source("LMalgo_parallel/LMalgo_parallel.R")
+optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, mu=6319.014))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 29, strategy = "gain", mu=6319.014))
+cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)

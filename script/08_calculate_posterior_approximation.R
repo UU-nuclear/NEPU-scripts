@@ -56,6 +56,9 @@ optSysDt_optpars <- read_object(7, "optSysDt_optpars")
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 08----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("variationMat", "variationMatRes", 
@@ -71,7 +74,7 @@ talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp)
 talys$setMask(mask)
-talys$setEps(0.01)
+talys$setEps(0.001)
 
 # construct an object that contains functions to
 # evaluate the log posterior density (up to a constant)
@@ -100,7 +103,8 @@ stopifnot(all(P0_all[optpars_indices, optpars_indices] == P0))
 Smod <- optRes$jac
 tS_invCexp_S <- mult_xt_invCov_x(Smod, D, S0, X)
 invP0_all <- solve(P0_all)
-H_gls <- (-solve(P0_all))
+#H_gls <- (-solve(P0_all))
+H_gls <- (-invP0_all)
 H_gls[optpars_indices, optpars_indices] <- H_gls[optpars_indices, optpars_indices] - (tS_invCexp_S)
 
 # define the variations needed to calculate the diagonal
@@ -135,7 +139,7 @@ finalParCovmat <- (-1) * solve(H)
 
 # if LM algorithm did not sufficiently converge
 # in step 07, the covariance matrix would not be well defined
-stopifnot(isSymmetric(finalParCovmat, tol=1e-9))
+stopifnot(isSymmetric(finalParCovmat, tol=1e-8))
 finalParCovmat <- (finalParCovmat + t(finalParCovmat)) / 2
 stopifnot(all(eigen(finalParCovmat)$values >= 0))
 

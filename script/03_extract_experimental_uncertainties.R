@@ -49,6 +49,11 @@ extNeedsDt <- read_object(2, "extNeedsDt")
 #       START OF SCRIPT
 ##################################################
 
+
+print("-----------------------------------------------------")
+print("----------------------script 03----------------------")
+print("-----------------------------------------------------")
+
 # define the objects that should be returned
 outputObjectNames <- c("expDt", "sysUncDt",
                        "modList", "modDt", "Smodexp")

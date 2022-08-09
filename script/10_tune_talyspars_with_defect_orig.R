@@ -15,8 +15,8 @@ args = commandArgs(trailingOnly=TRUE)
 
 
 if (length(args)==0) {
-  #source("./config/config.R")
-  #stop("No config file supplied, using default file config.R", call.=FALSE)
+  source("./config/config.R")
+  stop("No config file supplied, using default file config.R", call.=FALSE)
 } else if (length(args) > 1) {
   stop("Script only accepts one argument.", call.=FALSE)
 } else {
@@ -29,7 +29,7 @@ if (length(args)==0) {
 #       SCRIPT PARAMETERS
 ##################################################
 
-scriptnr <- 7L
+scriptnr <- 10L
 overwrite <- FALSE
 
 ##################################################
@@ -44,13 +44,15 @@ fullSensDt <- read_object(5, "fullSensDt")
 optExpDt <- read_object(6, "optExpDt")
 optSysDt <- read_object(6, "optSysDt")
 optGpDt <- read_object(6, "optGpDt")
-
+P0 <- read_object(7, "P0")
+yexp <- read_object(7, "yexp")
+D <- read_object(7, "D")
+S0 <- read_object(7, "S0k")
+X <- read_object(7, "Xk")
+finalPars <- read_object(8, "finalPars")
 ##################################################
 #       START OF SCRIPT
 ##################################################
-print("-----------------------------------------------------")
-print("----------------------script 07----------------------")
-print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
@@ -160,8 +162,8 @@ optGpDt[, ADJUSTABLE := NULL]
 #       Conversion between 'numeric' and 'character' may
 #       cause problems in identifying corresponding components.
 optSysDt[grepl("^TALYS-", EXPID), PARNAME := {
-    parname <- sub("^TALYS-","", EXPID)
-    ifelse(is.na(EN), parname, sub("adjust", paste0("adjust(", EN, ")"), parname))
+  parname <- sub("^TALYS-","", EXPID)
+  ifelse(is.na(EN), parname, sub("adjust", paste0("adjust(", EN, ")"), parname))
 }, by="IDX"]
 setkey(optSysDt, PARNAME)
 setkey(optParamDt, PARNAME)
@@ -204,7 +206,6 @@ talysHandler$setRef(extNeedsDt, fullSensDt, refParamDt,
                     exforHandler, c(subents, modList$SUBENT))
 talysHandler$setPrior(refParamDt)
 
-
 # create global handler and register the individual handlers
 sysCompHandler <- createSysCompHandler()
 sysCompHandler$addHandler(normHandler)
@@ -234,14 +235,14 @@ setkey(optExpDt, IDX)
 expSel <- optSysDt[, !grepl("TALYS-", EXPID)]
 talysSel <- !expSel
 
-P0 <- P[talysSel, talysSel]
-X <- P[expSel, expSel] 
-S0 <- S[, expSel]
-D <- Diagonal(x = optExpDt$UNC^2) 
-yexp <- getDt_DATA(optExpDt)
+#P0 <- P[talysSel, talysSel]
+#X <- P[expSel, expSel] 
+#S0 <- S[, expSel]
+#D <- Diagonal(x = optExpDt$UNC^2) 
+#yexp <- getDt_DATA(optExpDt)
 setkey(optParamDt, IDX)
-refPar <- optParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)]
-
+#refPar <- optParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)]
+refPar <- finalPars[optParamDt[PARUNC > 0, ADJUSTABLE]]
 # because we removed rows from optSysDt, we need to restore
 # a continuous index which is required for functions that create
 # matrices and rely on a continuous and complete set of
@@ -254,21 +255,26 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-#pinit <- read_object(7, "optRes")$par
-pinit <- refPar
+pinit <- read_object(7, "optRes")$par
+#pinit <- read_object(10, "pref_last")
+#pinit <- refPar
 
-#cat("Started calculations at", as.character(Sys.time()), "\n")  
+# temporary code to read the last parameter set before crash
+#library(stringr)
+#tmp <- tail(read.delim("outdata-gp-prior-after-lm-try2/LMalgo/lastPars.log"),n=1L)
+#pinit <- as.numeric(str_split(tmp[1,],pattern=" ")[[1]][4:155])
+
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-#                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1))
-#cat("Finished calculations at", as.character(Sys.time()), "\n")
+#                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, mu=6319.014))
 
 cat("Started calculations at", as.character(Sys.time()), "\n")  
 source("LMalgo_parallel/LMalgo_parallel.R")
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 29, strategy = "gain", mu=6319.014))
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
+

@@ -48,15 +48,12 @@ optGpDt <- read_object(6, "optGpDt")
 ##################################################
 #       START OF SCRIPT
 ##################################################
-print("-----------------------------------------------------")
-print("----------------------script 07----------------------")
-print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
                        "refPar", "P0", "yexp", "D", "S0", "X",
                        "optSysDt_allpars", "optSysDt_optpars")
-check_output_objects(scriptnr, outputObjectNames)
+#check_output_objects(scriptnr, outputObjectNames)
 
 # convert the sparse matrix given as data.table 
 # into a spase matrix type as defined in package Matrix
@@ -254,20 +251,17 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-#pinit <- read_object(7, "optRes")$par
-pinit <- refPar
+pinit <- read_object(7, "optRes")$par
+#pinit <- refPar
 
-#cat("Started calculations at", as.character(Sys.time()), "\n")  
+cat("Started calculations at", as.character(Sys.time()), "\n")  
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
 #                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1))
-#cat("Finished calculations at", as.character(Sys.time()), "\n")
-
-cat("Started calculations at", as.character(Sys.time()), "\n")  
 source("LMalgo_parallel/LMalgo_parallel.R")
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 32, strategy = "gain"))
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference

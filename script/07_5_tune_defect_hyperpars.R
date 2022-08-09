@@ -206,11 +206,11 @@ gpDt[grepl("TALYS-",EXPID)  & PARNAME == "sigma", UPPERLIMS := 0.5]
 gpDt[grepl("TALYS-",EXPID)  & PARNAME == "len", UPPERLIMS := 5]
 gpDt[grepl("TALYS-",EXPID)  & PARNAME == "nugget", UPPERLIMS := 1000]
 
-# Do not adjust prior on energy dependat paramters
+# Do not adjust prior on energy dependent paramters
 gpDt[grepl("TALYS-",EXPID), ADJUSTABLE := FALSE]
 
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , LOWERLIMS := 1] # Set different upper limit for GPs on the observable
-gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , LOWERLIMS := 0.01]# Set different upper limit for GPs on the observable
+gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , LOWERLIMS := 1e-6]# Set different upper limit for GPs on the observable
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "nugget" , LOWERLIMS := 1e-3] # Set different upper limit for GPs on the observable
 
 #gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , UPPERLIMS := 3*PARVAL]

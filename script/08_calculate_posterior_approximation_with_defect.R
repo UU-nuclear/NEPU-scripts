@@ -56,6 +56,9 @@ optSysDt_optpars <- read_object(7, "optSysDt_optpars")
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 08----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("variationMat", "variationMatRes", 
@@ -71,7 +74,7 @@ talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp)
 talys$setMask(mask)
-talys$setEps(0.01)
+talys$setEps(0.001)
 
 # construct an object that contains functions to
 # evaluate the log posterior density (up to a constant)
@@ -135,7 +138,7 @@ finalParCovmat <- (-1) * solve(H)
 
 # if LM algorithm did not sufficiently converge
 # in step 07, the covariance matrix would not be well defined
-stopifnot(isSymmetric(finalParCovmat, tol=1e-9))
+stopifnot(isSymmetric(finalParCovmat, tol=1e-8))
 finalParCovmat <- (finalParCovmat + t(finalParCovmat)) / 2
 stopifnot(all(eigen(finalParCovmat)$values >= 0))
 

@@ -48,6 +48,9 @@ modDt <- read_object(3, "modDt")
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 06----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("optExpDt", "optSysDt", "optGpDt", "mapAssignment", "reacHandlerGPobs", "sysCompHandler")
@@ -73,7 +76,8 @@ curSysDt[, ADJUSTABLE := FALSE]
 gpHandler <- createSysCompGPHandler()
 parnames_endep <- unique(curSysDt[ERRTYPE == "talyspar_endep", EXPID])
 for (curParname in parnames_endep) {
-    gpHandler$addGP(curParname, 0.1, 3, 1e-4)
+    parUnc <- curSysDt[EXPID==curParname][1]$UNC
+    gpHandler$addGP(curParname, parUnc, 3, 1e-4)
 }
 
 # create a mapping matrix from the model output
@@ -167,8 +171,8 @@ for(curReac in reactions){
 gpObsDt <- gpObsHandler$createGPDt()
 
 gpObsDt[,ADJUSTABLE := FALSE]
-#gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N>1,EXPID],  ADJUSTABLE := PARNAME %in% c("sigma","len")]
-gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N>1,EXPID],  ADJUSTABLE := PARNAME %in% c("sigma","len","nugget")]
+gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N>1,EXPID],  ADJUSTABLE := PARNAME %in% c("sigma","len")]
+#gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N>1,EXPID],  ADJUSTABLE := PARNAME %in% c("sigma","len","nugget")]
 gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N==1,EXPID] & PARNAME %in% c("sigma","len"),  PARVAL := 1]
 gpObsDt[EXPID %in% exactGPObsSysDt[,.N, by=EXPID][N==1,EXPID] & PARNAME %in% c("nugget"),  PARVAL := 1]
 gpObsDt[, IDX := seq_len(.N)]
@@ -208,7 +212,7 @@ gpDt[grepl("TALYS-",EXPID) & PARNAME == "sigma", LOWERLIMS := 0.1]
 gpDt[grepl("TALYS-",EXPID) & PARNAME == "len", LOWERLIMS := 3]
 gpDt[grepl("TALYS-",EXPID) & PARNAME == "nugget", LOWERLIMS := 1e-4]
 
-gpDt[grepl("TALYS-",EXPID)  & PARNAME == "sigma", UPPERLIMS := 0.5]
+gpDt[grepl("TALYS-",EXPID)  & PARNAME == "sigma", UPPERLIMS := 1.0]
 gpDt[grepl("TALYS-",EXPID)  & PARNAME == "len", UPPERLIMS := 5]
 gpDt[grepl("TALYS-",EXPID)  & PARNAME == "nugget", UPPERLIMS := 1000]
 
@@ -221,12 +225,16 @@ gpDt[grepl("REACEXP",EXPID) & PARNAME == "nugget" , LOWERLIMS := 1e-3] # Set dif
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "sigma" , UPPERLIMS := 2000]
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "len" , UPPERLIMS := 5] # Set different upper limit for GPs on the observable
 gpDt[grepl("REACEXP",EXPID) & PARNAME == "nugget" , UPPERLIMS := 10] # Set different upper limit for GPs on the observable
+
+#gpDt[grepl("TALYS-",EXPID) & PARNAME == "sigma",PARVAL] contains the prior uncertainties on the parameters
 gpDt[,INITVAL:=PARVAL]
+# set the minimum value for hyper-paramter sigma to be the prior uncertainty
+gpDt[grepl("TALYS-",EXPID) & PARNAME == "sigma",LOWERLIMS:=PARVAL] 
 
 # optimize hyperparameters
 # this may take a few minutes
 library(optimParallel)
-# Setup of multicore optimization using opimparalell
+# Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
 cl <- makeCluster(6)
 setDefaultCluster(cl=cl)
@@ -239,6 +247,12 @@ optRes <- optimParallel(par = gpDt[ADJUSTABLE==TRUE, INITVAL],
                         upper = gpDt[ADJUSTABLE==TRUE, UPPERLIMS], 
                         control = list(fnscale = -1)
 )
+
+if(optRes$convergence) {
+  print("The optimization didn't converge!!")
+}
+
+print(paste("optRes$convergence = ", optRes$convergence))
 
 #optRes <- optim(par = gpDt[ADJUSTABLE==TRUE, INITVAL], 
 #                fn = optfuns$logLike,
@@ -253,6 +267,10 @@ newDts <- optfuns$getModifiedDts(optRes$par)
 optExpDt <- newDts$expDt
 optSysDt <- newDts$sysDt
 optGpDt <- newDts$gpDt
+
+print(optGpDt[grepl("TALYS-",EXPID) & PARNAME == "sigma"])
+print("-------------")
+print(gpDt[grepl("TALYS-",EXPID) & PARNAME == "sigma"])
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)

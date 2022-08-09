@@ -46,6 +46,7 @@ for (curReac in reactions) {
     curModDt <- modDt[REAC == curReac]
 
     ggp <- ggplot(curExpDt,aes(x = L1, y = DATA)) + theme_bw()
+    ggp <- ggp + scale_x_continuous(breaks=seq(0,30,2))
     ggp <- ggp + theme(axis.text=element_text(size=9),
                        axis.title=element_text(size=10),
                        plot.title=element_text(size=12))
@@ -55,9 +56,11 @@ for (curReac in reactions) {
 
     ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
                                size = 0.2, width = 0.25)
-    ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
+    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UNC, ymax = DATA + UNC), col = curExpDt$EXPID,
+                               size = 0.2, width = 0.25)
+    #ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25, col = curExpDt$EXPID)
 
-    ggp <- ggp + geom_line(data=curModDt[,c("L1","DATA")],aes(x = L1, y = DATA),col = "red", size=0.2)
+    ggp <- ggp + geom_line(data=curModDt[,c("L1","DATA")],aes(x = L1, y = DATA),col = "black", size=0.2)
 
     print(ggp)
     dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)

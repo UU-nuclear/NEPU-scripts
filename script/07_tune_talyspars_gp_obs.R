@@ -48,12 +48,15 @@ reacHandlerGPobs <- read_object(6, "reacHandlerGPobs")
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 07----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
                        "refPar", "P0", "yexp", "D", "S0", "X",
                        "optSysDt_allpars", "optSysDt_optpars")
-check_output_objects(scriptnr, outputObjectNames, overwrite = TRUE)
+#check_output_objects(scriptnr, outputObjectNames, overwrite = TRUE)
 
 # convert the sparse matrix given as data.table 
 # into a spase matrix type as defined in package Matrix
@@ -128,7 +131,7 @@ talys$setSexp(Sexp)
 talys$setMask(mask)
 # the finite difference used to calculate numerically the
 # Jacobian matrix
-talys$setEps(0.01)
+talys$setEps(0.001)
 
 # sanity check: check if we have set up the model correctly
 # refPar <- optParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)]
@@ -250,10 +253,9 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLM(talys, savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-#pinit <- read_object(7, "optRes")$par
+pinit <- read_object(7, "optRes")$par
 #pinit <- read_object(7, "pref_last")
-
-pinit <- refPar
+#pinit <- refPar
 
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
@@ -264,9 +266,11 @@ cat("Started calculations at", as.character(Sys.time()), "\n")
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
 #                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1))
 source("LMalgo_parallel/LMalgo_parallel.R")
+library(parallel)
+nCores <- detectCores(all.tests = FALSE, logical = TRUE)
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 32, strategy = "gain"))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = nCores-1, strategy = "gain"))
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference

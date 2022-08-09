@@ -55,6 +55,11 @@ needsDt <- read_object(1, "needsDt")
 #       START OF SCRIPT
 ##################################################
 
+
+print("-----------------------------------------------------")
+print("----------------------script 02----------------------")
+print("-----------------------------------------------------")
+
 # define the objects that should be returned
 outputObjectNames <- c("refInpList", "refParamDt", "extNeedsDt", "rawRes") 
 check_output_objects(scriptnr, outputObjectNames) 
@@ -181,7 +186,7 @@ extNeedsDt <- rawRes[[1]]$result
 extNeedsDt <- data.table(extNeedsDt) ## Just add this line compared to the original one.
 extNeedsDt[, IDX := seq_len(.N)]#
 
-print(extNeedsDt)
+#print(extNeedsDt)
 
 ## save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)

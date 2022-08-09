@@ -48,11 +48,7 @@ fullSensDt <- read_object(5, "fullSensDt")
 #       START OF SCRIPT
 ##################################################
 
-
-
-print("-----------------------------------------------------")
-print("----------------------script 06----------------------")
-print("-----------------------------------------------------")
+library(parallel)
 
 # define objects to be returned
 outputObjectNames <- c("optExpDt", "optSysDt", "optGpDt")
@@ -78,7 +74,7 @@ curSysDt[, ADJUSTABLE := FALSE]
 gpHandler <- createSysCompGPHandler()
 parnames_endep <- unique(curSysDt[ERRTYPE == "talyspar_endep", EXPID])
 for (curParname in parnames_endep) {
-    gpHandler$addGP(curParname, 0.1, 3, 1e-4)
+    gpHandler$addGP(curParname, 0.1, 2, 1e-4)
 }
 
 # create a mapping matrix from the model output
@@ -126,36 +122,78 @@ optfuns$setDts(curExpDt, curSysDt, gpDt,
                sysCompHandler = sysCompHandler)
 
 # define the hyperparameter limits
+min_sigma <- 0.1
+max_sigma <- 0.5
+min_length <- 3
+max_length <- 10
 setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- min_sigma
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- min_length
 lowerLims <- lowerLims[gpDt$ADJUSTABLE]
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5
-#upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 5
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- max_sigma
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- max_length
 upperLims <- upperLims[gpDt$ADJUSTABLE]
 
-# initial configuration
-#initPars <- lowerLims + runif(length(lowerLims)) * abs(upperLims - lowerLims)
-initPars <- lowerLims
-#initPars <- upperLims
 
 # optimize hyperparameters
-# this may take a few minutes
-optRes <- optim(initPars, optfuns$logLike, optfuns$gradLogLike, method = "L-BFGS-B",
-                lower = lowerLims, upper = upperLims, control = list(fnscale = -1))
+# randomly select different starting points from a uniform prior, optimize for each starting point
+# and select the one with the maximum likelihood
 
-newDts <- optfuns$getModifiedDts(optRes$par)
+n_sigmas <- length(lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"])
+n_lengths <- length(lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"])
+
+# sample hyperparameter initial values
+n_samples <- 64
+
+sigma_samples <- runif(n_sigmas*n_samples,min_sigma,max_sigma)
+length_samples <- runif(n_lengths*n_samples,min_length,max_length)
+
+hyper_par_samples <- rep(NA_real_, nrow(gpDt)*n_samples)
+hyper_par_samples[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- sigma_samples
+hyper_par_samples[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- length_samples
+hyper_par_samples <- hyper_par_samples[!is.na(hyper_par_samples)] # removing the ones that are not adjustable
+
+list_of_samples <- as.list(split(hyper_par_samples,  cut(seq_along(hyper_par_samples), n_samples, labels = FALSE)))
+
+num_cores <- min(detectCores(),n_samples)
+optRes_list <- mclapply(list_of_samples, FUN=optim, fn = optfuns$logLike, gr = optfuns$gradLogLike,
+                          method = "L-BFGS-B",lower = lowerLims, upper = upperLims, control = list(fnscale = -1),
+                          mc.cores = num_cores)
+
+optRes <- optRes_list[[1]]
+for(res in optRes_list) {
+  if(res$value > optRes$value) {
+    optRes <- res
+  }
+}
+
+# the weighted averaged result
+optPar_matrix <- matrix(NA_real_, nrow = length(optRes_list[[1]]$par), ncol = n_samples)
+weight_vector <- rep(NA_real_, n_samples)
+idx <- 1
+for(res in optRes_list) {
+  optPar_matrix[,idx] <- res$par
+  weight_vector[idx] <- exp(res$value - optRes$value)
+
+  idx <- idx + 1
+}
+
+optPar_avg <- apply(optPar_matrix,1,FUN=weighted.mean,w=weight_vector)
+
+#newDts <- optfuns$getModifiedDts(optRes$par) # using the par-vector with the maximum marginal likelihood
+newDts <- optfuns$getModifiedDts(optPar_avg) # using the average par-vector weighted with the marginal likelihood
+
+# I would expect that hyperparameters which are constrained by data will obtain the same value,
+# no matter the starting point. This seems to be shown by the data as well. Fot the hyperparameters
+# that are not constrained by the data the result of the MLO lands on the initial value. Hence,
+# by taking the weighted average I should get the optimum for the hyperparameters that are
+# constrained, while those that are not should obtain a value close to the prior (uniform) average
 
 optExpDt <- newDts$expDt
 optSysDt <- newDts$sysDt
 optGpDt <- newDts$gpDt
 
-print("---- optimised endep hyperparameters -----")
-print(optGpDt[ADJUSTABLE==TRUE])
-
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
-

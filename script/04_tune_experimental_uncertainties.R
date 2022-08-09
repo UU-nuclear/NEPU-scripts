@@ -51,6 +51,11 @@ sysUncDt <- read_object(3, "sysUncDt")
 #       START OF SCRIPT
 ##################################################
 
+
+print("-----------------------------------------------------")
+print("----------------------script 04----------------------")
+print("-----------------------------------------------------")
+
 # define objects to be returned
 outputObjectNames <- c("origSysDt", "updSysDt")
 check_output_objects(scriptnr, outputObjectNames)

@@ -3,8 +3,6 @@
 ##################################################
 args = commandArgs(trailingOnly=TRUE)
 
-args = commandArgs(trailingOnly=TRUE)
-
 if (length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
@@ -34,6 +32,7 @@ fitResult <- as.numeric(as.vector(optRes$fn))
 fitUnc <- as.numeric(as.vector(optRes$stdAsyFitErrLM))
 J <- optRes$jac
 
+
 # plot the results
 
 # reconstruct experimental covariance matrix
@@ -48,48 +47,47 @@ tmpExpDt <- copy(expDt)
 setkey(tmpExpDt, IDX)
 tmpExpDt[, UNC := totunc_exp]
 tmpExpDt[, LMFIT := fitResult]
-tmpExpDt[, LMUNC := fitUnc]
+tmpExpDt[, LMFITUNC := fitUnc]
 
 D = Diagonal(x = getDt_UNC(expDt)^2)
 chi2_ref <- chisquare(tmpExpDt[,DATA-DATAREF], D, SX, X)
 chi2_lm <- chisquare(tmpExpDt[,DATA-LMFIT], D, SX, X)
 
-#hist(tmpExpDt[,(DATA-DATAREF)/UNC], breaks=100)
-#qqnorm(tmpExpDt[,DATA-DATAREF], pch = 1, frame = FALSE)
-#qqline(tmpExpDt[,DATA-DATAREF], col = "steelblue", lwd = 2)
-##avr(tmpExpDt[,DATA-DATAREF])
-#all.moments(tmpExpDt[,(DATA-DATAREF)/UNC], order.max = 4, central = FALSE, absolute = FALSE, na.rm = FALSE)
-#hist(tmpExpDt[,(DATA-LMFIT)/UNC], breaks=100)
-#qqnorm(tmpExpDt[,DATA-LMFIT], pch = 1, frame = FALSE)
-#qqline(tmpExpDt[,DATA-LMFIT], col = "steelblue", lwd = 2)
-#all.moments(tmpExpDt[,(DATA-LMFIT)/UNC], order.max = 4, central = FALSE, absolute = FALSE, na.rm = FALSE)
+hist(tmpExpDt[,(DATA-DATAREF)/UNC], breaks=100)
+qqnorm(tmpExpDt[,DATA-DATAREF], pch = 1, frame = FALSE)
+qqline(tmpExpDt[,DATA-DATAREF], col = "steelblue", lwd = 2)
+#avr(tmpExpDt[,DATA-DATAREF])
+all.moments(tmpExpDt[,(DATA-DATAREF)/UNC], order.max = 4, central = FALSE, absolute = FALSE, na.rm = FALSE)
+hist(tmpExpDt[,(DATA-LMFIT)/UNC], breaks=100)
+qqnorm(tmpExpDt[,DATA-LMFIT], pch = 1, frame = FALSE)
+qqline(tmpExpDt[,DATA-LMFIT], col = "steelblue", lwd = 2)
+all.moments(tmpExpDt[,(DATA-LMFIT)/UNC], order.max = 4, central = FALSE, absolute = FALSE, na.rm = FALSE)
 #crossprod(tmpExpDt[,DATA-LMFIT], solve(D + SX %*% X %*% t(SX), tmpExpDt[,DATA-LMFIT]))
 
-ggp <- ggplot(data=tmpExpDt)
-ggp <- ggp + theme_bw() + theme(legend.position="none")
-ggp <- ggp + theme(axis.text=element_text(size=9),
-                   axis.title=element_text(size=10),
-                   strip.text=element_text(size=8))
-ggp <- ggp + xlab('enegy [MeV]') + ylab('cross section [mbarn]')
-# overlay experimental data
-ggp <- ggp + geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC, col=EXPID), data=tmpExpDt)
-ggp <- ggp + geom_point(aes(x=L1, y=DATA, col=EXPID), data=tmpExpDt, size=0.2)
-# plot the model
-ggp <- ggp + geom_line(aes(x=L1, y=DATAREF), color="red")
-ggp <- ggp + geom_point(aes(x=L1, y=DATAREF), color="red", size=0.2)
-  ggp <- ggp + geom_line(aes(x=L1, y=LMFIT))
-  #ggp <- ggp + geom_point(aes(x=L1, y=LMFIT), size=0.2)
-  #ggp <- ggp + geom_ribbon(aes(x=L1, ymin=LMFIT-LMUNC, ymax=LMFIT+LMUNC), alpha=0.3)
-  ggp <- ggp + geom_errorbar(aes(x=L1, ymin=LMFIT-LMUNC, ymax=LMFIT+LMUNC), data=tmpExpDt)
-#ggp <- ggp + geom_ribbon(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC), alpha=0.3)
-ggp <- ggp + facet_wrap(~REAC, scales='free_y')
+plot_lm <- function(){
+  ggp <- ggplot(data=tmpExpDt)
+  ggp <- ggp + theme_bw() + theme(legend.position="none")
+  ggp <- ggp + theme(axis.text=element_text(size=9),
+                     axis.title=element_text(size=10),
+                     strip.text=element_text(size=8))
+  ggp <- ggp + xlab('enegy [MeV]') + ylab('cross section [mbarn]')
+  # overlay experimental data
+  ggp <- ggp + geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC, col=EXPID), data=tmpExpDt)
+  ggp <- ggp + geom_point(aes(x=L1, y=DATA, col=EXPID), data=tmpExpDt, size=0.2)
+  # plot the model
+  ggp <- ggp + geom_line(aes(x=L1, y=DATAREF), color="red")
+    ggp <- ggp + geom_line(aes(x=L1, y=LMFIT))
+  ggp <- ggp + geom_ribbon(aes(x=L1, ymin=LMFIT-LMFITUNC, ymax=LMFIT+LMFITUNC), alpha=0.3)
+  ggp <- ggp + facet_wrap(~REAC, scales='free_y')
+  
+  ggp  
+}
 
-ggp  
-
-
+print(plot_lm)
 
 #dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-#ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=17.8, height=10)
+#ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp,
+#       units='cm', width=17.8, height=10)
 
 
 

@@ -93,7 +93,7 @@ reltolLM <- 1e-5
 
 # where to save output data
 #outdataPath <- file.path(workdir, "/outdata")
-outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try4")
+outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try5")
 #outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try3")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 

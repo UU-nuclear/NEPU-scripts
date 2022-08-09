@@ -44,6 +44,9 @@ finalParCovmat <- read_object(8, "finalParCovmat")
 ##################################################
 #       START OF SCRIPT
 ##################################################
+print("-----------------------------------------------------")
+print("----------------------script 09----------------------")
+print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("allParsets", "allResults")
@@ -62,7 +65,7 @@ extNeedsDt[, IDX := seq_len(.N)]
 # available for variations
 optParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
 
-# set ener gygrid for random-files
+# set energy grid for random-files
 parval <- as.list(optParamDt[, PARVAL])
 parval[[1]] <- as.vector(energyGridrandomFiles)
 optParamDt[, PARVAL:= parval]
@@ -76,7 +79,7 @@ talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp)
 talys$setMask(mask)
-talys$setEps(0.01)
+talys$setEps(0.001)
 
 # set the seed for the random number generator
 # to have a reproducible creation of TALYS parameter sets

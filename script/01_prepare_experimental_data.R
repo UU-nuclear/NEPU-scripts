@@ -40,6 +40,10 @@ overwrite <- FALSE
 #       START OF SCRIPT
 ##################################################
 
+print("-----------------------------------------------------")
+print("----------------------script 01----------------------")
+print("-----------------------------------------------------")
+
 outputObjectNames <- c("subents", "expDt", "needsDt")
 check_output_objects(scriptnr, outputObjectNames)
 

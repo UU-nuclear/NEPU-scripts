@@ -93,7 +93,7 @@ reltolLM <- 1e-5
 
 # where to save output data
 #outdataPath <- file.path(workdir, "/outdata")
-outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try2")
+outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try4")
 #outdataPath <- file.path(workdir, "/outdata-gp-prior-before-lm-try3")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
@@ -114,7 +114,9 @@ talysFilesSeed <- 13
 # pathTalys <-paste0(workdir,"/talysResults")
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
-pathTalys <-paste0("/tmp/talysResults-gp-prior-before-lm")
+ pathTalys <-paste0("/tmp/talysResults-gp-prior-before-lm")
+#pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm-try2-gls-unc")
+
 # pathTalys <- "/TMC/alf/eval-fe56-singularity/talysResults/full-eval"
 savePathTalys <- pathTalys
 
