@@ -55,6 +55,7 @@ for(exp_id in GPsigmas$EXPID) { # add the values to the EXPIDs so they will be p
 # sort the EXPIDs according to uncertainty
 expid_order <- order(plotDt[,abs(DATAMAX-DATAMIN)])
 plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), ordered=TRUE)
+
 ###########################################
 #    ENERGY-DEPENDENT PARAMETERS
 ###########################################
@@ -68,8 +69,9 @@ ggp <- ggp + theme(axis.text=element_text(size=10),
 ggp <- ggp + xlab('energy') + ylab('parameter value relative to default')
 ggp <- ggp + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp <- ggp + geom_line(aes(x=EN, y=DATA))
+ggp <- ggp + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
 ggp <- ggp + facet_wrap(~ EXPID, ncol=2)
-ggp <- ggp + ylim(0.1,1.9)
+ggp <- ggp + ylim(0.45,1.55)
 ggp
 
 print(ggp)

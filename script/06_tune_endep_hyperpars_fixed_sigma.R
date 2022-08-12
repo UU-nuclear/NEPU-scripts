@@ -11,14 +11,12 @@
 #       SCRIPT Setup
 ##################################################
 
-
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
 }
-
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -73,7 +71,7 @@ curSysDt[, ADJUSTABLE := FALSE]
 gpHandler <- createSysCompGPHandler()
 parnames_endep <- unique(curSysDt[ERRTYPE == "talyspar_endep", EXPID])
 for (curParname in parnames_endep) {
-    gpHandler$addGP(curParname, 0.1, 3, 1e-4)
+    gpHandler$addGP(curParname, 0.5, 3, 1e-4)
 }
 
 # create a mapping matrix from the model output
@@ -95,7 +93,7 @@ gpDt <- gpHandler$createGPDt()
 gpHandler$updateSysDt(curSysDt)
 
 # define which GP hyperparameters are adjustable
-gpDt[, ADJUSTABLE := PARNAME %in% c("sigma","len")]
+gpDt[, ADJUSTABLE := PARNAME %in% c("len")]
 gpDt[, IDX := seq_len(.N)]
 
 # initialize handler for systematic experimental uncertainties
@@ -124,10 +122,10 @@ optfuns$setDts(curExpDt, curSysDt, gpDt,
 setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5
 lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3
 lowerLims <- lowerLims[gpDt$ADJUSTABLE]
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.500001
 #upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 5
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
 upperLims <- upperLims[gpDt$ADJUSTABLE]

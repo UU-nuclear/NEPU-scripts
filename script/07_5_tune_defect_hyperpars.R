@@ -139,8 +139,6 @@ for(curReac in reacs){
 
 curSysDtGPobs <- reacHandlerGPobs$createSysDtGpObs()
 
-
-
 mapAssignment <- reacHandlerGPobs$getMapAssignment()[,data.table(REAC, EXPID)]
 
 exactGPObsSysDt <- copy(expDt) 

@@ -70,11 +70,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   pref <- as.vector(pinit)
 
   print(paste("strategy =",control$strategy))
-  #print("calculating initial jacobian...")
+  print("calculating initial jacobian...")
   J <- jac(as.vector(pref))
-  #print("calculating initial function value...")
+  print("calculating initial function value...")
   fref <- fn(as.vector(pref))
-  #print("...done!")
+  print("...done!")
 
   dpriorRef <- pref - p0
   LpriorRef <- as.vector(crossprod(dpriorRef, invP0 %*% dpriorRef))
@@ -122,16 +122,18 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     }
    
     # calculate the function values at the proposal parameter sets
-    #print("calculating the function values at the proposal parameter sets...")
+    print(paste("length(mus) = ", length(mus)))
+    print(paste("length(pref) = ", length(pref)))
+    print("calculating the function values at the proposal parameter sets...")
     fprops <- fn(pprops)
-    #print("done!")
+    print("done!")
     
     Lprop_min <- Inf
     Lprop_approx_min <- Inf
     fprop_approx_min <- Inf
     col_min <- 0
     best_gain <- Inf
-    #print("finding the parameter set with the largest gain in Likelihood...")
+    print("finding the best parameter set...")
     #print(paste("mu0 = ",mu))
     #print(paste("mu","Lprop","Lprop_approx","Lref"))
     #for(col in 1:length(mus)) {
@@ -167,7 +169,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
         }
       }
       if(control$strategy=="gain") {
-        # this strategy picks the step with the "best" gain. Starting from the smalles values
+        # this strategy picks the step with the "best" gain. Starting from the smallest values
         # of mu it goes in order of increasing mu-value, and stops once the mu-value goes
         # above a threshold value of 0.75. If all values are above 0.75 the one with the smallest
         # mu is taken. If all values are below 0.75 the largest value of mu is taken
@@ -186,6 +188,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       }
       
     }
+    print("done finding the best parameter set!")
 
     if(col_min==0) {
       # safeguard against the case where, in the "gain" strategy,
@@ -210,7 +213,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     }
 
     #print("--------------------------")
-    #print(paste("best tried mu column = ",col_min))
+    print(paste("best tried mu column = ",col_min))
     #print("done!")
 
     # +1e-10 to avoid problems if Lprop_approx == Lref
@@ -219,8 +222,6 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     # and then Lprop_approx < Lref not guaranteed anymore
 
     gain <- ((Lref - Lprop_min)+1e-10) / (abs(Lref - Lprop_approx_min)+1e-10)
-    #if (gain < 0.25) mu <- mu * 2 # try without adjusting the step here based on the gain
-    #else if (gain > 0.75) mu <- mu / 3
 
     # check break conditions
     if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
@@ -241,13 +242,16 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     if (Lprop_min < Lref) {
       pref <- pprops[,col_min]
       fref <- fprops[,col_min]
+      print("step accepted")
+      print("calculating the new Jacobian...")
       J <- jac(as.vector(pprops[,col_min]))
+      print("...done!")
       Lref <- Lprop_min
       accepted <- TRUE
     } else {
       # set the next mu-value to 2*(current mu-value)
       mu <- 2*mu
-      #print("step not accepted")
+      print("step not accepted")
     }
 
   }  

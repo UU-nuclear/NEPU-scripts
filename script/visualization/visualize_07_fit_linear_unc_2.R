@@ -1,7 +1,6 @@
 #################################################
 #       SCRIPT Setup
 ##################################################
-args = commandArgs(trailingOnly=TRUE)
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -86,10 +85,8 @@ ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
 ggp  
 
-
-
-#dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-#ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=17.8, height=10)
+dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
+ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=17.8, height=10)
 
 
 
