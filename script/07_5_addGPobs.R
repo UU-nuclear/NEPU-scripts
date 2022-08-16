@@ -171,3 +171,7 @@ Xk <- P[expSel, expSel]
 S0k <- S[, expSel]
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
+
+print("-------------------------------------------------")
+print("- result of MLO optimization of hyperparameters -")
+print(optGpDt[grepl("REACEXP",EXPID)])

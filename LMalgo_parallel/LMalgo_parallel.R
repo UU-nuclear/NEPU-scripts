@@ -86,7 +86,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   while (i < control$maxit && breakCounter < 3) {
     i <- i + 1
 
-    #print(breakCounter)
+    print(paste("breakCounter = ",breakCounter))
     # propose new parameter set and calculate function value
     tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
     invP1 <- invP0 + tJinvBJ
@@ -189,6 +189,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       
     }
     print("done finding the best parameter set!")
+    print(paste("col_min = ",col_min))
 
     if(col_min==0) {
       # safeguard against the case where, in the "gain" strategy,
@@ -254,7 +255,8 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       print("step not accepted")
     }
 
-  }  
+    print("re-enter loop")
+  }
   
   tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
   invP1 <- invP0 + tJinvBJ

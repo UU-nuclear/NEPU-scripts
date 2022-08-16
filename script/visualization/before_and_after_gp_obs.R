@@ -12,10 +12,10 @@ if (length(args)==1) {
 
 library(ggplot2)
 
-expDt <- read_object(3, "expDt", outdata_path=outdataPathRun)
+expDt <- read_object(3, "expDt", outdata_path=outdataPath)
 optRes_before <- read_object(7, "optRes", outdata_path=outdataPath)
 optRes_after <- read_object(10, "optRes", outdata_path=outdataPath)
-updSysDt <- read_object(4, "updSysDt", outdata_path=outdataPathRun)
+updSysDt <- read_object(4, "updSysDt", outdata_path=outdataPath)
 sysDt <- updSysDt[grepl('^EXPID-', EXPID)]
 sysDt[, IDX:=seq_len(.N)]
 
@@ -64,6 +64,6 @@ ggp <- ggp + geom_errorbar(aes(x=L1, ymin=fit2-fitunc2, ymax=fit2+fitunc2), colo
 
 ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
-ggp
-
 ggsave(file.path(plotPath, 'before_and_after_gp_obs.png'), ggp, units='cm', width=17.8, height=10)
+
+ggp

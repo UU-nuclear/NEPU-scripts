@@ -61,14 +61,16 @@ plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), o
 
 ggp <- ggplot(data=plotDt_adjustables[ERRTYPE=='talyspar_endep'])
 ggp <- ggp + theme_bw()
+ggp <- ggp + scale_x_continuous(breaks=seq(0,30,2))
 ggp <- ggp + theme(axis.text=element_text(size=10),
                    axis.title=element_text(size=10),
                    plot.title=element_text(size=10))
 ggp <- ggp + xlab('energy') + ylab('parameter value relative to default')
 ggp <- ggp + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp <- ggp + geom_line(aes(x=EN, y=DATA))
+ggp <- ggp + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
 ggp <- ggp + facet_wrap(~ EXPID, ncol=2)
-ggp <- ggp + ylim(0.25,1.75)
+ggp <- ggp + ylim(0.45,1.55)
 ggp
 
 print(ggp)
@@ -83,3 +85,36 @@ ggsave(filepath, ggp)
 # ON THEIR SENSITIVITY TO EXPERIMENTAL DATA THE POINT AT E=0 WILL ALWAYS BE EXCLUDED. CURIOSLY, ALTHOUGH
 # THE PARAMETER (AT E=0) IS NOT INCLUDED IN THE OPTIMIZATION IT GETS A VALUE != PRIOR. I GUESS THIS HAS TO DO
 # WITH THE GAUSSIAN PROCESS LENGTH SCALE. 
+
+###########################################
+#    ENERGY-INDEPENDENT PARAMETERS
+###########################################
+
+plotDt2 <- plotDt[ERRTYPE=='talyspar']
+plotDt2 <- plotDt2[order(abs(DATAMAX-DATAMIN))]
+plotDt2[, IDX:=seq_len(.N)]
+setkey(plotDt2, IDX)
+plotDt2$EXPID <- factor(plotDt2$EXPID, levels=rev(plotDt2$EXPID), ordered=TRUE)
+
+# Add column showing the relative change = fitted val. / starting val.
+plotDt2[,RELATIVE_CHANGE := DATA/REFDATA]
+plotDt2[,RELATIVE_CHANGE_MIN := DATAMIN/REFDATA]
+plotDt2[,RELATIVE_CHANGE_MAX := DATAMAX/REFDATA]
+
+#ggp <- ggplot(data=plotDt2[1:30])
+ggp <- ggplot(data=plotDt2[order(UNC)][RELATIVE_CHANGE!=1.0])
+#ggp <- ggplot(data=plotDt2[UNC!=0.1 & DATA!=1.0]) # all parameters that have been adjusted
+ggp <- ggp + theme_bw() #+ theme(axis.text.x = element_text(angle=90))
+ggp <- ggp + theme(axis.text=element_text(size=9),
+                   axis.title=element_text(size=10),
+                   axis.title.x=element_text(hjust=1),
+                   plot.title=element_text(size=12))
+ggp <- ggp + xlab('parameter value relative to initial') + ylab('')
+#ggp <- ggp + geom_errorbarh(aes(y=EXPID, xmin=DATAMIN, xmax=DATAMAX), size=0.5, height=0.3)
+#ggp <- ggp + geom_point(aes(y=EXPID, x=DATA), col='red', size=0.75)
+ggp <- ggp + geom_errorbarh(aes(y=EXPID, xmin=RELATIVE_CHANGE_MIN, xmax=RELATIVE_CHANGE_MAX), size=0.5, height=0.3)
+ggp <- ggp + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
+
+dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
+ggsave(file.path(plotPath, 'posterior_pars_with_gp_obs.png'), ggp,
+       units='cm', width=8.65, height=12, dpi=300)

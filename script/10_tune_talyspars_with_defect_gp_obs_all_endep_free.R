@@ -55,6 +55,12 @@ refPar <- read_object(7,"refPar")
 #       START OF SCRIPT
 ##################################################
 
+# TODO: Right now this script is basically a copy paste of step07.
+# Should implement that the results from step07 about which parameters to keep adjustable is read
+# from step07 instead of redoing the calculation. This is mainly for cleanliness but also makes 
+# the execution less prone to errors since if I want to change something I don't need to do it in two 
+# sepparate scripts.
+
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
                        "refPar", "P0", "yexp", "D", "S0", "X",
@@ -109,6 +115,13 @@ optParamDt[J(adjParIdcs), ADJUSTABLE := TRUE]
 
 # safeguard
 stopifnot(sum(optParamDt$ADJUSTABLE) == length(adjParIdcs))
+
+# find all energy dependent parameters which have at least one point that is adjustbale
+adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
+adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.\\)"))
+optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
+optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
+optParamDt[,tmp:=NULL] # remove the temporary column from the data table
 
 talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd

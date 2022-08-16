@@ -10,7 +10,8 @@ setwd(workdir)
 
 source("/opt/pipeline/eval-fe56/required_packages.R")
 source("/opt/pipeline/eval-fe56/required_sourcefiles.R")
-library(clusterTALYSmpi);
+library(clusterTALYSmpi)
+library(stringr)
 
 # temporarily place the sourcing of the clusterTALYSmpi script here
 # later on this should be installed as a package
