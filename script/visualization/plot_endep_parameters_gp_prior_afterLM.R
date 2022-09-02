@@ -59,25 +59,23 @@ plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), o
 #    ENERGY-DEPENDENT PARAMETERS
 ###########################################
 
-ggp <- ggplot(data=plotDt_adjustables[ERRTYPE=='talyspar_endep'])
-ggp <- ggp + theme_bw()
-ggp <- ggp + scale_x_continuous(breaks=seq(0,30,2))
-ggp <- ggp + theme(axis.text=element_text(size=10),
-                   axis.title=element_text(size=10),
-                   plot.title=element_text(size=10))
-ggp <- ggp + xlab('energy') + ylab('parameter value relative to default')
-ggp <- ggp + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
-ggp <- ggp + geom_line(aes(x=EN, y=DATA))
-ggp <- ggp + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
-ggp <- ggp + facet_wrap(~ EXPID, ncol=2)
-ggp <- ggp + ylim(0.45,1.55)
-ggp
+ggp1 <- ggplot(data=plotDt_adjustables[ERRTYPE=='talyspar_endep'])
+ggp1 <- ggp1 + theme_bw()
+ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,30,3),minor_breaks=seq(0,30,1))
+ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
+ggp1 <- ggp1 + theme(axis.text=element_text(size=10),
+                   axis.title=element_text(size=12),
+                   plot.title=element_text(size=8))
+ggp1 <- ggp1 + xlab('energy') + ylab('parameter value relative to default')
+ggp1 <- ggp1 + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
+ggp1 <- ggp1 + geom_line(aes(x=EN, y=DATA))
+ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
+ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4)
 
-print(ggp)
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.png')
-#ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
-ggsave(filepath, ggp)
+ggsave(filepath, ggp1, width = 29.7, height = 21.0, units = "cm", dpi = 300)
+#ggsave(filepath, ggp1)
 
 # IT APPEARS THAT SOME OF THE ENERGY DEPENDENT PARAMTERS ARE NOT ADJUST OVER THE ENTIRE ENERGY INTERVALL
 # DURING THE LM FIT. IN PARTICULAR THE POINT AT E=0 IS NOT PART OF THE ADJUSTABLE PARAMETERS. THIS HAS 
@@ -101,20 +99,18 @@ plotDt2[,RELATIVE_CHANGE := DATA/REFDATA]
 plotDt2[,RELATIVE_CHANGE_MIN := DATAMIN/REFDATA]
 plotDt2[,RELATIVE_CHANGE_MAX := DATAMAX/REFDATA]
 
-#ggp <- ggplot(data=plotDt2[1:30])
-ggp <- ggplot(data=plotDt2[order(UNC)][RELATIVE_CHANGE!=1.0])
-#ggp <- ggplot(data=plotDt2[UNC!=0.1 & DATA!=1.0]) # all parameters that have been adjusted
-ggp <- ggp + theme_bw() #+ theme(axis.text.x = element_text(angle=90))
-ggp <- ggp + theme(axis.text=element_text(size=9),
+#ggp2 <- ggplot(data=plotDt2[1:30])
+ggp2 <- ggplot(data=plotDt2[order(UNC)][RELATIVE_CHANGE!=1.0])
+#ggp2 <- ggplot(data=plotDt2[UNC!=0.1 & DATA!=1.0]) # all parameters that have been adjusted
+ggp2 <- ggp2 + theme_bw() #+ theme(axis.text.x = element_text(angle=90))
+ggp2 <- ggp2 + theme(axis.text=element_text(size=9),
                    axis.title=element_text(size=10),
                    axis.title.x=element_text(hjust=1),
                    plot.title=element_text(size=12))
-ggp <- ggp + xlab('parameter value relative to initial') + ylab('')
-#ggp <- ggp + geom_errorbarh(aes(y=EXPID, xmin=DATAMIN, xmax=DATAMAX), size=0.5, height=0.3)
-#ggp <- ggp + geom_point(aes(y=EXPID, x=DATA), col='red', size=0.75)
-ggp <- ggp + geom_errorbarh(aes(y=EXPID, xmin=RELATIVE_CHANGE_MIN, xmax=RELATIVE_CHANGE_MAX), size=0.5, height=0.3)
-ggp <- ggp + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
+ggp2 <- ggp2 + xlab('parameter value relative to initial') + ylab('')
+ggp2 <- ggp2 + geom_errorbarh(aes(y=EXPID, xmin=RELATIVE_CHANGE_MIN, xmax=RELATIVE_CHANGE_MAX), size=0.5, height=0.3)
+ggp2 <- ggp2 + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-ggsave(file.path(plotPath, 'posterior_pars_with_gp_obs.png'), ggp,
+ggsave(file.path(plotPath, 'posterior_pars_with_gp_obs.png'), ggp2,
        units='cm', width=8.65, height=12, dpi=300)

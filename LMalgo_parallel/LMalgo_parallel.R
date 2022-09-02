@@ -58,9 +58,9 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
 
   # initialization
   nproc <- max(3,control$nproc)
-  tau <- 1e-4  # factor to determine damping factor
+  tau <- 1e-5  # factor to determine damping factor
   DD <- Diagonal(x = rep(1, length(pinit)))
-  firstLoop <- TRUE
+  #firstLoop <- TRUE
 
   # speeds up inversions of the experimental covariance matrix
   cholZ <- makeCholZ(D, S, X)
@@ -83,6 +83,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   logBuffer <- list()
   i <- 0  # counter
   accepted <- TRUE # checking if the last iteration lead to an accepted step
+
+  tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
+  invP1 <- invP0 + tJinvBJ
+  mu <- if (is.null(control$mu)) tau * max(diag(invP1)) else control$mu
+
   while (i < control$maxit && breakCounter < 3) {
     i <- i + 1
 
@@ -91,10 +96,10 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
     invP1 <- invP0 + tJinvBJ
 
-    if (firstLoop) {
-      mu <- if (is.null(control$mu)) tau * max(diag(invP1)) else control$mu
-      firstLoop <- FALSE
-    }
+    #if (firstLoop) {
+    #  mu <- if (is.null(control$mu)) tau * max(diag(invP1)) else control$mu
+    #  firstLoop <- FALSE
+    #}
 
     n1 <- floor(0.5*nproc)
     n2 <- ceiling(0.5*nproc) + 2
@@ -106,6 +111,9 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       # try only larger values of mu if the former iteration did not find an improvement 
       mus <- seq(nproc,1)*mu
     }
+
+    print("mus to try")
+    print(mus)
 
     #prepare the next set of proposal parameters
     pprops <- matrix(0,ncol=length(mus),nrow=length(pref))
@@ -132,7 +140,6 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     Lprop_approx_min <- Inf
     fprop_approx_min <- Inf
     col_min <- 0
-    best_gain <- Inf
     print("finding the best parameter set...")
     #print(paste("mu0 = ",mu))
     #print(paste("mu","Lprop","Lprop_approx","Lref"))
@@ -191,27 +198,28 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     print("done finding the best parameter set!")
     print(paste("col_min = ",col_min))
 
-    if(col_min==0) {
-      # safeguard against the case where, in the "gain" strategy,
-      # there is no tried value with a positive gain I still need to 
-      # set some value for Lprop_min etc.
-      # I then set it to the value with the largest mu-value
-      fprop <- fprops[,1]
-      pprop <- pprops[,1]
-      fprop_approx <- fref + J %*% (pprop - pref)
-      fprop_approx_unconstr <- fref + J %*% (pprop_unconstr - pref)
-
-      # calculate true objective function and approximation thereof
-      dpriorProp <- pprop - p0
-      dpriorProp_unconstr <- pprop_unconstr - p0
-
-      LpriorProp <- as.vector(crossprod(dpriorProp, invP0 %*% dpriorProp))
-      LpriorProp_unconstr <- as.vector(crossprod(dpriorProp_unconstr, invP0 %*% dpriorProp_unconstr))
-
-      Lprop <- as.vector(mult_xt_invCov_x(yexp - fprop, D, S, X, cholZ = cholZ)) + LpriorProp
-      Lprop_approx <- as.vector(mult_xt_invCov_x(yexp - fprop_approx, D, S, X, cholZ = cholZ)) + LpriorProp
-      Lprop_approx_unconstr <- as.vector(mult_xt_invCov_x(yexp - fprop_approx_unconstr, D, S, X, cholZ = cholZ)) + LpriorProp_unconstr
-    }
+# This can never happen and should be removed, the loop will select the largest value of mu when no step_gain>0.75
+#    if(col_min==0) {
+#      # safeguard against the case where, in the "gain" strategy,
+#      # there is no tried value with a positive gain I still need to 
+#      # set some value for Lprop_min etc.
+#      # I then set it to the value with the largest mu-value
+#      fprop <- fprops[,1]
+#      pprop <- pprops[,1]
+#      fprop_approx <- fref + J %*% (pprop - pref)
+#      fprop_approx_unconstr <- fref + J %*% (pprop_unconstr - pref)
+#
+#      # calculate true objective function and approximation thereof
+#      dpriorProp <- pprop - p0
+#      dpriorProp_unconstr <- pprop_unconstr - p0
+#
+#      LpriorProp <- as.vector(crossprod(dpriorProp, invP0 %*% dpriorProp))
+#      LpriorProp_unconstr <- as.vector(crossprod(dpriorProp_unconstr, invP0 %*% dpriorProp_unconstr))
+#
+#      Lprop <- as.vector(mult_xt_invCov_x(yexp - fprop, D, S, X, cholZ = cholZ)) + LpriorProp
+#      Lprop_approx <- as.vector(mult_xt_invCov_x(yexp - fprop_approx, D, S, X, cholZ = cholZ)) + LpriorProp
+#      Lprop_approx_unconstr <- as.vector(mult_xt_invCov_x(yexp - fprop_approx_unconstr, D, S, X, cholZ = cholZ)) + LpriorProp_unconstr
+#    }
 
     #print("--------------------------")
     print(paste("best tried mu column = ",col_min))
@@ -223,6 +231,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     # and then Lprop_approx < Lref not guaranteed anymore
 
     gain <- ((Lref - Lprop_min)+1e-10) / (abs(Lref - Lprop_approx_min)+1e-10)
+    print(paste("gain = ",gain))
 
     # check break conditions
     if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
@@ -238,6 +247,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
                       Jref = J, p0 = p0, P0 = P0, yexp = yexp, D = D, S = S, X = X)
     if (is.function(logger)) logger(logBuffer)
 
+    print("accept or reject...")
     # accept if proposed parameter set better than old one
     accepted <- FALSE
     if (Lprop_min < Lref) {

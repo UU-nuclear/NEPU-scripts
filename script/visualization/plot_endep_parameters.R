@@ -70,7 +70,7 @@ ggp <- ggp + xlab('energy') + ylab('parameter value relative to default')
 ggp <- ggp + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp <- ggp + geom_line(aes(x=EN, y=DATA))
 ggp <- ggp + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
-ggp <- ggp + facet_wrap(~ EXPID, ncol=2)
+ggp <- ggp + facet_wrap(~ EXPID, ncol=4)
 ggp <- ggp + ylim(0.45,1.55)
 ggp
 

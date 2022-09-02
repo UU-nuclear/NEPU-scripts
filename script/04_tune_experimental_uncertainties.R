@@ -186,6 +186,7 @@ sysDt[paste0("EXPID-",curExpId) == EXPID, UNC := 0.005]
 expDt[curExpId == EXPID, UNC := pmax(DATAREF * 0.05, 1)]
 sysDt[paste0("EXPID-",curExpId) == EXPID, ADJUSTABLE := FALSE]
 
+# ((26-FE-56(N,2N)26-FE-55,,SIG)
 curExpId <- "23171003"
 sysDt[paste0("EXPID-",curExpId) == EXPID, UNC := 0.005]
 expDt[curExpId == EXPID, UNC := pmax(DATAREF * 0.05, 1)]

@@ -117,8 +117,8 @@ optParamDt[J(adjParIdcs), ADJUSTABLE := TRUE]
 stopifnot(sum(optParamDt$ADJUSTABLE) == length(adjParIdcs))
 
 # find all energy dependent parameters which have at least one point that is adjustbale
-adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
-adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.\\)"))
+adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.+\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
+adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.+\\)"))
 optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
 optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
 optParamDt[,tmp:=NULL] # remove the temporary column from the data table

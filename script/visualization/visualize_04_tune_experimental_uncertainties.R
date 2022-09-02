@@ -46,14 +46,14 @@ for (curReac in reactions) {
     ggp <- ggp + theme(axis.text=element_text(size=9),
                        axis.title=element_text(size=10),
                        plot.title=element_text(size=12))
-    ggp <- ggp + guides(col = "none")
+    #ggp <- ggp + guides(col = "none")
     ggp <- ggp + xlab("energy [MeV]") + ylab("cross section [mbarn]")
     ggp <- ggp + ggtitle(curReac)
 
-    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "green",
-                               size = 0.5, width = 0.2)
-    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
                                size = 0.5, width = 0.3)
+    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+                               size = 0.5, width = 0.2)
     ggp <- ggp + geom_point(aes(x = L1, y = DATA, col = EXPID))
 
     print(ggp)
