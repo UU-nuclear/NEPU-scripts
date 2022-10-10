@@ -253,7 +253,8 @@ refPar <- finalPars[optParamDt[PARUNC > 0, ADJUSTABLE]]
 #optSysDt[, IDX := seq_len(.N)]
 
 if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
-loggerLM <- createLoggerLM(talys, savePathLM)
+#loggerLM <- createLoggerLM(talys, savePathLM)
+loggerLM <- createLoggerLMalt(savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
 pinit <- read_object(7, "optRes")$par

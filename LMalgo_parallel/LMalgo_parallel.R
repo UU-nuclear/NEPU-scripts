@@ -141,9 +141,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     fprop_approx_min <- Inf
     col_min <- 0
     print("finding the best parameter set...")
+    print(paste("col","mu","step_gain"))
     #print(paste("mu0 = ",mu))
     #print(paste("mu","Lprop","Lprop_approx","Lref"))
     #for(col in 1:length(mus)) {
+    former_step_gain <- 0
     for(col in length(mus):1) {
       fprop <- fprops[,col]
       pprop <- pprops[,col]
@@ -183,15 +185,29 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
         # this will lead to a maximum step length while still in the region where the 
         # linear approximation is good. If the gain is close to 1, we are well inside this region.
         # As gain -> 0 we are moving outside of this region.
+        
+        step_gain <- ((Lref - Lprop)+1e-10) / (abs(Lref - Lprop_approx)+1e-10)
+        print(paste(col,mu,step_gain))
+        if(step_gain>0.75) {
+          if((step_gain-0.75) < (0.75 - former_step_gain)) {
+            # if current step gain is closer to 0.75 than the former one
+            Lprop_min <- Lprop
+            Lprop_approx_min <- Lprop_approx
+            fprop_approx_min <-fprop_approx
+            col_min <- col
+            mu <- mus[col]
+            break
+          } else {
+            # otherwise, the former_step_gain is closer to 0.75
+            break
+          }
+        }
+
         Lprop_min <- Lprop
         Lprop_approx_min <- Lprop_approx
         fprop_approx_min <-fprop_approx
         col_min <- col
         mu <- mus[col]
-        step_gain <- ((Lref - Lprop)+1e-10) / (abs(Lref - Lprop_approx)+1e-10)
-        if(step_gain>0.75) {
-          break
-        }
       }
       
     }
@@ -234,18 +250,34 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     print(paste("gain = ",gain))
 
     # check break conditions
+    print("check break conditions...")
     if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
         abs(Lprop_min - Lref) < control$abstol) {
+      print("   break condition TRUE")
       breakCounter <- breakCounter + 1
     } else {
+      print("   break condition FALSE")
       breakCounter <- 0
     }
 
     # print status information
+    print("preparing the log...")
     logBuffer <- list(iteration = i, mu = mu, gain = gain, pref = pref, fref = fref, Lref = Lref,
                       pprop = pprops[,col_min], fprop = fprops[,col_min], Lprop = Lprop_min, fprop_approx = fprop_approx_min, Lprop_approx = Lprop_approx_min,
                       Jref = J, p0 = p0, P0 = P0, yexp = yexp, D = D, S = S, X = X)
+    print("...done!")
+    
+    print("logging...")
     if (is.function(logger)) logger(logBuffer)
+    print("...done!")
+    # The problem is in the loggerLM created by createLoggerLM(talys, savePathLM)
+    # on line 16-17 of the file RsourceFiles/LM_logger.R the logger calls
+    # fref <- talys$fun(buf$pref, applySexp = FALSE)
+    # Jref <- talys$jac(buf$pref, applySexp = FALSE)
+    # assuming they are cached so if pref in logBuffer has changed or
+    # other calculations have been done in between so that the cached 
+    # data does not correspond to pref both the function values and the 
+    # jacobian are re-calculated, but they are never used in the logger.
 
     print("accept or reject...")
     # accept if proposed parameter set better than old one

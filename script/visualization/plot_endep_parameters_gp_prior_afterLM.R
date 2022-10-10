@@ -10,6 +10,7 @@ if (length(args)==1) {
 
 
 library(ggplot2)
+library(latex2exp)
 
 ##################################################
 #       OUTPUT FROM PREVIOUS STEPS
@@ -61,11 +62,11 @@ plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), o
 
 ggp1 <- ggplot(data=plotDt_adjustables[ERRTYPE=='talyspar_endep'])
 ggp1 <- ggp1 + theme_bw()
-ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,30,3),minor_breaks=seq(0,30,1))
+ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,50,5),minor_breaks=seq(0,50,1))
 ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
 ggp1 <- ggp1 + theme(axis.text=element_text(size=10),
-                   axis.title=element_text(size=12),
-                   plot.title=element_text(size=8))
+                   axis.title=element_text(size=10),
+                   plot.title=element_text(size=10))
 ggp1 <- ggp1 + xlab('energy') + ylab('parameter value relative to default')
 ggp1 <- ggp1 + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp1 <- ggp1 + geom_line(aes(x=EN, y=DATA))
@@ -73,8 +74,9 @@ ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PA
 ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.png')
-ggsave(filepath, ggp1, width = 29.7, height = 21.0, units = "cm", dpi = 300)
+filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.pdf')
+ggsave(filepath, ggp1, width = 29.7, height = 21.0*2/3., units = "cm", dpi = 300)
+#ggsave(filepath, ggp1, width = 20, height = 21.0, units = "cm", dpi = 300)
 #ggsave(filepath, ggp1)
 
 # IT APPEARS THAT SOME OF THE ENERGY DEPENDENT PARAMTERS ARE NOT ADJUST OVER THE ENTIRE ENERGY INTERVALL
@@ -114,3 +116,20 @@ ggp2 <- ggp2 + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 ggsave(file.path(plotPath, 'posterior_pars_with_gp_obs.png'), ggp2,
        units='cm', width=8.65, height=12, dpi=300)
+
+tmpDt <- plotDt_adjustables[grepl("v1adjust\\(.+\\) p",PARNAME)]
+ggp1 <- ggplot(data=tmpDt)
+ggp1 <- ggp1 + theme_bw()
+ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,50,5),minor_breaks=seq(0,50,1))
+ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
+ggp1 <- ggp1 + theme(axis.text=element_text(size=20),
+                   axis.title=element_text(size=25),
+                   plot.title=element_text(size=10))
+ggp1 <- ggp1 + xlab('energy (MeV)') + ylab('parameter value')
+ggp1 <- ggp1 + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
+ggp1 <- ggp1 + geom_line(aes(x=EN, y=DATA))
+ggp1 <- ggp1 + geom_point(aes(x=EN, y=DATA))
+ggp1
+
+filepath <- file.path(plotPath, 'endep_parameter_v1adjust_p.pdf')
+ggsave(filepath, ggp1, width = 29.7, height = 21.0*0.5, units = "cm", dpi = 300)

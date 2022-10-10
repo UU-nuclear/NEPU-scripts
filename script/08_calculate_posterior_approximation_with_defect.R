@@ -62,7 +62,7 @@ print("-----------------------------------------------------")
 
 # define objects to be returned
 outputObjectNames <- c("variationMat", "variationMatRes", 
-                       "finalPars", "finalParCovmat")
+                       "finalPars", "finalParCovmat","finalParamDt")
 check_output_objects(scriptnr, outputObjectNames)
 
 # see step 07_tune_talyspars.R for more explanation

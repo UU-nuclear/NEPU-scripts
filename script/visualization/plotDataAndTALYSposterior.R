@@ -168,7 +168,7 @@ for (curReac in reactions) {
     tex_label <- TeX(paste0(Chi2_exp_str," | ",Chi2_fit_str))
 
     ggp <- ggplot(curExpDt,aes(x = L1, y = DATA)) + theme_bw()
-    ggp <- ggp + scale_x_continuous(breaks=seq(0,30,2))
+    ggp <- ggp + scale_x_continuous(breaks=seq(0,50,5))
     ggp <- ggp + theme(axis.text=element_text(size=9),
                        axis.title=element_text(size=10),
                        plot.title=element_text(size=12),

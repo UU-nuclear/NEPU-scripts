@@ -43,7 +43,7 @@ overwrite <- FALSE
 
 subents <- read_object(1, "subents")
 modList <- read_object(3, "modList")
-modDt <- read_object(3, "modDt")
+modDt <- read_object(3, "modDt") # default model prediction mapped to experimental energies
 expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
 

@@ -5,7 +5,8 @@
 ##################################################
 
 # working directory
-workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
+#workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
+workdir <- "/home/alf/projects/NucDat/pipeline-local-copy"
 setwd(workdir)
 
 source("/opt/pipeline/eval-fe56/required_packages.R")
@@ -49,7 +50,9 @@ energyGrid <- c(seq(0.1,10,by=0.3),seq(10.6,20,by=0.6),seq(20.2,30.001,length=11
 # For example an extrapolation from data region.
 # Note that for proper error propagation the energy dependent paramters should cover the same range.
 # energyGridrandomFiles <- seq(0.1, 30.001, length = 100)
-energyGridrandomFiles <- energyGrid
+# energyGridrandomFiles <- energyGrid
+energyGridrandomFiles <- c(seq(0.1,1.,0.1),seq(1.2,8.0,0.2),seq(8.5,15.0,0.5),seq(16.,30,1),seq(32,60,2),seq(65,80,5),seq(90,200,10))
+
 
 # default threshold energy for reaction channels
 # if automatic determination fails

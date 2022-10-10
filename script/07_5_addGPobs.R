@@ -173,5 +173,6 @@ S0k <- S[, expSel]
 save_output_objects(scriptnr, outputObjectNames, overwrite)
 
 print("-------------------------------------------------")
+print("---------------- 07_5_addGPobs.R ----------------")
 print("- result of MLO optimization of hyperparameters -")
 print(optGpDt[grepl("REACEXP",EXPID)])

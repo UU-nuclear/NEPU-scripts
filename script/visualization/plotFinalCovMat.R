@@ -20,8 +20,8 @@ library(RColorBrewer)
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-#allResults <- read_object(9, 'allResults')
-allResults <- read_object(12, 'allResults')
+allResults <- read_object(9, 'allResults')
+#allResults <- read_object(12, 'allResults')
 modDt <- read_object(3,"modDt")
 
 #construct the covariance matrix from the result of the sampling in step09
