@@ -28,7 +28,7 @@ if(length(args)==1) {
 #       SCRIPT PARAMETERS
 ##################################################
 
-scriptnr <- 9L
+scriptnr <- 12L
 overwrite <- FALSE
 
 ##################################################
@@ -49,7 +49,7 @@ finalParCovmat <- read_object(11, "finalParCovmat")
 #       START OF SCRIPT
 ##################################################
 print("-----------------------------------------------------")
-print("----------------------script 09----------------------")
+print("----------------------script 12----------------------")
 print("-----------------------------------------------------")
 
 # define objects to be returned
@@ -72,6 +72,16 @@ dE <- energyGridForParams[nn] - energyGridForParams[nn-1]
 Elow = energyGridForParams[nn] + dE
 Eup = energyGridrandomFiles[length(energyGridrandomFiles)]
 energyGridForParams_extension <- seq(Elow,Eup+dE-Eup%%dE,by=dE)
+# This is probably overkill:
+# (1) If the length scale of the GP is short we only need additional energy grid close to 
+#     the end of the optimized interval (say 3*l), so we could construct an energy grid
+#     which is dense up to Elow + 3l and puts a final value at Eup
+# (2) If the length scale is long, a dense energy grid is not needed in order to interpolate.
+#     So we could set the energy grid density (by parameter in seq) to be a fraction of l
+#     So far we have used that l>=3 and the energy grid density is 2, so an energy grid density
+#     of 2/3*l should suffice
+#  => This means we need several energy grids (one per parameter)
+#     which will complicate the script a bit
 
 # retrieve the names of the parameters to extend
 energy_dep_par_names <- unique(str_remove(optParamDt[grepl("\\(.+\\)",PARNAME)]$PARNAME,"\\(.+\\)"))
@@ -175,6 +185,7 @@ gpHandler <- createSysCompGPHandler()
 sysCompHandler <- createSysCompHandler()
 sysCompHandler$addGPHandler(gpHandler)
 
+print("Building the covariance matrices...")
 # Prior covariance matrix including extended parameters
 P <- sysCompHandler$cov(allSysDt, optGpDt, ret.mat = TRUE)
 expSel <- allSysDt[, !grepl("TALYS-", EXPID)]
@@ -207,23 +218,37 @@ p0_extra <- unlist(extParamDt[, PARVAL])
 # conditional covariance matrix for extra parameters (doesn't depend on the value of p_opt)
 P1_ext_ext <- P0_ext_ext - P0_opt_ext %*% solve(P0_opt_opt,t(P0_opt_ext))
 
+# calculate the inverse of P0_opt_opt, which will be used many times during the sampling
+P0_opt_opt_inv <- solve(P0_opt_opt)
+
 # symmetrize P1_ext_ext
 stopifnot(max(abs(P1_ext_ext - t(P1_ext_ext))) < 1.e-09)
 P1_ext_ext <- 0.5*(P1_ext_ext + t(P1_ext_ext))
 
+print("...done!")
+
+print("sampling the optimized parameters...")
 # create samples of parameter sets
 # first sample the optimized parameters from the posterior mean & covariance matrix
-opt_par_samples <- sample_mvn(numTalysFiles,finalPars,finalParCovmat)
+opt_par_samples <- sample_mvn(numTalysFiles,finalPars,finalParCovmat) # this takes some time (few seconds)
+print("...done!")
+
 
 # now sample the extended parameters from the prior MVN conditioned on each
 # sample from the posterior
 sample_extended_pars <- function(optParset)
 {
-  ext_par_mean <- p0_extra + P0_opt_ext %*% solve(P0_opt_opt,optParset-p0_opt)
+  # this thing is exceedingly slow!!!
+  # It may be faster to use this package : https://cran.r-project.org/web/packages/mvnfast/mvnfast.pdf
+  # ext_par_mean <- p0_extra + P0_opt_ext %*% solve(P0_opt_opt,optParset-p0_opt)
+  ext_par_mean <- p0_extra + P0_opt_ext %*% P0_opt_opt_inv %*% (optParset-p0_opt) # this should be a bit faster
   sample_mvn(1,ext_par_mean,P1_ext_ext)
 }
 
+print("sampling the extended parameters...")
+# this step is very slow even for just one sample
 ext_par_samples <- apply(opt_par_samples,2,sample_extended_pars)
+print("...done!")
 
 # get the mean of the sampled extended parameters
 ext_pars_mean <- matrix(rowMeans(ext_par_samples),ncol=1)
@@ -238,7 +263,9 @@ allParsets <- cbind(optParset, variedParsets)
 dir.create(savePathTalys, showWarnings=TRUE)
 print(paste0("Storing talys results in: ", savePathTalys))
 
+print("performing talys calculations...")
 allResults <- talys$fun(allParsets, applySexp = FALSE, ret.dt=FALSE, saveDir = savePathTalys)
+print("...done!")
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)

@@ -5,8 +5,8 @@
 ##################################################
 
 # working directory
-#workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
-workdir <- "/home/alf/projects/NucDat/pipeline-local-copy"
+workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
+#workdir <- "/home/alf/projects/NucDat/pipeline-local-copy"
 setwd(workdir)
 
 source("/opt/pipeline/eval-fe56/required_packages.R")
@@ -121,8 +121,7 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
- #numTalysFiles <- 300
- numTalysFiles <- 30
+ numTalysFiles <- 300
 
 # where to store the TALYS results on the remote machine
 # content of TALYS result directories is stored as tar archives

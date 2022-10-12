@@ -21,14 +21,20 @@ origSysDt <- read_object(4, "origSysDt")
 updSysDt <- read_object(4, "updSysDt")
 expDt <- read_object(3, "expDt")
 modDt <- read_object(3,"modDt")
-allResults <- read_object(9, 'allResults')
+#allResults <- read_object(9, 'allResults')
+allResults <- read_object(12, 'allResults')
 
 optExpDt <- read_object(6, "optExpDt")
-optParamDt <- read_object(7,"optParamDt")
-optRes <- read_object(7, "optRes")
-P0 <- read_object(7, "P0")
-X <- read_object(7, "X")
-SX <- read_object(7, "S0")
+# optParamDt <- read_object(7,"optParamDt")
+# optRes <- read_object(7, "optRes")
+# P0 <- read_object(7, "P0")
+# X <- read_object(7, "X")
+# SX <- read_object(7, "S0")
+optParamDt <- read_object(11,"optParamDt")
+optRes <- read_object(11, "optRes")
+P0 <- read_object(11, "P0")
+X <- read_object(11, "X")
+SX <- read_object(11, "S0")
 
 reactions <- expDt[,unique(REAC)]
 
@@ -69,7 +75,7 @@ extNeedsDtMod[, IDX := seq_len(.N)]
 sampledResults <- allResults[,2:ncol(allResults)]
 optResult <- allResults[,1]
 postDt <- copy(extNeedsDtMod)
-setkey(tmpDt, IDX)
+setkey(postDt, IDX)
 uncinfo <- cov.wt(t(sampledResults))
 postDt[, OPT:=optResult]
 postDt[, V1:=uncinfo$center]
