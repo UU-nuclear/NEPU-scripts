@@ -423,21 +423,21 @@ facet_wrap(~ REAC, ncol=3, scales='free')
 #ggp <- ggplot(expDt[REAC=="(26-FE-56(N,TOT),,SIG)" & EXPID!=22316003 & EXPID!=13764002]) + theme_bw() +
 #ggp <- ggplot(expDt[REAC=="(26-FE-56(N,TOT),,SIG)" & EXPID!=22316003]) + theme_bw() +
 #ggp <- ggplot(expDt[REAC=="(26-FE-56(N,TOT),,SIG)" & EXPID!=13764002]) + theme_bw() +
-#ggp2 <- ggplot(expDt[REAC=="(26-FE-56(N,TOT),,SIG)"]) + theme_bw() +
-ggp2 <- ggplot(expDt[REAC=="(26-FE-56(N,2N)26-FE-55,,SIG)"]) + theme_bw() +
+ggp2 <- ggplot(expDt[REAC=="(26-FE-56(N,TOT),,SIG)"]) + theme_bw() +
+#ggp2 <- ggplot(expDt[REAC=="(26-FE-56(N,2N)26-FE-55,,SIG)"]) + theme_bw() +
 theme(axis.text=element_text(size=9),
 	               axis.title=element_text(size=10),
 	               plot.title=element_text(size=12)) +
 xlab("energy [MeV]") + ylab("cross section [mbarn]") +
 #geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
 #                               size = 0.5, width = 0.3) +
-geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
-                           size = 0.5, width = 0.2) +
+#geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+#                           size = 0.5, width = 0.2) +
 geom_point(aes(x = L1, y = DATA, col = EXPID)) +
 
 new_scale_colour() +
-#geom_line(data = updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,TOT-01"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.')) +
-geom_line(data = updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,2N-01"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.')) +
+geom_line(data = updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,TOT-01"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.')) +
+#geom_line(data = updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,2N-01"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.')) +
 #geom_line(data = updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,TOT-01"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_MLO, col='extra sys. unc.')) +
 scale_color_manual(name='Regression Model',
                      breaks=c('orig. sys. unc.', 'only stat. unc.', 'extra sys. unc.'),

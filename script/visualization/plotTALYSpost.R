@@ -10,6 +10,7 @@ if (length(args)==1) {
 
 library(ggplot2)
 library(latex2exp)
+library(ggnewscale)
 
 ##################################################
 #       OUTPUT FROM PREVIOUS STEPS
@@ -30,11 +31,22 @@ optExpDt <- read_object(6, "optExpDt")
 # P0 <- read_object(7, "P0")
 # X <- read_object(7, "X")
 # SX <- read_object(7, "S0")
-optParamDt <- read_object(11,"optParamDt")
-optRes <- read_object(11, "optRes")
-P0 <- read_object(11, "P0")
-X <- read_object(11, "X")
-SX <- read_object(11, "S0")
+optParamDt <- read_object(10,"optParamDt")
+optRes <- read_object(10, "optRes")
+P0 <- read_object(10, "P0")
+X <- read_object(10, "X")
+SX <- read_object(10, "S0")
+
+# found a possible bug in the parsing of the talys files
+# when the talys cross section result is zero NA appears in the
+# parsed output. For now I will just replace NAs with 0, and print a warning
+
+if(any(is.na(allResults))) {
+  cat("Warning: NAs appear in the sampled cross sections. \n
+    A bug in the parsing of the talys files causes NAs to appear when TALYS predict 0. \n
+    This bug should be fixed, but for now replacing NAs with 0.\n")
+  allResults[is.na(allResults)] <- 0
+}
 
 reactions <- expDt[,unique(REAC)]
 
@@ -92,37 +104,90 @@ postDt[REAC=="CS/REAC/000001/TOT",REAC:="(26-FE-56(N,A)24-CR-53,,SIG)"]
 postDt[REAC=="CS/REAC/000100/TOT",REAC:="(26-FE-56(N,T)25-MN-54,,SIG)"]
 # --------------------------------------
 
-
-
-curExpDt <- expDt
-curPostDt <- postDt
-
-# label with chi2 information
-ggp <- ggplot(curExpDt) + theme_bw()
-ggp <- ggp + scale_x_continuous(breaks=seq(0,200,20))
-ggp <- ggp + theme(axis.text=element_text(size=9),
-                   axis.title=element_text(size=10),
-                   plot.title=element_text(size=12),
-                   plot.subtitle=element_text(size=7))
-ggp <- ggp + guides(col = "none")
-ggp <- ggp + xlab("energy (MeV)") + ylab("cross section (mbarn)")
-ggp <- ggp + labs(title=curReac,subtitle=tex_label)
-
-ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
-                           size = 0.2, width = 0.25)
-ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
+ggp <- ggplot(expDt) + theme_bw() +
+  scale_x_continuous(breaks=seq(0,200,20)) +
+  theme(axis.text=element_text(size=8),
+                     axis.title=element_text(size=10),
+                     plot.title=element_text(size=8),
+                     plot.subtitle=element_text(size=7)) +
+  guides(col = "none") +
+  xlab("energy (MeV)") + ylab("cross section (mbarn)") +
+  geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+                             size = 0.2, width = 0.25) +
+  geom_point(aes(x = L1, y = DATA), size=0.25)
 
 # plot the model posterior
-ggp <- ggp + geom_line(aes(x=L1, y=OPT), data=curPostDt, col="red", size=0.2)
-ggp <- ggp + geom_line(aes(x=L1, y=V1), data=curPostDt, col="green", size=0.2)
-ggp <- ggp + geom_ribbon(aes(x=L1, ymin=V1-UNC, ymax=V1+UNC), alpha=0.3, data=curPostDt,fill="green")
-ggp + facet_wrap(~REAC, scales='free_y')
-
-# and the model MAP
-#ggp <- ggp + geom_line(aes(x=L1, y=XSECTFIT_MAP), col="blue", size=0.2)
+ggp <- ggp + new_scale_colour() +
+  geom_line(aes(x=L1, y=OPT, col='mode'), data=postDt, size=0.2) +
+  geom_line(aes(x=L1, y=V1, col='mean'), data=postDt, size=0.2) +
+  geom_ribbon(aes(x=L1, ymin=V1-UNC, ymax=V1+UNC), fill='green', alpha=0.3, data=postDt) +
+  scale_color_manual(name='posterior',
+                       breaks=c('mode', 'mean'),
+                       values=c('mode'='red', 'mean'='green')) +
+  facet_wrap(~REAC, scales='free_y')
 
 
 #print(ggp)
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-filepath <- file.path(plotPath, paste0('posterior_TALYS_', curReac,'.png'))
-ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
+filepath <- file.path(plotPath, 'posterior_TALYS.png')
+ggsave(filepath, ggp, width = 2*16, height = 2*9, units = "cm", dpi = 300)
+
+# individual plots per channel
+curPlotPath <- file.path(plotPath,'talysPosteriorPlots')
+dir.create(curPlotPath, recursive=TRUE, showWarnings=FALSE)
+
+for(curReac in unique(expDt$REAC))
+{
+  cur_expDt <- expDt[REAC==curReac]
+  cur_postDt <- postDt[REAC==curReac]
+
+  plot <- ggplot(cur_expDt) + theme_bw() +
+    labs(title=curReac) +
+    scale_x_continuous(breaks=seq(0,200,20)) +
+    theme(axis.text=element_text(size=8),
+                       axis.title=element_text(size=10),
+                       plot.title=element_text(size=8),
+                       plot.subtitle=element_text(size=7)) +
+    guides(col = "none") +
+    xlab("energy (MeV)") + ylab("cross section (mbarn)") +
+    geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+                               size = 0.2, width = 0.25) +
+    geom_point(aes(x = L1, y = DATA), size=0.25)
+
+    # plot the model posterior
+  plot <- plot + new_scale_colour() +
+    geom_line(aes(x=L1, y=OPT, col='mode'), data=cur_postDt, size=0.2) +
+    geom_line(aes(x=L1, y=V1, col='mean'), data=cur_postDt, size=0.2) +
+    geom_ribbon(aes(x=L1, ymin=V1-UNC, ymax=V1+UNC), fill='green', alpha=0.3, data=cur_postDt) +
+    scale_color_manual(name='posterior',
+                         breaks=c('mode', 'mean'),
+                         values=c('mode'='red', 'mean'='green'))
+
+  curPlotPath <- file.path(plotPath,'talysPosteriorPlots',paste0('talys_',curReac,'.png'))
+  ggsave(curPlotPath, plot, width = 16, height = 9, units = "cm", dpi = 300)
+}
+
+curReac <- "(26-FE-56(N,TOT),,SIG)"
+plot <- ggplot(cur_expDt) + theme_bw() +
+    labs(title=curReac) +
+    theme(axis.text=element_text(size=8),
+                       axis.title=element_text(size=10),
+                       plot.title=element_text(size=8),
+                       plot.subtitle=element_text(size=7)) +
+    guides(col = "none") +
+    xlab("energy (MeV)") + ylab("cross section (mbarn)") +
+    #geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+    #                           size = 0.2, width = 0.25) +
+    geom_point(aes(x = L1, y = DATA), size=0.25)
+
+    # plot the model posterior
+  plot <- plot + new_scale_colour() +
+    geom_line(aes(x=L1, y=DATAREF, col='prior'), data=cur_expDt, size=0.2) +
+    geom_line(aes(x=L1, y=OPT, col='mode'), data=cur_postDt, size=0.2) +
+    geom_line(aes(x=L1, y=V1, col='mean'), data=cur_postDt, size=0.2) +
+    geom_ribbon(aes(x=L1, ymin=V1-UNC, ymax=V1+UNC), fill='green', alpha=0.3, data=cur_postDt) +
+    scale_color_manual(name='posterior',
+                         breaks=c('mode', 'mean','prior'),
+                         values=c('mode'='red', 'mean'='green', 'prior'='blue'))
+
+  plot + xlim(1,3)

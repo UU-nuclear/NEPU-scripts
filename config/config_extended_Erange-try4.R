@@ -6,11 +6,12 @@
 
 # working directory
 workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
-#workdir <- "/home/alf/projects/NucDat/pipeline-local-copy"
+#workdir <- "/home/alf/projects/NucDat/pipeline-local-copy/"
 setwd(workdir)
 
 source("/opt/pipeline/eval-fe56/required_packages.R")
 source("/opt/pipeline/eval-fe56/required_sourcefiles.R")
+source(paste0(workdir,"LMalgo_parallel/altLM_logger.R"))
 library(clusterTALYSmpi)
 library(stringr)
 
@@ -59,8 +60,10 @@ defaultThresEn <- 1
 
 # energy grid for energy-dependent TALYS parameters
 # theses grid points should not coincide with the low cut-off energy for experimental data
-# energyGridForParams <- seq(0,31,by=2)
-energyGridForParams <- seq(0,50,by=2)
+# additionally: Observe that energy dependent parameters at E=0 is ignored by TALYS
+# instead the default value (1.0) is used below the first energy>0.
+energyGridForParams <- c(1e-6,seq(2,50,by=2))
+
 
 # specify which paramters to make energy dependent
 # a data.frame object named enParDt containing the columns par and proj
@@ -72,7 +75,7 @@ energyGridForParams <- seq(0,50,by=2)
 tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc','av','avd','avso','aw','awso','rv','rvd','rvso','rwd','rwso'),'adjust')
 tmpProj <- c('n','p','d','t','h','a')
 enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
-enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Columb radius for the neutron
+#enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
 
 # specification of the TALYS input file used as template
 # param_template_path <- "/opt/pipeline/eval-fe56/indata/n_Fe_056.inp"
@@ -81,6 +84,7 @@ param_template_path <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/wor
 # instantiate the transformation used for all parameters of the form ...adjust
 # parameters are restricted to the interval (0.5, 1.5), in other words:
 # the maximal deviation from the default values is 50%
+#paramTrafo <- generateTrafo(1, 0.9, 4) 
 paramTrafo <- generateTrafo(1, 0.5, 4) 
 
 # optional argument to set the finite difference used by talys to calculate the Jacobian
@@ -111,7 +115,7 @@ reltolLM <- 1e-5
 
 # where to save output data
 #outdataPath <- file.path(workdir, "/outdata")
-outdataPath <- file.path(workdir, "/outdata-to-50-MeV-try3")
+outdataPath <- file.path(workdir, "/outdata-to-50-MeV-try4")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 
@@ -122,7 +126,7 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
- numTalysFiles <- 1000
+ numTalysFiles <- 100
 
 # where to store the TALYS results on the remote machine
 # content of TALYS result directories is stored as tar archives
@@ -131,7 +135,7 @@ talysFilesSeed <- 13
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
 # pathTalys <-paste0("/tmp/talysResults")
-pathTalys <- "/TMC/alf/eval-fe56-singularity/to-50-MeV-try3"
+pathTalys <- "/TMC/alf/eval-fe56-singularity/to-50-MeV-try4-test"
 savePathTalys <- pathTalys
 
 # where to save plots produced by the scripts in eval-fe56/script/visualization

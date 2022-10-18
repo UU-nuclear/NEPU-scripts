@@ -70,11 +70,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   pref <- as.vector(pinit)
 
   print(paste("strategy =",control$strategy))
-  print("calculating initial jacobian...")
+  #print("calculating initial jacobian...")
   J <- jac(as.vector(pref))
-  print("calculating initial function value...")
+  #print("calculating initial function value...")
   fref <- fn(as.vector(pref))
-  print("...done!")
+  #print("...done!")
 
   dpriorRef <- pref - p0
   LpriorRef <- as.vector(crossprod(dpriorRef, invP0 %*% dpriorRef))
@@ -91,7 +91,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   while (i < control$maxit && breakCounter < 3) {
     i <- i + 1
 
-    print(paste("breakCounter = ",breakCounter))
+    #print(paste("breakCounter = ",breakCounter))
     # propose new parameter set and calculate function value
     tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
     invP1 <- invP0 + tJinvBJ
@@ -112,8 +112,8 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       mus <- seq(nproc,1)*mu
     }
 
-    print("mus to try")
-    print(mus)
+    #print("mus to try")
+    #print(mus)
 
     #prepare the next set of proposal parameters
     pprops <- matrix(0,ncol=length(mus),nrow=length(pref))
@@ -130,18 +130,18 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     }
    
     # calculate the function values at the proposal parameter sets
-    print(paste("length(mus) = ", length(mus)))
-    print(paste("length(pref) = ", length(pref)))
-    print("calculating the function values at the proposal parameter sets...")
+    #print(paste("length(mus) = ", length(mus)))
+    #print(paste("length(pref) = ", length(pref)))
+    #print("calculating the function values at the proposal parameter sets...")
     fprops <- fn(pprops)
-    print("done!")
+    #print("done!")
     
     Lprop_min <- Inf
     Lprop_approx_min <- Inf
     fprop_approx_min <- Inf
     col_min <- 0
-    print("finding the best parameter set...")
-    print(paste("col","mu","step_gain"))
+    #print("finding the best parameter set...")
+    #print(paste("col","mu","step_gain"))
     #print(paste("mu0 = ",mu))
     #print(paste("mu","Lprop","Lprop_approx","Lref"))
     #for(col in 1:length(mus)) {
@@ -187,7 +187,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
         # As gain -> 0 we are moving outside of this region.
         
         step_gain <- ((Lref - Lprop)+1e-10) / (abs(Lref - Lprop_approx)+1e-10)
-        print(paste(col,mu,step_gain))
+        #print(paste(col,mu,step_gain))
         if(step_gain>0.75) {
           if((step_gain-0.75) < (0.75 - former_step_gain)) {
             # if current step gain is closer to 0.75 than the former one
@@ -211,8 +211,8 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       }
       
     }
-    print("done finding the best parameter set!")
-    print(paste("col_min = ",col_min))
+    #print("done finding the best parameter set!")
+    #print(paste("col_min = ",col_min))
 
 # This can never happen and should be removed, the loop will select the largest value of mu when no step_gain>0.75
 #    if(col_min==0) {
@@ -237,8 +237,8 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
 #      Lprop_approx_unconstr <- as.vector(mult_xt_invCov_x(yexp - fprop_approx_unconstr, D, S, X, cholZ = cholZ)) + LpriorProp_unconstr
 #    }
 
-    #print("--------------------------")
-    print(paste("best tried mu column = ",col_min))
+    ##print("--------------------------")
+    #print(paste("best tried mu column = ",col_min))
     #print("done!")
 
     # +1e-10 to avoid problems if Lprop_approx == Lref
@@ -247,29 +247,29 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     # and then Lprop_approx < Lref not guaranteed anymore
 
     gain <- ((Lref - Lprop_min)+1e-10) / (abs(Lref - Lprop_approx_min)+1e-10)
-    print(paste("gain = ",gain))
+    #print(paste("gain = ",gain))
 
     # check break conditions
-    print("check break conditions...")
+    #print("check break conditions...")
     if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
         abs(Lprop_min - Lref) < control$abstol) {
-      print("   break condition TRUE")
+      #print("   break condition TRUE")
       breakCounter <- breakCounter + 1
     } else {
-      print("   break condition FALSE")
+      #print("   break condition FALSE")
       breakCounter <- 0
     }
 
     # print status information
-    print("preparing the log...")
+    #print("preparing the log...")
     logBuffer <- list(iteration = i, mu = mu, gain = gain, pref = pref, fref = fref, Lref = Lref,
                       pprop = pprops[,col_min], fprop = fprops[,col_min], Lprop = Lprop_min, fprop_approx = fprop_approx_min, Lprop_approx = Lprop_approx_min,
                       Jref = J, p0 = p0, P0 = P0, yexp = yexp, D = D, S = S, X = X)
-    print("...done!")
+    #print("...done!")
     
-    print("logging...")
+    #print("logging...")
     if (is.function(logger)) logger(logBuffer)
-    print("...done!")
+    #print("...done!")
     # The problem is in the loggerLM created by createLoggerLM(talys, savePathLM)
     # on line 16-17 of the file RsourceFiles/LM_logger.R the logger calls
     # fref <- talys$fun(buf$pref, applySexp = FALSE)
@@ -279,25 +279,25 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     # data does not correspond to pref both the function values and the 
     # jacobian are re-calculated, but they are never used in the logger.
 
-    print("accept or reject...")
+    #print("accept or reject...")
     # accept if proposed parameter set better than old one
     accepted <- FALSE
     if (Lprop_min < Lref) {
       pref <- pprops[,col_min]
       fref <- fprops[,col_min]
-      print("step accepted")
-      print("calculating the new Jacobian...")
+      #print("step accepted")
+      #print("calculating the new Jacobian...")
       J <- jac(as.vector(pprops[,col_min]))
-      print("...done!")
+      #print("...done!")
       Lref <- Lprop_min
       accepted <- TRUE
     } else {
       # set the next mu-value to 2*(current mu-value)
       mu <- 2*mu
-      print("step not accepted")
+      #print("step not accepted")
     }
 
-    print("re-enter loop")
+    #print("re-enter loop")
   }
   
   tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
