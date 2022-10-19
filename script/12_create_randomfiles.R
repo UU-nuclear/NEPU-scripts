@@ -75,9 +75,9 @@ check_output_objects(scriptnr, outputObjectNames)
 finalParamDt <- copy(optParamDt)
 finalParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
 setkey(finalParamDt, IDX)
-finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafo$fun(finalPars)]
+# finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafo$fun(finalPars)]
 # IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
-finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
+# finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
 
 # extend the energy range of energy dependent parameter grid
 # we use the same increment as the last increment in the
@@ -178,6 +178,10 @@ allParamDt[, PARVAL:= parval]
 
 # start by recreating the prior covariance matrix for all parameters
 # including the extended energy range
+# Observe that all parameters and their covariance matrices is in the 
+# untransformed (internal) parameter space (they can take on any real value)
+# as they are passed to TALYS via talys_wrapper.R they are transformed to 
+# the external parameter space, limited by the allowed ranges of talys
 
 gpHandler <- createSysCompGPHandler()
 sysCompHandler <- createSysCompHandler()
@@ -208,8 +212,7 @@ P0_ext_ext <- P0_all[-optpars_indices,-optpars_indices]
 # update extended energy range parameters
 
 # prior mean of optimized parameters
-p0_opt <- unlist(finalParamDt[ADJUSTABLE==TRUE, PARVAL]) # these are transformed parameters
-#p0_opt <- paramTrafo$invfun(p0_opt)
+p0_opt <- unlist(finalParamDt[ADJUSTABLE==TRUE, PARVAL])
 
 # prior mean of extra parameters
 p0_extra <- unlist(extParamDt[, PARVAL]) # these are transformed parameters
@@ -296,12 +299,24 @@ allResults <- talys$fun(allParsets, applySexp = FALSE, ret.dt=FALSE, saveDir = s
 print("...done!")
 # 
 
-# save the sampled parameters in a human readable data table
-allParamDt[ADJUSTABLE == TRUE, POST_MODE := paramTrafo$fun(optParset)]
-uncinfo <- cov.wt(t(variedParsets))
-allParamDt[ADJUSTABLE == TRUE, POST_MEAN := paramTrafo$fun(uncinfo$center)]
-# IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
-allParamDt[ADJUSTABLE == TRUE, POST_UNC := sqrt(diag(uncinfo$cov))]
-
 # # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
+
+adjParNames <- allParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  allParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  allParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# set the parameter transformation to be centered at the prior mean/mode
+# the ranges of the parameters are the ones specified in the TALYS manual
+paramTrafo <- parameterTransform(
+                  x0 = unlist(allParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  x_min = allParamDt[ADJUSTABLE==TRUE,PARMIN],
+                  x_max = allParamDt[ADJUSTABLE==TRUE,PARMAX])
+
+# save the sampled parameters in a human readable data table
+allParamDt[ADJUSTABLE == TRUE, POST_MODE := paramTrafo$fun(optParset)]
+# allParamDt[ADJUSTABLE == TRUE, POST_MEAN := paramTrafo$fun(uncinfo$center)]
+# IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
+# allParamDt[ADJUSTABLE == TRUE, POST_UNC := sqrt(diag(uncinfo$cov))]

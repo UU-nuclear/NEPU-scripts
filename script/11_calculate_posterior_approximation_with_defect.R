@@ -62,6 +62,20 @@ outputObjectNames <- c("variationMat", "variationMatRes",
                        "finalPars", "finalParCovmat")
 check_output_objects(scriptnr, outputObjectNames)
 
+# create the parameter transformation object
+adjParNames <- optParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  optParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  optParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# set the parameter transformation to be centered at the prior mean/mode
+# the ranges of the parameters are the ones specified in the TALYS manual
+paramTrafo <- parameterTransform(
+                  x0 = unlist(optParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  x_min = optParamDt[ADJUSTABLE==TRUE,PARMIN],
+                  x_max = optParamDt[ADJUSTABLE==TRUE,PARMAX])
+
 # see step 07_tune_talyspars.R for more explanation
 # about setting up the talys handler
 talysHnds <- createTalysHandlers()

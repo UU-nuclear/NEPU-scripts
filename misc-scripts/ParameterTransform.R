@@ -28,8 +28,10 @@ transFunc <- function(x, x0, x_min, x_max) {
 }
 
 inv_transFunc <- function(z, x0, x_min, x_max) {
-  z[z <= x_min] <- x_min[z < x_min] + 1e-09 # can happen due to numerical inaccuracy
-  z[z >= x_max] <- x_max[z > x_max] - 1e-09 # can happen due to numerical inaccuracy
+  print("z = ")
+  print(z)
+  z[z <= x_min] <- x_min[z <= x_min] + 1e-09 # can happen due to numerical inaccuracy
+  z[z >= x_max] <- x_max[z >= x_max] - 1e-09 # can happen due to numerical inaccuracy
 
   lower <- z <= x0
   upper <- z > x0
@@ -41,15 +43,15 @@ inv_transFunc <- function(z, x0, x_min, x_max) {
 jac_transFunc <- function(x, x0, x_min, x_max) {
   much_lower <- -2.*(x-x0)/(x0-x_min) > 1e2
   much_higher <- -2.*(x-x0)/(x_max-x0) < -1e2
-  x[much_lower] <- double.xmin
-  x[much_higher] <- double.xmin
+  x[much_lower] <- .Machine$double.xmin
+  x[much_higher] <- .Machine$double.xmin
 
   lower <- x <= x0
   upper <- x >  x0
   c = exp(-2*(x[lower]-x0[lower])/(x0[lower]-x_min[lower]))
-  x[lower] <- 2*c^2/(1.+c)^2
+  x[lower] <- 4*c^2/(1.+c)^2
   c = exp(-2*(x[upper]-x0[upper])/(x_max[upper]-x0[upper]))
-  x[upper] <- 2*c^2/(1.+c)^2
+  x[upper] <- 4*c^2/(1.+c)^2
   diag(x = x, nrow = length(x))
 }
 

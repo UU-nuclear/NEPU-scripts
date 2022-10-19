@@ -56,6 +56,20 @@ print("-----------------------------------------------------")
 outputObjectNames <- c("fullSensDt")
 check_output_objects(scriptnr, outputObjectNames)
 
+# create the parameter transformation object
+adjParNames <- refParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  refParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  refParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# set the parameter transformation to be centered at the prior mean/mode
+# the ranges of the parameters are the ones specified in the TALYS manual
+paramTrafo <- parameterTransform(
+                  x0 = unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  x_min = refParamDt[ADJUSTABLE==TRUE,PARMIN],
+                  x_max = refParamDt[ADJUSTABLE==TRUE,PARMAX])
+
 # sanity check: are all parameters within the restricted
 # range allowed by the transformation
 # (check near end in config.R for details about the transformation)
@@ -69,7 +83,15 @@ stopifnot(all.equal(refParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)], origPars))
 # contain untransformed parameters. However, the eps specification refers to 
 # adjustments in the transformed! parameter space
 if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
-jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff, trafo = paramTrafo)
+#jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff, trafo = paramTrafo)
+jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff)
+# for now I simply neglect that there is a difference between 
+# paramTrafo$fun(paramTrafo$invfun(x) + talys_finite_diff) and
+# x + talys_finite_diff
+# even for a talys_finite_diff = 0.1 the difference betwen the above is only
+# in the order of 1e-16, so it should not make much difference
+# this means I don't even need the parameter transformation here
+
 
 ###############################
 # perform the calculation
