@@ -282,6 +282,9 @@ loggerLM <- createLoggerLMalt(savePathLM)
 #pinit <- read_object(7, "optRes")$par
 pinit <- refPar
 
+# The full Jacobian was calculated in step 05, no need to recalculate it 
+Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX]
+
 #cat("Started calculations at", as.character(Sys.time()), "\n")  
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
 #                 lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
@@ -292,7 +295,7 @@ cat("Started calculations at", as.character(Sys.time()), "\n")
 source("LMalgo_parallel/LMalgo_parallel.R")
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"))
+                 control = list(maxit = maxitLM, reltol = reltolLM, acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"),J=Jinit)
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference

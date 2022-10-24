@@ -184,7 +184,23 @@ finalPars[optpars_indices] <- optRes$par
 finalParamDt <- copy(optParamDt)
 finalParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
 setkey(finalParamDt, IDX)
-finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafo$fun(finalPars)]
+# We need another parameter transformation here since the full parameter
+# vector is different from the optimized parameter vector
+adjParNamesFull <- finalParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  finalParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  finalParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# set the parameter transformation to be centered at the prior mean/mode
+# the ranges of the parameters are the ones specified in the TALYS manual
+paramTrafoFull <- parameterTransform(
+                  x0 = unlist(finalParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  x_min = finalParamDt[ADJUSTABLE==TRUE,PARMIN],
+                  x_max = finalParamDt[ADJUSTABLE==TRUE,PARMAX])
+
+
+finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafoFull$fun(finalPars)]
 # IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
 finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
 

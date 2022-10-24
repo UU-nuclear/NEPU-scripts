@@ -28,8 +28,6 @@ transFunc <- function(x, x0, x_min, x_max) {
 }
 
 inv_transFunc <- function(z, x0, x_min, x_max) {
-  print("z = ")
-  print(z)
   z[z <= x_min] <- x_min[z <= x_min] + 1e-09 # can happen due to numerical inaccuracy
   z[z >= x_max] <- x_max[z >= x_max] - 1e-09 # can happen due to numerical inaccuracy
 
@@ -58,11 +56,19 @@ jac_transFunc <- function(x, x0, x_min, x_max) {
 parameterTransform <- function(x0, x_min, x_max) {
 
   fun <- function(x) {
-    transFunc(x, x0, x_min, x_max)
+    if(is.vector(x)) {
+      transFunc(x, x0, x_min, x_max)
+    } else if(is.matrix(x)) {
+      apply(x,2,transFunc,x0=x0,x_min=x_min,x_max=x_max)
+    }
   }
 
   invfun <- function(z) {
-    inv_transFunc(z, x0, x_min, x_max)
+    if(is.vector(z)) {
+      inv_transFunc(z, x0, x_min, x_max)
+    } else if(is.matrix(z)) {
+      apply(z,2,inv_transFunc,x0=x0,x_min=x_min,x_max=x_max)
+    }
   }
 
   jac <- function(x) {

@@ -139,10 +139,12 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
 
     stopifnot(is.numeric(x))
     x <- as.matrix(x)
+
     stopifnot(! (ncol(x) > 1 & ret.dt))
     trafo_x <- x
     if (!is.null(thisParTrafoFun))
       x <- thisParTrafoFun(x)
+    stopifnot(!any(is.na(x)))
     
     y <- matrix(NA_real_, nrow = nrow(thisNeedsDt), ncol = ncol(x))
     isCached <- rep(FALSE, ncol(x))
@@ -202,6 +204,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
   jac <- function(x, applySexp = TRUE) {
 
     stopifnot(is.numeric(x))
+
     trafo_x <- x
     if (!is.null(thisParTrafoJac))
       x <- thisParTrafoFun(x)

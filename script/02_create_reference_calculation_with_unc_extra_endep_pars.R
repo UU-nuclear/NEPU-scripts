@@ -91,14 +91,7 @@ if (isTRUE(fewParameterTest)) {
 }
 
 # augment parameter list with energy dependent parameters
-# these are instead specified in the config script
-# tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc'),'adjust')
-# tmpProj <- c('n','p','d','t','h','a')
-
-#if (isTRUE(fewParameterTest)) {
-#    tmpPar <- tmpPar[1:3]
-#    tmpProj <- tmpProj[1]
-#}
+# these are specified in the config script
 
 # to do that, first remove the associated global specifications
 # enParDt <- expand.grid(par = tmpPar, proj = tmpProj)
@@ -131,7 +124,8 @@ refParamDt <- refParamDt[! PARNAME %in% c("projectile", "element", "mass")]
 # only parameters with "adjust" in the parameter name 
 # are considered as adjustable
 refParamDt[, ADJUSTABLE := grepl("adjust", PARNAME)]
-refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
+#refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
+refParamDt[ADJUSTABLE == TRUE, PARUNC := NA]
 
 # set the prior parameter uncertainties according to Nuclear Data Sheets 113 (2012) 2841–2934
 # multiplied with a factor (here 2) and maximum prior uncertainty 0.5
@@ -149,6 +143,7 @@ for(i in 1:nrow(par_unc)) {
     # unc <- min(unc,0.8) 
     if(is.na(particle)) {
         refParamDt[grepl(name,refParamDt$PARNAME),PARUNC := min(unc,0.5)]
+        cat(name," : ",unc,"\n")
     } else {
         refParamDt[grepl(name,refParamDt$PARNAME) & stri_sub(refParamDt$PARNAME,-1)==particle ,PARUNC := min(unc,0.5)]
     }
@@ -192,13 +187,8 @@ runObj <- talysHnd$run(list(refInpList), extNeedsDt)
 # later recovery if something goes wrong
 save_output_objects(scriptnr, "runObj", overwrite)
 
-#cat("Started calculations at", as.character(Sys.time()), "\n")
-#cat("Waiting for termination...\n")
-#while (talysHnd$isRunning(runObj)) { 
-#    Sys.sleep(pollTime)
-#}
+cat("Started calculations at", as.character(Sys.time()), "\n")
 rawRes <- talysHnd$result(runObj)
-#talysHnds$clustHnd$closeCon()#
 
 extNeedsDt <- rawRes[[1]]$result
 

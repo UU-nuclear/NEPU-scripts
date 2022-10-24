@@ -88,7 +88,7 @@ jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finit
 # for now I simply neglect that there is a difference between 
 # paramTrafo$fun(paramTrafo$invfun(x) + talys_finite_diff) and
 # x + talys_finite_diff
-# even for a talys_finite_diff = 0.1 the difference betwen the above is only
+# for a talys_finite_diff = 0.1 the difference betwen the above is only
 # in the order of 1e-16, so it should not make much difference
 # this means I don't even need the parameter transformation here
 

@@ -41,12 +41,10 @@ gpObsHandler <- createSysCompGPHandler()
 gpEnGridLength <- 200
 reacs <- expDt[ , .N, by=REAC][N>1 ,REAC]
 for(curReac in reacs){
-  if(expDt[REAC==curReac, .N] <= gpEnGridLength){
-    curEnGrid <- sort(expDt[REAC==curReac, L1])
-  } else if(length(seq(getThresEn(curReac, modDt, defaultThresEn), maxExpEn, by = 0.1)) > gpEnGridLength){
-    curEnGrid <- seq(getThresEn(curReac, modDt, defaultThresEn), maxExpEn, length.out = gpEnGridLength)
-  } else{
-    curEnGrid <- seq(getThresEn(curReac, modDt, defaultThresEn), maxExpEn, by = 0.1)
+  if(expDt[REAC==curReac, .N] <= length(energyGrid) ){
+    curEnGrid <- unique(sort(expDt[REAC==curReac, L1]))
+  } else {
+    curEnGrid <- energyGrid
   }
   
   curUncs <- c(0, 0, rep(2, length(curEnGrid)-2))
@@ -103,11 +101,6 @@ gpDt[, IDX := seq_len(.N)]
 sysCompHandler$addHandler(reacHandlerGPobs)
 
 optExpDt[, REFDATA := optRes$fn] # set reference data to the result of the LM algorithm
-# setup optimization specification
-optfuns <- createMLOptimFuns()
-optfuns$setDts(optExpDt, curSysDt, gpDt,
-               sysCompHandler = sysCompHandler)
-
 
 # define the hyperparameter limits
 setkey(gpDt, IDX)
@@ -116,33 +109,90 @@ upperLims <- rep(NA_real_, nrow(gpDt[ADJUSTABLE==TRUE]))
 
 lowerLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="sigma"] <- 1e-06
 upperLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="sigma"] <- 2000
-lowerLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="len"] <- 1e-06
+lowerLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="len"] <- 0.1
 upperLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="len"] <- 5
+
+# set the upper limit for sigma to be the maxium residual
+for(expID in unique(gpDt[ADJUSTABLE==TRUE]$EXPID)) {
+  maxResidual <- max(expDt[mapAssignment,on="REAC"][i.EXPID==expID,abs(DATA-DATAREF)])
+  upperLims[gpDt[ADJUSTABLE==TRUE]$PARNAME=="sigma" & gpDt[ADJUSTABLE==TRUE]$EXPID==expID] <- maxResidual
+}
 
 gpDt[ADJUSTABLE==TRUE, INITVAL := PARVAL]
 
-# optimize hyperparameters
-# this may take a few minutes
+optfuns <- createMLOptimFuns()
 library(optimParallel)
-# Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
 cl <- makeCluster(6)
 setDefaultCluster(cl=cl)
-#optimParallel
-optRes <- optimParallel(par = gpDt[ADJUSTABLE==TRUE, INITVAL], 
-                        fn = optfuns$logLike, 
-                        gr = optfuns$gradLogLike, 
-                        method = "L-BFGS-B",
-                        lower = lowerLims, 
-                        upper = upperLims, 
-                        control = list(fnscale = -1)
-)
 
-newDts <- optfuns$getModifiedDts(optRes$par)
+newExpDt <- copy(optExpDt)
+newSysDt <- copy(curSysDt)
+newGPdt <- copy(gpDt)
+for(reac in reacs) {
+  cat("CURRENT REACTION: ", reac, "\n")
+  reacExpID <- mapAssignment[REAC==reac]$EXPID
+  expIDs <- unique(optExpDt[REAC==reac]$EXPID)
+  expIDs <- paste0("EXPID-",expIDs)
 
-optExpDt <- newDts$expDt
-optSysDt <- newDts$sysDt
-optGpDt <- newDts$gpDt
+  thisGPdt <- gpDt[grepl("TALYS",EXPID) | EXPID==reacExpID]
+  thisGPdt[, IDX := seq_len(.N)]
+  setkey(thisGPdt, IDX)
+  lowerLims <- rep(NA_real_, nrow(thisGPdt[ADJUSTABLE==TRUE]))
+  upperLims <- rep(NA_real_, nrow(thisGPdt[ADJUSTABLE==TRUE]))
+
+  maxResidual <- max(optExpDt[REAC==reac,abs(DATA-DATAREF)])
+
+  lowerLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="sigma"] <- 0
+  upperLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="sigma"] <- maxResidual
+  lowerLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="len"] <- 0.1
+  upperLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="len"] <- 5
+
+  thisSysDt <- curSysDt[EXPID %in% expIDs | EXPID==reacExpID]
+  thisSysDt[, IDX := seq_len(.N)]
+  setkey(thisSysDt, IDX)
+  thisExpDt <- optExpDt[REAC==reac]
+  thisExpDt[, IDX := seq_len(.N)]
+  setkey(thisExpDt, IDX)
+
+  optfuns$setDts(thisExpDt, thisSysDt, thisGPdt,
+               sysCompHandler = sysCompHandler)
+
+  cat("sigma Limits: ",lowerLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="sigma"],
+    " - ",upperLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="sigma"],"\n")
+  cat("len Limits: ",lowerLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="len"],
+    " - ",upperLims[thisGPdt[ADJUSTABLE==TRUE]$PARNAME=="len"],"\n")
+
+  cat("logLike before ML optimization: ", optfuns$logLike(thisGPdt[ADJUSTABLE==TRUE, INITVAL]), "\n")
+  optRes <- optimParallel(par = thisGPdt[ADJUSTABLE==TRUE, INITVAL], 
+  #optRes <- optim(par = thisGPdt[ADJUSTABLE==TRUE, INITVAL], 
+                          fn = optfuns$logLike, 
+                          gr = optfuns$gradLogLike, 
+                          method = "L-BFGS-B",
+                          lower = lowerLims, 
+                          upper = upperLims, 
+                          control = list(fnscale = -1)
+  )
+
+  newDts <- optfuns$getModifiedDts(optRes$par)
+
+  cat("logLike after ML optimization: ", optRes$value, "\n")
+  cat("GPobs hyperparameters\n")
+  print(newDts$gpDt[ADJUSTABLE==TRUE])
+  cat("--------------------------\n\n")
+
+  newExpDt[REAC==reac] <- newDts$expDt
+  newSysDt[EXPID %in% expIDs | EXPID==reacExpID] <- newDts$sysDt
+  newGPdt[grepl("TALYS",EXPID) | EXPID==reacExpID] <- newDts$gpDt
+}
+stopCluster(cl)
+
+#optExpDt <- newExpDt
+#optExpDt[, IDX := seq_len(.N)]
+optSysDt <- newSysDt
+optSysDt[, IDX := seq_len(.N)]
+optGpDt <- newGPdt
+optGpDt[, IDX := seq_len(.N)]
 
 # construct the matrix to map from systematic error components
 # of the experiments to the measurement points

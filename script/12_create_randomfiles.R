@@ -32,7 +32,7 @@ library(parallel)
 library(mvnfast)
 
 scriptnr <- 12L
-overwrite <- FALSE
+overwrite <- TRUE
 
 ##################################################
 #       OUTPUT FROM PREVIOUS STEPS
@@ -58,7 +58,7 @@ print("-----------------------------------------------------")
 # before we do anything;
 # check that we can create the directory pointed to by savePathTalys
 # and that it does not already exists, to prevent overwriting stuff
-stopifnot(dir.create(savePathTalys, showWarnings=TRUE))
+stopifnot(dir.create(file.path(savePathTalys,"12"), showWarnings=TRUE))
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # define objects to be returned
@@ -171,6 +171,21 @@ allParamDt[PARNAME %in% allSysDt$PARNAME, ADJUSTABLE:=TRUE]
 parval <- as.list(allParamDt[, PARVAL])
 parval[[1]] <- as.vector(energyGridrandomFiles)
 allParamDt[, PARVAL:= parval]
+
+# We need another parameter transformation here since the full parameter
+# vector is different from the optimized parameter vector
+adjParNamesFull <- allParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  allParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  allParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# set the parameter transformation to be centered at the prior mean/mode
+# the ranges of the parameters are the ones specified in the TALYS manual
+paramTrafoFull <- parameterTransform(
+                  x0 = unlist(allParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  x_min = allParamDt[ADJUSTABLE==TRUE,PARMIN],
+                  x_max = allParamDt[ADJUSTABLE==TRUE,PARMAX])
 
 #############################################################################
 # extend the finalPars and finalParCovmat to the extended parameter set
@@ -287,7 +302,7 @@ allParsets <- cbind(optParset, variedParsets)
 talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 talys$setPars(allParamDt)
-talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
+talys$setParTrafo(paramTrafoFull$fun, paramTrafoFull$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp) # not sure if this is correct!!!
 talys$setMask(mask)
@@ -317,6 +332,5 @@ paramTrafo <- parameterTransform(
 
 # save the sampled parameters in a human readable data table
 allParamDt[ADJUSTABLE == TRUE, POST_MODE := paramTrafo$fun(optParset)]
-# allParamDt[ADJUSTABLE == TRUE, POST_MEAN := paramTrafo$fun(uncinfo$center)]
-# IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
-# allParamDt[ADJUSTABLE == TRUE, POST_UNC := sqrt(diag(uncinfo$cov))]
+
+save_output_objects(scriptnr, "allParamDt", overwrite)

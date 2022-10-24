@@ -43,7 +43,11 @@
 #'
 LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
                    lower = -Inf, upper = Inf, logger = NULL,
-                   control = list(maxit = 10, abstol = 1e-3, reltol = 1e-3, mu = NULL, nproc = 1, strategy = "likelihood")) {
+                   control = list(maxit = 10, abstol = 1e-3,
+                                  reltol = 1e-3, mu = NULL,
+                                  nproc = 1, strategy = "likelihood"),
+                   J = NULL
+                   ) {
 
   parDefaults <- list(
     control = list(maxit = 10, abstol = 1e-3, reltol = 1e-3)
@@ -69,12 +73,16 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   invP0 <- solve(P0)
   pref <- as.vector(pinit)
 
-  print(paste("strategy =",control$strategy))
+  #print(paste("strategy =",control$strategy))
   #print("calculating initial jacobian...")
-  J <- jac(as.vector(pref))
+  if(is.null(J)) J <- jac(as.vector(pref))
   #print("calculating initial function value...")
   fref <- fn(as.vector(pref))
   #print("...done!")
+
+  #print("str(J)")
+  print(str(J))
+  #print(paste("length(pref) =",length(pref)))
 
   dpriorRef <- pref - p0
   LpriorRef <- as.vector(crossprod(dpriorRef, invP0 %*% dpriorRef))
@@ -84,6 +92,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   i <- 0  # counter
   accepted <- TRUE # checking if the last iteration lead to an accepted step
 
+  #print("tJinvBJ <- ")
   tJinvBJ <- forceSymmetric(mult_xt_invCov_x(J, D, S, X, cholZ = cholZ))
   invP1 <- invP0 + tJinvBJ
   mu <- if (is.null(control$mu)) tau * max(diag(invP1)) else control$mu
@@ -286,6 +295,10 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       pref <- pprops[,col_min]
       fref <- fprops[,col_min]
       #print("step accepted")
+      #print(paste0("col_min = ",col_min))
+      #print("pprops[,col_min] = ")
+      #print(pprops[,col_min])
+      #print("----------")
       #print("calculating the new Jacobian...")
       J <- jac(as.vector(pprops[,col_min]))
       #print("...done!")
