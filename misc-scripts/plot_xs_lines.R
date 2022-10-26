@@ -193,15 +193,17 @@ modeDt <- data.table(L1=modDt$L1,
 
 plot_MVNprob <- ggplot(data=samplesDt[L1<maxEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
 		geom_line(aes(col=LOGP,group=LOGP)) +
+		geom_point(data=expDt[L1<maxEnergy],alpha=0.25,size=0.1) +
+		geom_errorbar(data=expDt[L1<maxEnergy],aes(ymin=DATA-UNC,ymax=DATA+UNC),alpha=0.25) +
 		geom_line(data=modeDt[L1<maxEnergy],col='red') +
 		facet_wrap(~REAC,scales="free_y")
 print(plot_MVNprob)
 
 plot_REALprob <- ggplot(data=samplesDt[L1<maxEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
 		geom_line(aes(col=LOGP_REAL,group=LOGP_REAL)) +
+		geom_point(data=expDt[L1<maxEnergy],alpha=0.25,size=0.1) +
+		geom_errorbar(data=expDt[L1<maxEnergy],aes(ymin=DATA-UNC,ymax=DATA+UNC),alpha=0.25) +
 		geom_line(data=modeDt[L1<maxEnergy],col='red') +
-		#geom_point(data=expDt[L1<maxEnergy],alpha=0.25) +
-		#geom_errorbar(data=expDt[L1<maxEnergy],aes(ymin=DATA-UNC,ymax=DATA+UNC),alpha=0.25) +
 		facet_wrap(~REAC,scales="free_y")
 print(plot_REALprob)
 
@@ -210,15 +212,10 @@ print(plot_REALprob)
 hist((post_probs-post_probs[1]) / (post_probs_real-post_probs_real[1]),breaks=100)
 #hist((post_probs-post_probs[1]) - (post_probs_real-post_probs_real[1]),breaks=100)
 
-# log(P(p)) - log(P(p_max)) : pdf normalized to 1 at the maximum 
+dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
+filepath <- file.path(plotPath, paste0('sampled_xs_MVNprob.png'))
+ggsave(filepath, plot_MVNprob, width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
 
-#dmvn(t(allParsets[1:length(finalPars),]),
-
-#test <- as.vector(finalPars)
-#test <- test + runif(length(test),-0.001,0.001)
-#dmvn(test,
-#					mu=finalPars,
-#					sigma = finalParCovmat,
-#					log = TRUE,
-#					ncores = 1,
-#					isChol = FALSE)
+dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
+filepath <- file.path(plotPath, paste0('sampled_xs_REALprob.png'))
+ggsave(filepath, plot_REALprob, width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)

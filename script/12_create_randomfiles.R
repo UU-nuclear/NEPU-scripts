@@ -38,7 +38,7 @@ overwrite <- TRUE
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-extNeedsDt <- read_object(2, "extNeedsDt")
+#extNeedsDt <- read_object(2, "extNeedsDt")
 optParamDt <- read_object(10, "optParamDt")
 needsDt <- read_object(1, "needsDt")
 optGpDt <- read_object(6, "optGpDt")
@@ -62,7 +62,7 @@ stopifnot(dir.create(file.path(savePathTalys,"12"), showWarnings=TRUE))
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # define objects to be returned
-outputObjectNames <- c("allParsets", "allResults","allParamDt")
+outputObjectNames <- c("allParsets", "allResults","allParamDt","extNeedsDt")
 check_output_objects(scriptnr, outputObjectNames)
 
 # something does not add up with the parameter transformation
