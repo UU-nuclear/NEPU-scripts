@@ -81,7 +81,7 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
   #print("...done!")
 
   #print("str(J)")
-  print(str(J))
+  #print(str(J))
   #print(paste("length(pref) =",length(pref)))
 
   dpriorRef <- pref - p0

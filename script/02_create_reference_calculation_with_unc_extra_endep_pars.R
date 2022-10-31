@@ -101,8 +101,10 @@ if (length(idcsToRemove) > 0)
     adjParList <- adjParList[-idcsToRemove]
 
 # add the energy dependent parameter specifications
-endepParnames <- expand.grid(tmpPar,'(',energyGridForParams,') ', tmpProj) 
-endepParnames <- do.call(paste0, endepParnames)
+# endepParnames <- expand.grid(tmpPar,'(',energyGridForParams,') ', tmpProj) 
+# endepParnames <- do.call(paste0, endepParnames)
+endepParnames <- paste0(rep(enParDt[,par],each=length(energyGridForParams)),"(",energyGridForParams,")",rep(enParDt[,proj],each=length(energyGridForParams)))
+
 endepInpList <- as.list(rep(1, length(endepParnames)))
 names(endepInpList) <- endepParnames
 
@@ -125,7 +127,7 @@ refParamDt <- refParamDt[! PARNAME %in% c("projectile", "element", "mass")]
 # are considered as adjustable
 refParamDt[, ADJUSTABLE := grepl("adjust", PARNAME)]
 #refParamDt[ADJUSTABLE == TRUE, PARUNC := unlist(PARVAL)*0.1]
-refParamDt[ADJUSTABLE == TRUE, PARUNC := NA]
+refParamDt[ADJUSTABLE == TRUE, PARUNC := NA_real_]
 
 # set the prior parameter uncertainties according to Nuclear Data Sheets 113 (2012) 2841–2934
 # multiplied with a factor (here 2) and maximum prior uncertainty 0.5
@@ -143,9 +145,10 @@ for(i in 1:nrow(par_unc)) {
     # unc <- min(unc,0.8) 
     if(is.na(particle)) {
         refParamDt[grepl(name,refParamDt$PARNAME),PARUNC := min(unc,0.5)]
-        cat(name," : ",unc,"\n")
+        #cat(name," : ",unc,"\n")
     } else {
         refParamDt[grepl(name,refParamDt$PARNAME) & stri_sub(refParamDt$PARNAME,-1)==particle ,PARUNC := min(unc,0.5)]
+        #cat(name," : ",particle," : ",unc,"\n")
     }
 }
 

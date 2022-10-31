@@ -74,7 +74,7 @@ curSysDt[, ADJUSTABLE := FALSE]
 gpHandler <- createSysCompGPHandler()
 parnames_endep <- unique(curSysDt[ERRTYPE == "talyspar_endep", EXPID])
 for (curParname in parnames_endep) {
-    gpHandler$addGP(curParname, 0.5, 3, 1e-4)
+    gpHandler$addGP(curParname, 0.5*curSysDt[EXPID==curParname,UNC][1], 10, 1e-4)
 }
 
 # create a mapping matrix from the model output
@@ -137,19 +137,18 @@ stopifnot(gpDt[PARNAME=="sigma"]$EXPID == tmp$EXPID)
 setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- tmp$UNC
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1*tmp$UNC
 lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3
 lowerLims <- lowerLims[gpDt$ADJUSTABLE]
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.50000
-#upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 5
-upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- tmp$UNC
+upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 200
 upperLims <- upperLims[gpDt$ADJUSTABLE]
 
 # initial configuration
 #initPars <- lowerLims + runif(length(lowerLims)) * abs(upperLims - lowerLims)
 initPars <- rep(NA_real_, nrow(gpDt))
-initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- tmp$UNC
-initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 6
+initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5*tmp$UNC
+initPars[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 10
 initPars <- initPars[gpDt$ADJUSTABLE]
 #initPars <- upperLims
 
@@ -178,6 +177,7 @@ newDts <- optfuns$getModifiedDts(optRes$par)
 optExpDt <- newDts$expDt
 optSysDt <- newDts$sysDt
 optGpDt <- newDts$gpDt
+optGpDt <- optGpDt[order(IDX)]
 optGpDt[ADJUSTABLE==TRUE,INITVAL:=initPars]
 
 # save the needed files for reference
