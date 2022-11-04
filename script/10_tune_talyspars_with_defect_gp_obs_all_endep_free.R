@@ -137,8 +137,7 @@ for( i in 1:nrow(parRanges) ) {
 # the ranges of the parameters are the ones specified in the TALYS manual
 paramTrafo <- parameterTransform(
                   x0 = unlist(optParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = optParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = optParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = optParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 # define the default parameters
 # the ADJUST column in optParamDt determines whether the 

@@ -67,51 +67,44 @@ for( i in 1:nrow(parRanges) ) {
 # the ranges of the parameters are the ones specified in the TALYS manual
 paramTrafo <- parameterTransform(
                   x0 = unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = refParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = refParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
-# sanity check: are all parameters within the restricted
-# range allowed by the transformation
-# (check near end in config.R for details about the transformation)
-trafoPars <- paramTrafo$invfun(refParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)])
-origPars <- paramTrafo$fun(trafoPars)
-stopifnot(all.equal(refParamDt[ADJUSTABLE==TRUE, unlist(PARVAL)], origPars))
-
-# create the inputs for the calculation of the Jacobian (aka sensitivity matrix)
-# Note concerning parameter transformation: values in refParamDt are assumed to
-# be in the original parameter space. Also generated input lists in jacInputsDt
-# contain untransformed parameters. However, the eps specification refers to 
-# adjustments in the transformed! parameter space
-if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
-#jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff, trafo = paramTrafo)
-jacInputsDt <- createInputsForJacobian(refParamDt, extNeedsDt, eps = talys_finite_diff)
-# for now I simply neglect that there is a difference between 
-# paramTrafo$fun(paramTrafo$invfun(x) + talys_finite_diff) and
-# x + talys_finite_diff
-# for a talys_finite_diff = 0.1 the difference betwen the above is only
-# in the order of 1e-16, so it should not make much difference
-# this means I don't even need the parameter transformation here
-
-
-###############################
-# perform the calculation
-##############################
-
+# We let the talys_wrapper take care of creating the jacobian
 talysHnds <- createTalysHandlers()
-talysHnd <- talysHnds$talysHnd
+talys <- talysHnds$talysOptHnd
 
-runObj <- talysHnd$run(jacInputsDt$inputs, jacInputsDt$outspecs)
-# save the information about the job for 
-# later recovery if something goes wrong
-save_output_objects(scriptnr, "runObj", overwrite)
+talys$setPars(refParamDt)
+# the optimization will be undertaken using transformed
+# TALYS parameters to make sure that parameters remain
+# within given limits. paramTrafo is defined in config.R
+talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
+# define the required predictions from TALYS in order to
+# map to the grid of the experimental data given in EXFOR
+talys$setNeeds(extNeedsDt)
+# the finite difference used to calculate numerically the
+# Jacobian matrix
+if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
+talys$setEps(talys_finite_diff)
 
+# now we perform the calculation of the Jacobian (aka sensitivity matrix).
+# Note concerning parameter transformation: values in refParamDt are assumed to
+# be in the original parameter space. 
+# we have two parameter spaces:
+# internal: as seen by the LM algorithm, these parameters are not limited 
+#           and may take on any real value in +-inf
+# external: as seen by talys, these parameters are limited by the transformation
+#           to the interval p0 +- delta, where p0 is the prior expectation.
+# The talys_wrapper transforms the values given to it into the external parameter
+# space before doing any talys calculation. ( Note that the transformation is
+# constructed so that p_int = p_ext when the parameters are at their prior
+# expectation values p0.) 
+# talys$jac() with returnDt=TRUE will return a data table with the
+# results in the external parameter space. In order to get it in the internal
+# parameter space it needs to be mulitplied with paramTrafo$jac(p_int)
 cat("Started calculations at", as.character(Sys.time()), "\n")
-jacRes <- talysHnd$result(runObj)
+fullSensDt <- talys$jac(unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL]),returnDt=TRUE)
 cat("Finished calculations at", as.character(Sys.time()), "\n")
-#talysHnds$clustHnd$closeCon()
-
-jacInputsDt$outspecs <- lapply(jacRes, function(x) x$result)
-fullSensDt <- computeJacobian(jacInputsDt, drop0=TRUE)
 
 # save the needed files for reference
 save_output_objects(scriptnr, outputObjectNames, overwrite)
+

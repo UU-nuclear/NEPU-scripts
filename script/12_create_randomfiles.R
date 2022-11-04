@@ -182,10 +182,9 @@ for( i in 1:nrow(parRanges) ) {
 
 # set the parameter transformation to be centered at the prior mean/mode
 # the ranges of the parameters are the ones specified in the TALYS manual
-paramTrafoFull <- parameterTransform(
+paramTrafo <- parameterTransform(
                   x0 = unlist(allParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = allParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = allParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = allParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 #############################################################################
 # extend the finalPars and finalParCovmat to the extended parameter set
@@ -327,8 +326,7 @@ for( i in 1:nrow(parRanges) ) {
 # the ranges of the parameters are the ones specified in the TALYS manual
 paramTrafo <- parameterTransform(
                   x0 = unlist(allParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = allParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = allParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = allParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 # save the sampled parameters in a human readable data table
 allParamDt[ADJUSTABLE == TRUE, POST_MODE := paramTrafo$fun(optParset)]

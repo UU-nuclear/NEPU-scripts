@@ -73,8 +73,7 @@ for( i in 1:nrow(parRanges) ) {
 # the ranges of the parameters are the ones specified in the TALYS manual
 paramTrafo <- parameterTransform(
                   x0 = unlist(optParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = optParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = optParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = optParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 # see step 07_tune_talyspars.R for more explanation
 # about setting up the talys handler
@@ -194,10 +193,9 @@ for( i in 1:nrow(parRanges) ) {
 
 # set the parameter transformation to be centered at the prior mean/mode
 # the ranges of the parameters are the ones specified in the TALYS manual
-paramTrafoFull <- parameterTransform(
+paramTrafo <- parameterTransform(
                   x0 = unlist(finalParamDt[ADJUSTABLE==TRUE,PARVAL]),
-                  x_min = finalParamDt[ADJUSTABLE==TRUE,PARMIN],
-                  x_max = finalParamDt[ADJUSTABLE==TRUE,PARMAX])
+                  delta = finalParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 
 finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafoFull$fun(finalPars)]
