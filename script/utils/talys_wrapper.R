@@ -201,7 +201,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
     }
   }
 
-  jac <- function(x, applySexp = TRUE) {
+  jac <- function(x, applySexp = TRUE, returnDt = FALSE) {
 
     stopifnot(is.numeric(x))
 
@@ -226,6 +226,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
       jacRes <- talysClust$result(jacCalcJobs)
       jacInputsDt$outspecs <- lapply(jacRes, function(x) x$result)
       SparDt <- computeJacobian(jacInputsDt, drop0 = TRUE)
+      if(returnDt) return(SparDt)
       jacmat <- SparDt[, sparseMatrix(i = IDX1, j = IDX2, x = X, dims = c(numNeeds, numPars))]
       setkey(thisParamDt, IDX)
       jacmat <- jacmat[, thisParamDt$ADJUSTABLE==TRUE, drop=FALSE]
