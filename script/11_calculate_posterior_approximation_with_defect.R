@@ -198,7 +198,7 @@ paramTrafo <- parameterTransform(
                   delta = finalParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 
-finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafoFull$fun(finalPars)]
+finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafo$fun(finalPars)]
 # IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
 finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
 

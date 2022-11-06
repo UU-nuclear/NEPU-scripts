@@ -125,7 +125,7 @@ createMLOptimFuns <- function() {
     stopifnot(length(x) == length(this$idxSetStat) + length(this$idxSetSys) + length(this$idxSetGp))
     
     D <- this$D
-    if(length(x[this$idxSetStat])) { # we need to update exp. stat unc
+    if(length(this$idxSetStat)) { # we need to update exp. stat unc
       expDt <- copy(this$expDt)
       setkey(expDt, IDX)
       expDt[J(this$statUncIdx), UNC := x[this$idxSetStat]]

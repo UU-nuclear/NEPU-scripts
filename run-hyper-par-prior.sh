@@ -5,28 +5,28 @@
 #        $3 = the pipeline configuration file
 
 apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf will mount this directory in the container
-apptainer exec instance://pipeline-inst start_EXFOR_mongoDB.sh $2
-echo "**********************************************************************"
-echo "*                        step01                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst Rscript --vanilla script/01_prepare_experimental_data.R $3
-echo "**********************************************************************"
-echo "*                        step02                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/02_create_reference_calculation_with_unc_extra_endep_pars.R $3
-echo "**********************************************************************"
-echo "*                        step03                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst Rscript --vanilla script/03_extract_experimental_uncertainties.R $3
-
-echo "**********************************************************************"
-echo "*                        step04                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst Rscript --vanilla script/04_tune_experimental_uncertainties_new.R $3
-echo "**********************************************************************"
-echo "*                        step05                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/05_create_reference_jacobian_mpi.R $3
+# apptainer exec instance://pipeline-inst start_EXFOR_mongoDB.sh $2
+# echo "**********************************************************************"
+# echo "*                        step01                                      *"
+# echo "**********************************************************************"
+# apptainer exec instance://pipeline-inst Rscript --vanilla script/01_prepare_experimental_data.R $3
+# echo "**********************************************************************"
+# echo "*                        step02                                      *"
+# echo "**********************************************************************"
+# apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/02_create_reference_calculation_with_unc_extra_endep_pars.R $3
+# echo "**********************************************************************"
+# echo "*                        step03                                      *"
+# echo "**********************************************************************"
+# apptainer exec instance://pipeline-inst Rscript --vanilla script/03_extract_experimental_uncertainties.R $3
+# 
+# echo "**********************************************************************"
+# echo "*                        step04                                      *"
+# echo "**********************************************************************"
+# apptainer exec instance://pipeline-inst Rscript --vanilla script/04_tune_experimental_uncertainties_new.R $3
+# echo "**********************************************************************"
+# echo "*                        step05                                      *"
+# echo "**********************************************************************"
+# apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/05_create_reference_jacobian_mpi.R $3
 
 echo "**********************************************************************"
 echo "*                        step06                                      *"
