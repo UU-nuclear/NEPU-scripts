@@ -28,19 +28,19 @@ apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf wil
 # echo "**********************************************************************"
 # apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/05_create_reference_jacobian_mpi.R $3
 
-echo "**********************************************************************"
-echo "*                        step06                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst Rscript --vanilla script/06_tune_endep_hyperpars_with_prior.R $3
-echo "**********************************************************************"
-echo "*                        step07                                      *"
-echo "**********************************************************************"
-#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_tune_talyspars.R $3
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_tune_talyspars_all_endep_free.R $3
-echo "**********************************************************************"
-echo "*                        step07.5                                    *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_5_addGPobs.R $3
+#echo "**********************************************************************"
+#echo "*                        step06                                      *"
+#echo "**********************************************************************"
+#apptainer exec instance://pipeline-inst Rscript --vanilla script/06_tune_endep_hyperpars_with_prior.R $3
+#echo "**********************************************************************"
+#echo "*                        step07                                      *"
+#echo "**********************************************************************"
+##apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_tune_talyspars.R $3
+#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_tune_talyspars_all_endep_free.R $3
+#echo "**********************************************************************"
+#echo "*                        step07.5                                    *"
+#echo "**********************************************************************"
+#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07_5_addGPobs.R $3
 #echo "**********************************************************************"
 #echo "*                        step08                                      *"
 #echo "**********************************************************************"
@@ -50,11 +50,11 @@ apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/07
 #echo "*                        step09                                      *"
 #echo "**********************************************************************"
 #apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/09_create_randomfiles_mpi.R $3
-echo "**********************************************************************"
-echo "*                        step10                                      *"
-echo "**********************************************************************"
-#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect.R $3
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect_gp_obs_all_endep_free.R $3
+#echo "**********************************************************************"
+#echo "*                        step10                                      *"
+#echo "**********************************************************************"
+##apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect.R $3
+#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect_gp_obs_all_endep_free.R $3
 echo "**********************************************************************"
 echo "*                        step11                                      *"
 echo "**********************************************************************"
