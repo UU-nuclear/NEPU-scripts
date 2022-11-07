@@ -55,10 +55,10 @@ apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf wil
 #echo "**********************************************************************"
 ##apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect.R $3
 #apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/10_tune_talyspars_with_defect_gp_obs_all_endep_free.R $3
-echo "**********************************************************************"
-echo "*                        step11                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/11_calculate_posterior_approximation_with_defect.R $3
+#echo "**********************************************************************"
+#echo "*                        step11                                      *"
+#echo "**********************************************************************"
+#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script/11_calculate_posterior_approximation_with_defect.R $3
 
 echo "**********************************************************************"
 echo "*                        step12                                      *"

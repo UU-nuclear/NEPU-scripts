@@ -18,12 +18,20 @@ library(latex2exp)
 outdataPathRun <- outdataPath
 plotPath <- paste0(outdataPathRun, "/plots")
 
-
+#finalParamDt <- read_object(11, "finalParamDt", outdata_path = outdataPathRun)
 finalPars <- read_object(11, "finalPars", outdata_path = outdataPathRun)
 finalParCovmat <- read_object(11, "finalParCovmat", outdata_path = outdataPathRun)
 optSysDt_allpars <- read_object(07, "optSysDt_allpars", outdata_path = outdataPathRun) # all parameters
 optParamDt <- read_object(07,"optParamDt")
 optGpDt <- read_object(06,"optGpDt")
+optSysDt_allpars <- read_object(10, "optSysDt_allpars")
+finalParamDt <- copy(optParamDt)
+finalParamDt[PARNAME %in% optSysDt_allpars$PARNAME, ADJUSTABLE:=TRUE]
+
+
+paramTrafo <- parameterTransform(
+                  x0 = unlist(finalParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  delta = finalParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 plotDt <- copy(optSysDt_allpars)
 setkey(plotDt, IDX)
@@ -56,6 +64,12 @@ for(exp_id in GPsigmas$EXPID) { # add the values to the EXPIDs so they will be p
 # sort the EXPIDs according to uncertainty
 expid_order <- order(plotDt[,abs(DATAMAX-DATAMIN)])
 plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), ordered=TRUE)
+
+# sort the EXPIDs according to uncertainty
+#expid_order <- order(plotDt_adjustables[,abs(DATAMAX-DATAMIN)])
+expid_order <- order(plotDt_adjustables[,abs(DATA-1)],decreasing = TRUE)
+plotDt_adjustables$EXPID <- factor(plotDt_adjustables$EXPID, levels=unique(plotDt_adjustables$EXPID[expid_order]), ordered=TRUE)
+
 ###########################################
 #    ENERGY-DEPENDENT PARAMETERS
 ###########################################
@@ -63,7 +77,7 @@ plotDt$EXPID <- factor(plotDt$EXPID, levels=unique(plotDt$EXPID[expid_order]), o
 ggp1 <- ggplot(data=plotDt_adjustables[ERRTYPE=='talyspar_endep'])
 ggp1 <- ggp1 + theme_bw()
 ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,50,5),minor_breaks=seq(0,50,1))
-ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
+#ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
 ggp1 <- ggp1 + theme(axis.text=element_text(size=10),
                    axis.title=element_text(size=10),
                    plot.title=element_text(size=10))
@@ -74,8 +88,8 @@ ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PA
 ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.pdf')
-ggsave(filepath, ggp1, width = 29.7, height = 21.0*2/3., units = "cm", dpi = 300)
+filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.png')
+ggsave(filepath, ggp1, width = 29.7, height = 21.0, units = "cm", dpi = 300)
 #ggsave(filepath, ggp1, width = 20, height = 21.0, units = "cm", dpi = 300)
 #ggsave(filepath, ggp1)
 
@@ -116,20 +130,3 @@ ggp2 <- ggp2 + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 ggsave(file.path(plotPath, 'posterior_pars_with_gp_obs.png'), ggp2,
        units='cm', width=8.65, height=12, dpi=300)
-
-tmpDt <- plotDt_adjustables[grepl("v1adjust\\(.+\\) p",PARNAME)]
-ggp1 <- ggplot(data=tmpDt)
-ggp1 <- ggp1 + theme_bw()
-ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,50,5),minor_breaks=seq(0,50,1))
-ggp1 <- ggp1 + scale_y_continuous(breaks=seq(0.5,1.5,0.5),minor_breaks=seq(0.5,1.5,0.1),limits=c(0.5,1.5))
-ggp1 <- ggp1 + theme(axis.text=element_text(size=20),
-                   axis.title=element_text(size=25),
-                   plot.title=element_text(size=10))
-ggp1 <- ggp1 + xlab('energy (MeV)') + ylab('parameter value')
-ggp1 <- ggp1 + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
-ggp1 <- ggp1 + geom_line(aes(x=EN, y=DATA))
-ggp1 <- ggp1 + geom_point(aes(x=EN, y=DATA))
-ggp1
-
-filepath <- file.path(plotPath, 'endep_parameter_v1adjust_p.pdf')
-ggsave(filepath, ggp1, width = 29.7, height = 21.0*0.5, units = "cm", dpi = 300)
