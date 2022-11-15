@@ -12,10 +12,11 @@
 # parameterTransform expects vectors x0, x_min, x_max, each of the same
 # length as the number of parameters holding the limits of the corresponding
 # parameter
-
-erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-
-erfinv <- function (x) qnorm((1 + x)/2)/sqrt(2)
+# 
+# erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+# 
+# erfinv <- function (x) qnorm((1 + x)/2)/sqrt(2)
+#
 
 transFunc <- function(x, x0, delta) {
   x0 + delta*(2*pnorm((x-x0)/delta) - 1)

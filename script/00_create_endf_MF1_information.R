@@ -11,18 +11,14 @@ library(stargazer)
 #       SCRIPT Setup
 ##################################################
 
+
 args = commandArgs(trailingOnly=TRUE)
-defaultConfig <- "config.R"
 
-
-if (length(args)==0) {
-  source(defaultConfig)
-  print(paste0("No config file supplied, using default file: ", defaultConfig))
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if(length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
+} else if (length(args) > 1) {
+  stop("Script only accepts one argument.", call.=FALSE)
 }
 
 
@@ -30,7 +26,7 @@ if (length(args)==0) {
 #       SCRIPT PARAMETERS
 ##################################################
 
-scriptnr <- 8L
+scriptnr <- 0L
 overwrite <- FALSE
 
 ##################################################
@@ -40,8 +36,10 @@ overwrite <- FALSE
 optExpDt <- read_object(6, "optExpDt")
 optSysDt_optpars <- read_object(7, "optSysDt_optpars")
 optSysDt_allpars <- read_object(7, "optSysDt_allpars")
-finalPars <- read_object(8, "finalPars")
-finalParCovmat <- read_object(8, "finalParCovmat")
+optParamDt <- read_object(10, "optParamDt")
+finalPars <- read_object(11, "finalPars")
+finalParCovmat <- read_object(11, "finalParCovmat")
+finalParamDt <- read_object(11, "finalParamDt")
 ##################################################
 #       START OF SCRIPT
 ##################################################
@@ -74,9 +72,10 @@ stargazer(reacNumDt, type = "text", digit.separator="",  summary=FALSE, rownames
 
 exforAccesNumsTab <- file.path(genTablesPath, "exforAccesNumsTab.txt")
 
-exforAccesNums <- optExpDt[, as.numeric(unique(EXPID))]
-exforAccesNumsMat <- matrix(data=exforAccesNums, nrow=24, ncol = 4)
-
+exforAccesNums <- optExpDt[, unique(EXPID)]
+# pad exforAccesNums with " " so that its length is divisible by 4
+exforAccesNums <- c(exforAccesNums,rep(" ", 4*ceiling(length(exforAccesNums)/4) - length(exforAccesNums)))
+exforAccesNumsMat <- matrix(data=exforAccesNums, ncol = 4, byrow=TRUE)
 
 stargazer(exforAccesNumsMat, type = "text", digit.separator="",  summary=FALSE, rownames=FALSE, out = exforAccesNumsTab)
 
@@ -87,22 +86,20 @@ stargazer(exforAccesNumsMat, type = "text", digit.separator="",  summary=FALSE, 
 paramtxt <- file.path(pilelineInfoPath, "paramtxt.txt")
 paramTab <- file.path(genTablesPath, "paramTab.txt")
 
-finalParamDt <- optSysDt_allpars
-finalParamDt[,ADJUSTABLE:=FALSE]
-optpars_indices <- optSysDt_optpars[, sort(IDX)]
-finalParamDt[IDX %in% optpars_indices, ADJUSTABLE:=TRUE]
-finalParamDt[, DATA := finalPars]
-finalParamDt[, POSTUNC := sqrt(diag(finalParCovmat))]
+UpdtUnc <- paste0("[+",signif(finalParamDt[ADJUSTABLE==TRUE,POSTUNC_UP],2),
+                    ",-",signif(finalParamDt[ADJUSTABLE==TRUE,POSTUNC_Low],2),"]")
+
+finalParamDt[,ADJUSTABLE:=optParamDt[,ADJUSTABLE]]
 
 paramDt <- finalParamDt[IDX > 2, 
                         data.table("Name"=unlist(PARNAME), 
-                                   "Prior"=unlist(REFDATA),
-                                   "PriorUnc"=unlist(UNC), 
-                                   "Updt"=unlist(DATA), 
-                                   "UpdtUnc"=unlist(POSTUNC), 
+                                   "Prior"=unlist(PARVAL),
+                                   "PriorUnc"=unlist(PARUNC), 
+                                   "Updt"=unlist(POSTVAL), 
+                                   "UpdtUnc"=UpdtUnc, 
                                    "ADJUSTABLE"=unlist(ADJUSTABLE))
                         ]
-cols <- c("Prior","PriorUnc","Updt","UpdtUnc")
+cols <- c("Prior","PriorUnc","Updt")
 paramDt[,(cols) := signif(.SD,4) , .SDcols=cols]
 paramAdjDt <- paramDt[ADJUSTABLE==TRUE]
 paramAdjDt <- paramDt[, "Adjust." := ifelse(ADJUSTABLE==TRUE, "LM", "POSTUPDT")]

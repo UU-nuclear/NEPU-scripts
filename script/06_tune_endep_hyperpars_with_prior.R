@@ -216,7 +216,7 @@ priorExpectation[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
 
 priorUnc <- rep(NA_real_, nrow(gpDt))
 priorUnc[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.5*gpDt[ADJUSTABLE==TRUE & PARNAME=="sigma",PARUNC]
-priorUnc[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50/3
+priorUnc[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 50
 
 #########################
 
