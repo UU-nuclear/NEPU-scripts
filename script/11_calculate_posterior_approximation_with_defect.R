@@ -59,7 +59,7 @@ optSysDt_optpars <- read_object(10, "optSysDt_optpars")
 
 # define objects to be returned
 outputObjectNames <- c("variationMat", "variationMatRes", 
-                       "finalPars", "finalParCovmat")
+                       "finalPars", "finalParCovmat","finalParamDt")
 check_output_objects(scriptnr, outputObjectNames)
 
 # create the parameter transformation object
@@ -200,7 +200,15 @@ paramTrafo <- parameterTransform(
 
 finalParamDt[ADJUSTABLE == TRUE, POSTVAL := paramTrafo$fun(finalPars)]
 # IMPORTANT NOTE: POSTUNC is still with respect to transformed parameters
-finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
+#finalParamDt[ADJUSTABLE == TRUE, POSTUNC := sqrt(diag(finalParCovmat))]
+par_unc_int <- sqrt(diag(finalParCovmat))
+par_min_int <- finalPars-par_unc_int
+par_max_int <- finalPars+par_unc_int
+par_min_ext <- paramTrafo$fun(par_min_int)
+par_max_ext <- paramTrafo$fun(par_max_int)
+
+finalParamDt[ADJUSTABLE==TRUE,POSTUNC_Low := POSTVAL - par_min_ext]
+finalParamDt[ADJUSTABLE==TRUE,POSTUNC_UP := par_max_ext - POSTVAL]
 
 # sanity check:
 # make sure that the results obtained by the two different

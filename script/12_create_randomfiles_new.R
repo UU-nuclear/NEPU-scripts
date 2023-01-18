@@ -58,7 +58,8 @@ print("-----------------------------------------------------")
 # before we do anything;
 # check that we can create the directory pointed to by savePathTalys
 # and that it does not already exists, to prevent overwriting stuff
-stopifnot(dir.create(file.path(savePathTalys,"12"), showWarnings=TRUE))
+savePathTalys <- file.path(savePathTalys,"12")
+stopifnot(dir.create(savePathTalys), showWarnings=TRUE)
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # define objects to be returned
@@ -239,6 +240,8 @@ print("sampling the optimized parameters...")
 # first sample the optimized parameters from the posterior mean & covariance matrix
 #opt_par_samples <- sample_mvn(numTalysFiles,finalPars,finalParCovmat) # this takes some time (few seconds)
 
+if(!exists("numTalysParSamples")) numTalysParSamples <- numTalysFiles
+
 # set the seed for the random number generator
 # to have a reproducible creation of TALYS parameter sets
 set.seed(talysFilesSeed)
@@ -246,7 +249,7 @@ nbr_cores_for_rmvn <- min(detectCores(),32)
 print(paste0("number of cores used for rmvn: ",nbr_cores_for_rmvn," | talysFilesSeed = ", talysFilesSeed))
 
 chol_finalParCovmat <- chol(finalParCovmat)
-opt_par_samples <- t(as.matrix(rmvn(numTalysFiles, finalPars, chol_finalParCovmat, ncores = nbr_cores_for_rmvn, isChol = TRUE)))
+opt_par_samples <- t(as.matrix(rmvn(numTalysParSamples, finalPars, chol_finalParCovmat, ncores = nbr_cores_for_rmvn, isChol = TRUE)))
 print("...done!")
 
 
@@ -255,7 +258,7 @@ print("...done!")
 # of the optimized parameter vector
 print("sampling the extra parameters...")
 chol_P1_ext_ext <- chol(P1_ext_ext)
-ext_par_samples <- t(as.matrix(rmvn(numTalysFiles, rep(0,length(p0_extra)), chol_P1_ext_ext, ncores = nbr_cores_for_rmvn, isChol = TRUE)))
+ext_par_samples <- t(as.matrix(rmvn(numTalysParSamples, rep(0,length(p0_extra)), chol_P1_ext_ext, ncores = nbr_cores_for_rmvn, isChol = TRUE)))
 print("...done!")
 
 # define function to calculate the the conditional mean for each
@@ -282,7 +285,7 @@ variedParsets <- rbind(opt_par_samples,ext_par_samples)
 optParset <- rbind(finalPars,ext_pars_mean)
 
 # bind together the 'best estimate' and the samples for the TALYS calculation
-allParsets <- cbind(optParset, variedParsets)
+allParsets <- cbind(optParset, variedParsets[,1:numTalysFiles])
 
 # perform calculations and save the result
 #talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
@@ -298,9 +301,13 @@ talys$setMask(mask)
 if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
 talys$setEps(talys_finite_diff)
  
-print("performing talys calculations...")
+
+cat("ncol(allParsets) = ",ncol(allParsets),"\n")
+cat("nrow(allParsets) = ",nrow(allParsets),"\n")
+
+cat("Started calculations at", as.character(Sys.time()), "\n")  
 allResults <- talys$fun(allParsets, applySexp = FALSE, ret.dt=FALSE, saveDir = savePathTalys)
-print("...done!")
+cat("Finished calculations at", as.character(Sys.time()), "\n")
 # 
 
 # # save the needed files for reference

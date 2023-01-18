@@ -138,7 +138,8 @@ talysFilesSeed <- 13
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
 # pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
 # pathTalys <-paste0("/tmp/talysResults")
-pathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior"
+#pathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior"
+pathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid"
 savePathTalys <- pathTalys
 
 # where to save plots produced by the scripts in eval-fe56/script/visualization
