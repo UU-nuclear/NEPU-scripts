@@ -1,8 +1,9 @@
 createLoggerLMalt <- function(saveDir) {
 
-	function(buf) {
+  function(buf) {
       cat("### iteration: ", buf$iteration, "\n",
           "mu:        ", buf$mu, "\n",
+          "stepLength:        ", buf$stepLength, "\n",
           "gain:      ", buf$gain, "\n",
           "Lref:      ", buf$Lref, "\n",
           "Lprop:     ", buf$Lprop, "\n",

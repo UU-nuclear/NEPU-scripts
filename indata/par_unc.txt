@@ -15,6 +15,7 @@ d2adjust,n,10
 d3adjust,n,10
 rvdadjust,n,3
 avdadjust,n,4
+awdadjust,n,10
 rvsoadjust,n,4
 avsoadjust,n,10
 vso1adjust,n,5
@@ -46,6 +47,7 @@ d2adjust,p,10
 d3adjust,p,10
 rvdadjust,p,4
 avdadjust,p,4
+awdadjust,p,10
 rvsoadjust,p,20
 avsoadjust,p,40
 vso1adjust,p,10
@@ -68,6 +70,7 @@ d2adjust,a,15
 d3adjust,a,15
 rvdadjust,a,6
 avdadjust,a,6
+awdadjust,a,30
 rvsoadjust,a,30
 avsoadjust,a,60
 vso1adjust,a,15
@@ -92,6 +95,7 @@ d2adjust,d,15
 d3adjust,d,15
 rvdadjust,d,6
 avdadjust,d,6
+awdadjust,d,30
 rvsoadjust,d,30
 avsoadjust,d,60
 vso1adjust,d,15
@@ -115,6 +119,7 @@ d2adjust,t,15
 d3adjust,t,15
 rvdadjust,t,6
 avdadjust,t,6
+awdadjust,t,30
 rvsoadjust,t,30
 avsoadjust,t,60
 vso1adjust,t,15
@@ -138,6 +143,7 @@ d2adjust,h,20
 d3adjust,h,20
 rvdadjust,h,8
 avdadjust,h,8
+awdadjust,n,50
 rvsoadjust,h,40
 avsoadjust,h,80
 vso1adjust,h,20

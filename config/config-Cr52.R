@@ -4,39 +4,30 @@
 #
 ##################################################
 
+# add a user library where we can install additional packages
+userLib <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts/R-libs-user"
+.libPaths( c( .libPaths(), userLib) )
+
 # working directory
-workdir <- "/home/alfgo462/NucDat/pipeline/eval-fe56-singularity/workdir/"
-#workdir <- "/home/alf/projects/NucDat/pipeline-local-copy/"
+workdir <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts"
 setwd(workdir)
 
-source("/opt/pipeline/eval-fe56/required_packages.R")
-source("/opt/pipeline/eval-fe56/required_sourcefiles.R")
-source(paste0(workdir,"LMalgo_parallel/altLM_logger.R"))
-library(clusterTALYSmpi)
-library(stringr)
+source("config/required_packages.R")
+source("config/required_sourcefiles.R")
 
-# temporarily place the sourcing of the clusterTALYSmpi script here
-# later on this should be installed as a package
-#source("/home/alf/programs/clusterTALYSmpi/R/clusterTALYSmpi.R")
+
+# specify the reaction(s) to extract data fromthe EXFOR data base
+# target reaction strings matching this regular expression
+reacPat <- "\\(24-CR-52\\(N,[^)]+\\)[^,]*,,SIG\\)"
 
 # should pipeline be executed with a very 
 # small number of adjustable model parameters
 # for testing purposes
 fewParameterTest <- FALSE
 
-# should TALYS calculations be performed
-# within the Docker container
-containerTest <- FALSE
-
-# a valid path on the remote machine and the
-# local machine, respectively, to store
-# result files 
-calcdir_rem <- "/TMC/alf/eval-fe56-singularity/remCalcDir"
-calcdir_loc <- paste0(workdir,"/localCalcDir")
-
 # time interval to check for completed
 # TALYS calculation in seconds
-pollTime <- 10
+pollTime <- 1
 
 # settings to retrieve EXFOR entries from
 # the MongoDb database
@@ -47,11 +38,16 @@ mongo_colname <- "entries"
 minExpEn <- 1.8
 maxExpEn <- 50
 
-# Option to specify different grid for the final random files created i step 9. 
-# For example an extrapolation from data region.
+# Specify energy grid for the final random files created in step 9.
+# The grid used during the fit is based on this one, but limited to the range of
+# the experimental data. Therefore the following must hold
+# energyGridrandomFiles[1] < minExpEn
+# energyGridrandomFiles[length(energyGridrandomFiles)] > maxExpEn
 # Note that for proper error propagation the energy dependent paramters should cover the same range.
 energyGridrandomFiles <- c(seq(0.1,1.,0.1),seq(1.2,8.0,0.2),seq(8.5,15.0,0.5),seq(16.,30,1),seq(32,60,2),seq(65,80,5),seq(90,200,10))
-energyGrid <- energyGridrandomFiles[energyGridrandomFiles>=minExpEn & energyGridrandomFiles<=maxExpEn]
+
+# moved the creation of the energy grid used in the fit to script 02, in order to limit it to where there is data
+
 
 # default threshold energy for reaction channels
 # if automatic determination fails
@@ -59,11 +55,16 @@ energyGrid <- energyGridrandomFiles[energyGridrandomFiles>=minExpEn & energyGrid
 defaultThresEn <- 1 
 
 # energy grid for energy-dependent TALYS parameters
-# theses grid points should not coincide with the low cut-off energy for experimental data
-# additionally: Observe that energy dependent parameters at E=0 is ignored by TALYS
-# instead the default value (1.0) is used below the first energy>0.
-energyGridForParams <- c(1e-6,seq(2,50,by=2))
-
+# copy energyGridrandomFiles 
+energyGridForParams <- energyGridrandomFiles
+# limit at the lowest energy
+energyGridForParams <- energyGridForParams[energyGridForParams>=minExpEn]
+# take every 3rd point for the parameters
+energyGridForParams <- energyGridForParams[seq(1,length(energyGridForParams),by=3)]
+# limit at the maximum energy, including the energy grid-point above maxExpEn
+energyGridForParams <- energyGridForParams[1:(max(which(energyGridForParams < maxExpEn))+1)]
+# add the energy at "zero" (must be a positive energy, otherwise talys ignores it)
+energyGridForParams <- c(1.e-06,energyGridForParams)
 
 # specify which paramters to make energy dependent
 # a data.frame object named enParDt containing the columns par and proj
@@ -72,28 +73,22 @@ energyGridForParams <- c(1e-6,seq(2,50,by=2))
 #           par proj
 # 1    v1adjust    n
 # 2    d1adjust    n
-tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc','av','avd','avso','aw','awso','rv','rvd','rvso','rwd','rwso'),'adjust')
+tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc','av','avd','avso','aw','awso','rv','rvd','rvso','rwd','rwso','awd'),'adjust')
 tmpProj <- c('n','p','d','t','h','a')
 enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 #enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
 
 # specification of the TALYS input file used as template
-param_template_path <- file.path(workdir,"indata/n_Fe_056.inp")
+# param_template_path <- file.path(workdir,"indata/n_Fe_056.inp")
+# I think that it should not really matter that this file is for Fe-56, only the parameters are extracted from the file
+# the target and projectile are specified sepparately
+# the input will be searched for in the indata directory, if not found there, it will be downloaded from
+# https://tendl.web.psi.ch/tendl_2019/
+# use the following keywords to specify which nuclide and projectile
+tendl_element <- "Cr"
+tendl_mass <- 52
+tendl_projectile <- "n"
 
-# instantiate the transformation used for all parameters of the form ...adjust
-# parameters are restricted to the interval (0.5, 1.5), in other words:
-# the maximal deviation from the default values is 50%
-#paramTrafo <- generateTrafo(1, 0.9, 4) 
-#paramTrafo <- generateTrafo(1, 0.5, 4) 
-
-# The new parameter transformation, just for testing now.
-# Should be integrated in the code-base later
-source("misc-scripts/ParameterTransformErf.R")
-# since the transformation depends on the order of the 
-# parameter vector (with different ranges for each par)
-# the paramTrafo object must be generated in the scripts
-# here we load a data.table that contains the ranges
-parRanges <- data.table(read.csv("indata/Talys-parameter-ranges.csv"))
 
 # optional argument to set the finite difference used by talys to calculate the Jacobian
 # default value is talys_finite_diff <- 0.01
@@ -118,7 +113,8 @@ maxitLM <- 30
 reltolLM <- 1e-5
 
 # where to save output data
-outdataPath <- file.path(workdir, "/outdata-hyperpar-prior")
+#outdataPath <- file.path(workdir, "/outdata-try1")
+outdataPath <- file.path(workdir, "/outdata-try5")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 
@@ -129,44 +125,30 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
- numTalysFiles <- 1000
+ numTalysFiles <- 300
 
-# where to store the TALYS results on the remote machine
+# where to store the TALYS results
 # content of TALYS result directories is stored as tar archives
 # needed for the creation of ENdf randomfiles using modified TASMAN
-# pathTalys <-paste0(workdir,"/talysResults")
-# pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
-# pathTalys <-paste0("/TMC/alf/eval-fe56-singularity/gp-prior-before-lm")
-# pathTalys <-paste0("/tmp/talysResults")
-#pathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior"
-pathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid"
+pathTalys <- file.path(outdataPath, "random-files")
 savePathTalys <- pathTalys
 
 # where to save plots produced by the scripts in eval-fe56/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
 
-
 createTalysHandlers <- function() {
+
+    # Initialize the talysR mpi interface
 
     # Important note: 1) TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
     #                    resides in main memory. TALYS produces many thousand files per run
     #                    and normal disks and shared file systems cannot deal with this load
     #                    so it is a good idea to store them in main memory.
-    #                 2) bindir points to the location of the runTALYSmpi program that takes care 
-    #                    of executing talys wiht the mpi-interface.
-    #                     i)   if the mpi session is invoked inside the container, for example
-    #                             singularity exec <sif-file> mpirun -np 1 Rscript --vanilla <script> <config>
-    #                          it is not necesary to provide this, since the code will find it in
-    #                          /usr/local/bin
-    #                     ii)  if the mpi session is invoked outside the container, for example
-    #                             mpirun -np 1 exec <sif-file> Rscript --vanilla <script> <config>
-    #                          runTALYSmpi must be compiled outside the container, and bindir should be 
-    #                          pointing to the location of the reulting binary
     #                 3) maxNumCPU set the number of requested talys workers. The number is an upper
     #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
     #                    the number of availible workers as given by the MPI interface.
-    runOpts <- list(TMPDIR = "/dev/shm/talysTemp",bindir = "/usr/local/bin")
-    talysHnd <- initClusterTALYSmpi(talysExe = "talys", runOpts = runOpts, maxNumCPU=0)
+    runOpts <- list(TMPDIR = "/dev/shm/talysTemp")
+    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0)
 
     # initialize an alternative TALYS handler
     talysOptHnd <- createTalysFun(talysHnd)

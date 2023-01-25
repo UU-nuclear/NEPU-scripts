@@ -139,10 +139,12 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
 
     stopifnot(is.numeric(x))
     x <- as.matrix(x)
+
     stopifnot(! (ncol(x) > 1 & ret.dt))
     trafo_x <- x
     if (!is.null(thisParTrafoFun))
       x <- thisParTrafoFun(x)
+    stopifnot(!any(is.na(x)))
     
     y <- matrix(NA_real_, nrow = nrow(thisNeedsDt), ncol = ncol(x))
     isCached <- rep(FALSE, ncol(x))
@@ -172,7 +174,6 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
       refCalcJobs <<- talysClust$run(inpList, redNeedsDt, saveDir = saveDir,
                                      calcsPerJob = 1000, runOpts=list(TMPDIR="/dev/shm/talysTemp"))
       
-      while(talysClust$isRunning(refCalcJobs, combine=TRUE)) Sys.sleep(30)
       res <- talysClust$result(refCalcJobs)
       calcIdcs <- which(!isCached)
       for (k in seq_along(calcIdcs)) {
@@ -199,9 +200,10 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
     }
   }
 
-  jac <- function(x, applySexp = TRUE) {
+  jac <- function(x, applySexp = TRUE, returnDt = FALSE) {
 
     stopifnot(is.numeric(x))
+
     trafo_x <- x
     if (!is.null(thisParTrafoJac))
       x <- thisParTrafoFun(x)
@@ -219,10 +221,10 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
         jacCalcId <<- newJacCalcId
       }
       
-      while(talysClust$isRunning(jacCalcJobs, combine=TRUE)) Sys.sleep(30)
       jacRes <- talysClust$result(jacCalcJobs)
       jacInputsDt$outspecs <- lapply(jacRes, function(x) x$result)
       SparDt <- computeJacobian(jacInputsDt, drop0 = TRUE)
+      if(returnDt) return(SparDt)
       jacmat <- SparDt[, sparseMatrix(i = IDX1, j = IDX2, x = X, dims = c(numNeeds, numPars))]
       setkey(thisParamDt, IDX)
       jacmat <- jacmat[, thisParamDt$ADJUSTABLE==TRUE, drop=FALSE]
