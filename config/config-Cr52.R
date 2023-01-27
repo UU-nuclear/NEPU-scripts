@@ -125,7 +125,7 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
- numTalysFiles <- 300
+ numTalysFiles <- 314
 
 # where to store the TALYS results
 # content of TALYS result directories is stored as tar archives

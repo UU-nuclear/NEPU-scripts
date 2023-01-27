@@ -58,13 +58,13 @@ print("-----------------------------------------------------")
 # before we do anything;
 # check that we can create the directory pointed to by savePathTalys
 # and that it does not already exists, to prevent overwriting stuff
-savePathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid-test3/12"
+#savePathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid-test3/12"
 #stopifnot(dir.create(savePathTalys), showWarnings=TRUE, recursive=TRUE)
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # where to save output data (don't overwrite the old stuff)
-outdataPath <- file.path(workdir, "outdata-hyper-par-prior-test-new-energy-grid-3")
-dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
+#outdataPath <- file.path(workdir, "outdata-hyper-par-prior-test-new-energy-grid-3")
+#dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # define objects to be returned
 outputObjectNames <- c("allParsets", "allResults","allParamDt","extNeedsDt")
@@ -122,7 +122,7 @@ energyGridForParams_extension <- c(200)
 # retrieve the names of the parameters to extend
 # add the energy dependent parameter specifications
 
-endepParname_extension <- paste0(rep(enParDt[,par],each=length(energyGridForParams_extension)),"(",energyGridForParams_extension,")",rep(enParDt[,proj],each=length(energyGridForParams_extension)))
+endepParname_extension <- paste0(rep(enParDt[,par],each=length(energyGridForParams_extension)),"(",energyGridForParams_extension,") ",rep(enParDt[,proj],each=length(energyGridForParams_extension)))
 
 
 endepInpList_extension <- as.list(rep(1, length(endepParname_extension)))

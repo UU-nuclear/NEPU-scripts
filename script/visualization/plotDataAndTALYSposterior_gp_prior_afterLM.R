@@ -16,10 +16,10 @@ library(latex2exp)
 ##################################################
 
 subents <- read_object(1, "subents")
+needsDt <- read_object(1, "needsDt")
 extNeedsDt <- read_object(2, "extNeedsDt")
 origSysDt <- read_object(4, "origSysDt")
 updSysDt <- read_object(4, "updSysDt")
-expDt <- read_object(3, "expDt")
 modDt <- read_object(3,"modDt")
 optExpDt <- read_object(7, "optExpDt")
 allResults <- read_object(12, 'allResults')
@@ -30,7 +30,11 @@ P0 <- read_object(10, "P0")
 X <- read_object(10, "X")
 SX <- read_object(10, "S0")
 
-reactions <- expDt[,unique(REAC)]
+# sort the experimental data table by recation, energy
+optExpDt <- optExpDt[order(REAC,L1)]
+optExpDt[, IDX := seq_len(.N)]
+
+reactions <- optExpDt[,unique(REAC)]
 
 normHandler <- createSysCompNormHandler("DATAREF")
 normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
@@ -38,93 +42,80 @@ normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
 sysCompHandler <- createSysCompHandler()
 sysCompHandler$addHandler(normHandler)
 
-S <- sysCompHandler$map(expDt, origSysDt, ret.mat = TRUE)
+S <- sysCompHandler$map(optExpDt, origSysDt, ret.mat = TRUE)
 origX <- sysCompHandler$cov(origSysDt, ret.mat = TRUE)
 updX <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
-statUnc <- getDt_UNC(expDt)
+statUnc <- getDt_UNC(optExpDt)
 
 origUnc <- sqrt(statUnc^2 + diag(S %*% origX %*% t(S))) 
 updUnc <- sqrt(statUnc^2 + diag(S %*% updX %*% t(S)))
 
-setkey(expDt, IDX)
-expDt[, ORIGUNC := origUnc]
-expDt[, UPDUNC := updUnc]
+setkey(optExpDt, IDX)
+optExpDt[, ORIGUNC := origUnc]
+optExpDt[, UPDUNC := updUnc]
 
 # ----------Calculate the Chi-squares -----------
-Sexp <- exforHandler$getJac(optExpDt,extNeedsDt,subents)
+RandomFilesNeedsDt <- needsDt[,{
+    stopifnot(all(L2 == 0) & all(L3 == 0))
+    list(L1 = defineEnergyGrid(L1, energyGridrandomFiles, enPolicy="compgrid"),
+         L2 = 0, L3 = 0)
+}, by=c("PROJECTILE", "ELEMENT", "MASS", "REAC")]
+RandomFilesNeedsDt[, IDX := seq_len(.N)]
+
+sampledResults <- allResults[,2:ncol(allResults)]
+
+Sexp <- exforHandler$getJac(optExpDt,RandomFilesNeedsDt,subents)
 transform_function <- function(x) { as.vector(Sexp%*%x) }
 allResults_transform <- apply(allResults,2,FUN=transform_function)
+sampledResults_transform <- allResults_transform[,2:ncol(allResults_transform)]
 
-uncinfo_transform <- cov.wt(t(allResults_transform))
-
+uncinfo_transform <- cov.wt(t(sampledResults_transform))
 model_covariance <- uncinfo_transform$cov
 model_predictions <- uncinfo_transform$center
 model_uncertainties <- sqrt(diag(model_covariance))
+optExpDt <- optExpDt[order(REAC,L1)]
+optExpDt[, FIT_MEAN := model_predictions]
 
-
-fitResult <- as.numeric(as.vector(optRes$fn))
-J <- optRes$jac
-finalPars <- optRes$par
-finalParCovmat <- optRes$parCovLM
-fit_unc <- as.vector(optRes$stdAsyFitErrLM)
-
-expDt[, FITUNC := fit_unc]
-expDt[, XSECTFIT := fitResult]
-
-D <- Diagonal(x = statUnc^2)
-P <- updX
-d <- expDt[,DATA-XSECTFIT]
-chi2_tot <- chisquare(d,D,S,P)
+optExpDt[, FIT_MODE := allResults_transform[,1]]
 
 getChi2reaction <- function(reaction_string) {
-  normHandler <- createSysCompNormHandler("DATAREF")
-  normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
-
-  sysCompHandler <- createSysCompHandler()
-  sysCompHandler$addHandler(normHandler)
-
-  reaction.expDt <- expDt[REAC==reaction_string]
+  reaction.expDt <- copy(optExpDt[REAC==reaction_string])
   reaction.expDt[, IDX := seq_len(.N)]
   reaction.stat_unc <- getDt_UNC(reaction.expDt)
   reaction.D <- Diagonal(x = reaction.stat_unc^2)
 
   reaction.S <- sysCompHandler$map(reaction.expDt, origSysDt, ret.mat = TRUE)
   reaction.P <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
-  reaction.d <- reaction.expDt[,DATA-XSECTFIT]
+  reaction.d <- reaction.expDt[,DATA-FIT_MEAN]
   chisquare(reaction.d,reaction.D,reaction.S,reaction.P)
 }
 
 getNDFreaction <- function(reaction_string) {
-  n_points <- length(expDt[REAC==reaction_string]$IDX)
+  n_points <- length(optExpDt[REAC==reaction_string]$IDX)
   n_pars <- length(optParamDt[ADJUSTABLE==TRUE]$IDX)
   #n_points - n_pars
   n_points
 }
 
 getChi2reaction_with_model_unc <- function(reaction_string) {
-  normHandler <- createSysCompNormHandler("DATAREF")
-  normHandler$addSysUnc("EXPID", "", 0, 0, TRUE)
 
-  sysCompHandler <- createSysCompHandler()
-  sysCompHandler$addHandler(normHandler)
-
-  reaction.expDt <- copy(expDt[REAC==reaction_string])
+  reaction.expDt <- copy(optExpDt[REAC==reaction_string])
   reaction.model_cov <- model_covariance[reaction.expDt$IDX,reaction.expDt$IDX]
 
   reaction.expDt[, IDX := seq_len(.N)]
-  reaction.stat_unc <- reaction.expDt$UNC # == getDt_UNC(reaction.expDt)
-  #reaction.stat_unc <- getDt_UNC(reaction.expDt)
-  #reaction.D <- Diagonal(x = reaction.stat_unc^2)
-  reaction.D <- Diagonal(x = (reaction.stat_unc^2 + reaction.expDt$FITUNC^2))
-
+  reaction.stat_unc <- getDt_UNC(reaction.expDt)
+  reaction.D <- Diagonal(x = reaction.stat_unc^2)
   reaction.S <- sysCompHandler$map(reaction.expDt, origSysDt, ret.mat = TRUE)
   reaction.P <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
-  reaction.d <- reaction.expDt[,DATA-XSECTFIT]
+  reaction.exp_cov <- reaction.S %*% reaction.P %*% t(reaction.S) + reaction.D
+
+  reaction.tot_cov <- reaction.model_cov + reaction.exp_cov
+
+  reaction.d <- reaction.expDt[,DATA-FIT_MEAN]
 
   # this should be the proper way? but cov is singular so it can't be solved
-  #t(reaction.d)%*%solve(reaction.model_cov,reaction.d) 
+  as.vector(t(reaction.d)%*%solve(reaction.tot_cov,reaction.d))
 
-   chisquare(reaction.d,reaction.D,reaction.S,reaction.P)
 }
 
 chi2dt <- data.table(reaction=reactions,
@@ -134,27 +125,27 @@ chi2dt <- data.table(reaction=reactions,
 # -------------------------------------------
 
 # create model grid for experimental data
-modSubents <- lapply(reactions, createSubentStub, en=energyGrid)
-#modSubents <- lapply(reactions, createSubentStub, en=energyGridrandomFiles)
+modSubents <- lapply(reactions, createSubentStub, en=energyGridrandomFiles)
 modDt_post <- exforHandler$extractData(modSubents, ret.values=FALSE)
-Smod <- exforHandler$getJac(modDt_post, extNeedsDt, modSubents)
+Smod <- exforHandler$getJac(modDt_post, RandomFilesNeedsDt, modSubents)
 setkey(modDt_post, IDX, DIDX)
 
 # for plotting uncertainty bands
-tmpDt <- copy(extNeedsDt)
+tmpDt <- copy(RandomFilesNeedsDt)
 setkey(tmpDt, IDX)
-uncinfo <- cov.wt(t(allResults))
+uncinfo <- cov.wt(t(sampledResults))
 tmpDt[, V1:=uncinfo$center]
 tmpDt[, UNC:=sqrt(diag(uncinfo$cov))]
 postDt <- copy(modDt_post)
 
-postDt[, DATA:=as.vector(Smod %*% tmpDt$V1)]
-postDt[, UNC:=as.vector(diag(Smod %*% diag(tmpDt$UNC) %*% t(Smod)))]
+postDt[, MEAN:=as.vector(Smod %*% uncinfo$center)]
+postDt[, UNC:=as.vector(sqrt(diag(Smod %*% diag(tmpDt$UNC^2) %*% t(Smod))))]
+postDt[, MODE:=as.vector(Smod %*% allResults[,1])]
 # --------------------------------------
 
 for (curReac in reactions) {
 
-    curExpDt <- expDt[REAC == curReac]
+    curExpDt <- optExpDt[REAC == curReac]
     curModDt <- modDt[REAC == curReac]
     curPostDt <- postDt[REAC == curReac]
 
@@ -164,7 +155,6 @@ for (curReac in reactions) {
     tex_label <- TeX(paste0(Chi2_exp_str," | ",Chi2_fit_str))
     
     ggp <- ggplot(curExpDt,aes(x = L1, y = DATA)) + theme_bw()
-    ggp <- ggp + scale_x_continuous(breaks=seq(0,30,5))
     ggp <- ggp + theme(axis.text=element_text(size=9),
                        axis.title=element_text(size=10),
                        plot.title=element_text(size=12),
@@ -178,17 +168,19 @@ for (curReac in reactions) {
     ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
 
     # plot the default TALYS model
-    ggp <- ggp + geom_line(data=curModDt[,c("L1","DATA")], aes(x = L1, y = DATA), col="red", size=0.2)
-    ggp <- ggp + geom_point(data=curModDt[,c("L1","DATA")], aes(x = L1, y = DATA), col="red", size=0.2)
+    ggp <- ggp + geom_line(data=curModDt, aes(x = L1, y = DATA), col="black", size=0.2, alpha=0.5,linetype = "dashed")
+    #ggp <- ggp + geom_point(data=curModDt[,c("L1","DATA")], aes(x = L1, y = DATA), col="red", size=0.2)
 
     # plot the model posterior
-    ggp <- ggp + geom_line(aes(x=L1, y=DATA), data=curPostDt, col="green", size=0.2)
-    ggp <- ggp + geom_ribbon(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC), alpha=0.3, data=curPostDt,fill="green")
+    ggp <- ggp + geom_line(aes(x=L1, y=MEAN), data=curPostDt, col="green", size=0.2)
+    ggp <- ggp + geom_ribbon(aes(x=L1, ymin=MEAN-UNC, ymax=MEAN+UNC, y=MEAN), data=curPostDt,fill="green",alpha=0.3)
+    ggp <- ggp + geom_line(aes(x=L1, y=MODE), data=curPostDt, col="red", size=0.2)
+    #ggp <- ggp + xlim(c(0,10))
     #ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
 
     #print(ggp)
     dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-    filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'.pdf'))
+    filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'_tmp.png'))
     ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
 }

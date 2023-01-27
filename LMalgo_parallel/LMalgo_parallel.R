@@ -44,7 +44,7 @@
 LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
                    lower = -Inf, upper = Inf, logger = NULL,
                    control = list(maxit = 10, abstol = 1e-3,
-                                  reltol = 1e-3, mu = NULL,
+                                  reltol = 1e-3, steptol = 1e-5, mu = NULL,
                                   nproc = 1, strategy = "likelihood"),
                    J = NULL
                    ) {
@@ -205,9 +205,13 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     gain <- ((Lref - Lprop_min)+1e-10) / (abs(Lref - Lprop_approx_min)+1e-10)
     #print(paste("gain = ",gain))
 
+    stepLength <- norm(as.matrix(pprops[,col_min]-pref),"f")
+    longestStep <- max(abs(pprops[,col_min]-pref)))
+
     # check break conditions
     if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
-        abs(Lprop_min - Lref) < control$abstol) {
+        abs(Lprop_min - Lref) < control$abstol ||
+        longestStep < control$steptol) {
       #print("   break condition TRUE")
       breakCounter <- breakCounter + 1
     } else {
@@ -215,12 +219,13 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       breakCounter <- 0
     }
 
-    stepLength <- norm(as.matrix(pprops[,col_min]-pref),"f")
 
     # print status information
     logBuffer <- list(iteration = i, mu = mu, gain = gain, pref = pref, fref = fref, Lref = Lref,
-                      pprop = pprops[,col_min], fprop = fprops[,col_min], Lprop = Lprop_min, fprop_approx = fprop_approx_min, Lprop_approx = Lprop_approx_min,
-                      Jref = J, p0 = p0, P0 = P0, yexp = yexp, D = D, S = S, X = X, stepLength = stepLength)
+                      pprop = pprops[,col_min], fprop = fprops[,col_min], Lprop = Lprop_min, 
+                      fprop_approx = fprop_approx_min, Lprop_approx = Lprop_approx_min,
+                      Jref = J, p0 = p0, P0 = P0, yexp = yexp, D = D, S = S, X = X, 
+                      stepLength = stepLength, longestStep = longestStep)
     
     if (is.function(logger)) logger(logBuffer)
     

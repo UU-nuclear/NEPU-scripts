@@ -57,6 +57,13 @@ optSysDt_optpars <- read_object(10, "optSysDt_optpars")
 #       START OF SCRIPT
 ##################################################
 
+# THIS SCRIPT USES UNNECASSRY COMPUTATIONAL POWER
+# the diagonal of the Hessian is calculated for the energy dependent 
+# parameter points that are not sensitive to data, but included in the
+# LM algorithm => this can be several hundred additional talys calculations
+# I added them in step7/step10 and masked them, but this mask is not used here
+# Alf, 26/01/2023
+
 # define objects to be returned
 outputObjectNames <- c("variationMat", "variationMatRes", 
                        "finalPars", "finalParCovmat","finalParamDt")
@@ -155,22 +162,28 @@ stopifnot(all(eigen(finalParCovmat)$values >= 0))
 
 # update insensitive parameters
 # not considered for optimization
+# setkey(refParamDt, IDX)
+# p0 <- unlist(refParamDt[ADJUSTABLE==TRUE, PARVAL])
+# pref <- p0
+# pref[optpars_indices] <- optRes$par
+# 
+# d0 <- pref - p0
+# d1 <- yexp - optRes$fn
+# 
+# invCexp_d1 <- mult_invCov_x(d1, D, S0, X)
+# G <- (-invP0_all %*% d0)
+# G[optpars_indices] <- G[optpars_indices] + t(Smod) %*% invCexp_d1
+# 
+# p1 <- as.matrix(pref + finalParCovmat %*% G)
+# 
+# finalPars <- p1
+# finalPars[optpars_indices] <- optRes$par
+
 setkey(refParamDt, IDX)
 p0 <- unlist(refParamDt[ADJUSTABLE==TRUE, PARVAL])
-pref <- p0
-pref[optpars_indices] <- optRes$par
-
-d0 <- pref - p0
+# p_upd is the vector of updated paramters
 d1 <- yexp - optRes$fn
-
-invCexp_d1 <- mult_invCov_x(d1, D, S0, X)
-G <- (-invP0_all %*% d0)
-G[optpars_indices] <- G[optpars_indices] + t(Smod) %*% invCexp_d1
-
-p1 <- as.matrix(pref + finalParCovmat %*% G)
-
-finalPars <- p1
-finalPars[optpars_indices] <- optRes$par
+delta_p <- mult_invCov_x(d1, D, S0, X)
 
 # IMPORTANT REMARK: 
 # If Levenberg-Marquardt did not converge sufficiently 

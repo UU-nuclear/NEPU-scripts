@@ -46,24 +46,24 @@ tmpExpDt[, fitunc2 := fitUnc_after]
 
 ggp <- ggplot(data=tmpExpDt)
 ggp <- ggp + theme_bw() + theme(legend.position="none")
-ggp <- ggp + theme(axis.text=element_text(size=9),
-                   axis.title=element_text(size=10),
-                   strip.text=element_text(size=8))
+ggp <- ggp + theme(axis.text=element_text(size=4),
+                   axis.title=element_text(size=4),
+                   strip.text=element_text(size=3))
 ggp <- ggp + xlab('enegy [MeV]') + ylab('cross section [mbarn]')
 # overlay experimental data
 ggp <- ggp + geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC, col=EXPID), data=tmpExpDt)
 ggp <- ggp + geom_point(aes(x=L1, y=DATA, col=EXPID), data=tmpExpDt, size=0.2)
 # plot the models
 
-ggp <- ggp + geom_ribbon(aes(x=L1, ymin=fit1-fitunc1, ymax=fit1+fitunc1), alpha=0.3, color="red")
-ggp <- ggp + geom_errorbar(aes(x=L1, ymin=fit1-fitunc1, ymax=fit1+fitunc1), color="red", data=tmpExpDt)
+ggp <- ggp + geom_ribbon(aes(x=L1, ymin=fit1-fitunc1, ymax=fit1+fitunc1), alpha=0.3, color="red",linewidth=0.2)
+#ggp <- ggp + geom_errorbar(aes(x=L1, ymin=fit1-fitunc1, ymax=fit1+fitunc1), color="red", data=tmpExpDt,linewidth=0.1)
 
 
-ggp <- ggp + geom_ribbon(aes(x=L1, ymin=fit2-fitunc2, ymax=fit2+fitunc2), alpha=0.3, color="green")
-ggp <- ggp + geom_errorbar(aes(x=L1, ymin=fit2-fitunc2, ymax=fit2+fitunc2), color="green", data=tmpExpDt)
+ggp <- ggp + geom_ribbon(aes(x=L1, ymin=fit2-fitunc2, ymax=fit2+fitunc2), alpha=0.3, color="green",linewidth=0.2)
+#ggp <- ggp + geom_errorbar(aes(x=L1, ymin=fit2-fitunc2, ymax=fit2+fitunc2), color="green", data=tmpExpDt,linewidth=0.1)
 
 ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
-ggsave(file.path(plotPath, 'before_and_after_gp_obs.png'), ggp, units='cm', width=17.8, height=10)
+ggsave(file.path(plotPath, 'before_and_after_gp_obs.png'), ggp, units='cm', width=29.7/3, height=21/3)
 
 ggp

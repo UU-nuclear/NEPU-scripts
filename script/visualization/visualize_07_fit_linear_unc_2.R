@@ -66,10 +66,10 @@ chi2_lm <- chisquare(tmpExpDt[,DATA-LMFIT], D, SX, X)
 
 ggp <- ggplot(data=tmpExpDt)
 ggp <- ggp + theme_bw() + theme(legend.position="none")
-ggp <- ggp + theme(axis.text=element_text(size=9),
-                   axis.title=element_text(size=10),
-                   strip.text=element_text(size=8))
-ggp <- ggp + xlab('enegy [MeV]') + ylab('cross section [mbarn]')
+ggp <- ggp + theme(axis.text=element_text(size=4),
+                   axis.title=element_text(size=4),
+                   strip.text=element_text(size=3))
+ggp <- ggp + xlab('energy (MeV)') + ylab('cross section (mbarn)')
 # overlay experimental data
 ggp <- ggp + geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC, col=EXPID), data=tmpExpDt, size=0.2)
 ggp <- ggp + geom_point(aes(x=L1, y=DATA, col=EXPID), data=tmpExpDt, size=0.1)
@@ -82,10 +82,10 @@ ggp <- ggp + geom_ribbon(aes(x=L1, ymin=LMFIT-LMUNC, ymax=LMFIT+LMUNC), alpha=0.
 #ggp <- ggp + geom_point(aes(x=L1, y=LMFIT), size=0.01)
 #ggp <- ggp + geom_errorbar(aes(x=L1, ymin=LMFIT-LMUNC, ymax=LMFIT+LMUNC), alpha=0.2)
 #ggp <- ggp + geom_ribbon(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC), alpha=0.3)
-ggp <- ggp + facet_wrap(~REAC, scales='free_y')
+ggp <- ggp + facet_wrap(~REAC, scales='free')
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=17.8, height=10)
+ggsave(file.path(plotPath, 'plot_posterior_xs.png'), ggp, units='cm', width=29.7/3, height=21/3)
 
 
 
