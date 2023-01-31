@@ -44,7 +44,7 @@
 LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
                    lower = -Inf, upper = Inf, logger = NULL,
                    control = list(maxit = 10, abstol = 1e-3,
-                                  reltol = 1e-3, steptol = 1e-5, mu = NULL,
+                                  reltol = 1e-3, steptol = 1e-4, mu = NULL,
                                   nproc = 1, strategy = "likelihood"),
                    J = NULL
                    ) {
@@ -206,12 +206,13 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
     #print(paste("gain = ",gain))
 
     stepLength <- norm(as.matrix(pprops[,col_min]-pref),"f")
-    longestStep <- max(abs(pprops[,col_min]-pref)))
+    longestStep <- max(abs(pprops[,col_min]-pref))
 
     # check break conditions
-    if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
-        abs(Lprop_min - Lref) < control$abstol ||
-        longestStep < control$steptol) {
+    #if (abs(Lprop_min - Lref) / abs(Lref) < control$reltol ||
+    #    abs(Lprop_min - Lref) < control$abstol ||
+    #    longestStep < control$steptol) {
+    if(longestStep < control$steptol) {
       #print("   break condition TRUE")
       breakCounter <- breakCounter + 1
     } else {

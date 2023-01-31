@@ -30,7 +30,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
   numPars <- NULL
   numNeeds<- NULL
 
-  cacheSize <- 50
+  cacheSize <- 64*3
   cacheIdx <- 0
   cache <- replicate(cacheSize, list(), simplify=FALSE)
   
@@ -100,8 +100,9 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
 
   # helper functions
 
-  getCachedVariable <- function(x, varname) {
-    idx <- which(sapply(cache, function(el) !is.null(el$x) && all(el$x == x)))
+  getCachedVariable <- function(x, varname, tolerance=1.e-05) {
+    #idx <- which(sapply(cache, function(el) !is.null(el$x) && all(el$x == x)))
+    idx <- which(sapply(cache, function(el) !is.null(el$x) && all(abs(el$x - x) < tolerance)))
     stopifnot(length(idx) <= 1)
     if (length(idx)==0) NULL else cache[[idx]]$data[[varname]]
   }
@@ -163,12 +164,23 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
         setkey(thisNeedsDt, IDX)
         thisParamDt[ADJUSTABLE == TRUE, PARVAL := as.list(curx)]
         inputDt <- convertToInput(thisParamDt, thisNeedsDt)
+        if(!is.null(thisMask)) {
+          # limit the energy grids to only the points needed for
+          # interpolation to the experimental energies.
+          # We only need to change the input specification,
+          # the output will be linearly interpolated by TALYSeval
+          # for the missing values (so we can use the same matrix
+          # stucture for all calculations)
+          cat("masking\n")
+          uniqueDstIdcs <- sort(unique(thisMask[,DSTIDX]))
+          stopifnot(!any(is.na(thisNeedsDt[J(uniqueDstIdcs),L1])))
+          inputDt$inputs[[1]]$energy <- sort(unique(thisNeedsDt[J(uniqueDstIdcs),L1]))
+        }
         inpList <- c(inpList, inputDt$inputs)
       }
     }
     
     if (!all(isCached)) {
-      
       redNeedsDt <- copy(thisNeedsDt)
       redNeedsDt[, c("PROJECTILE","MASS","ELEMENT","V1"):=NULL]
       refCalcJobs <<- talysClust$run(inpList, redNeedsDt, saveDir = saveDir,

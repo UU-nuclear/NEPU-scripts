@@ -168,6 +168,26 @@ for(i in 1:nrow(par_unc)) {
 # index is needed for the sensitivity calculations later
 refParamDt[, IDX := seq_len(.N)]
 
+adjParNames <- refParamDt[ADJUSTABLE==TRUE,PARNAME]
+for( i in 1:nrow(parRanges) ) {
+  refParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
+  refParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
+}
+
+# convert the parameter specification (specifiaclly the uncertainty) to the internal parameter space
+paramTrafo <- parameterTransform(
+                  x0 = unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL]),
+                  delta = refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
+
+par_unc_int <- refParamDt[ADJUSTABLE==TRUE,PARUNC]/diag(paramTrafo$jac(refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL)]))
+par_val_int <- paramTrafo$invfun(refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL)])
+
+refParamDt[ADJUSTABLE==TRUE,PARUNC_EXT:=PARUNC]
+#refParamDt[ADJUSTABLE==TRUE,PARUNC:=par_unc_int]
+refParamDt[ADJUSTABLE==TRUE,PARUNC:=pmin(par_unc_int,unlist(PARVAL)-PARMIN)]
+refParamDt[ADJUSTABLE==TRUE,PARVAL_EXT:=PARVAL]
+refParamDt[ADJUSTABLE==TRUE,PARVAL:=as.list(par_val_int)]
+
 print(refParamDt)
 
 # Note: function convertToInput(paramDt, needsDt) produces a 

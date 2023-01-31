@@ -284,13 +284,16 @@ if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLMalt(savePathLM)
 
 # uncomment the line below to start from last parameterset of previous LM run
-pinit <- read_object(7, "optRes")$par
+optRes7 <- read_object(7, "optRes")
+pinit <- optRes7$par
+Jinit <- optRes7$jac
 
 cat("Started calculations at", as.character(Sys.time()), "\n")  
 source("LMalgo_parallel/LMalgo_parallel.R")
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, steptol=0.1*talys$getEps(), acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 29, strategy = "gain", mu=6319.014))
+                 control = list(maxit = maxitLM, reltol = reltolLM, steptol=0.1*talys$getEps(), acc = FALSE,
+                  alpha=0.75, acc_step = 1e-1, nproc = 29, strategy = "gain", mu=10),J=Jinit)
 cat("Finished calculations at", as.character(Sys.time()), "\n")
 
 # save the needed files for reference

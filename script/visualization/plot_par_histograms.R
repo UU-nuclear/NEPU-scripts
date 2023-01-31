@@ -47,6 +47,30 @@ dir.create(cur_plotPath, recursive=TRUE, showWarnings=FALSE)
 filename <- file.path(cur_plotPath, paste0("parameters.png"))
 ggsave(filename, histplot1, width = 0.5*29.7, height = 21.0, units = "cm", dpi = 300)
 
+# the same energy independent parameters but in the internal parameter space
+plotDt_int <- data.table(PARNAME=parnames,parval=as.vector(allParsets[,2:ncol(allParsets)]))
+
+# first the parameters that are not energy dependent and that have been adjusted in LM
+histplot3 <- ggplot(data=plotDt_int[PARNAME %in% adj_enindep_par_names],
+					aes(y=PARNAME, x=parval,  fill=PARNAME)) +
+			geom_density_ridges(alpha=0.6, stat="binline", binwidth=0.01) +
+		    theme_ridges() +
+		    theme(
+		      legend.position="none",
+		      panel.spacing = unit(0.1, "lines"),
+		      strip.text.x = element_text(size = 8),
+		      panel.background = element_rect(fill='white'),
+		      plot.background = element_rect(fill='white')
+		    ) +
+		    xlab("parameter value") +
+		    ylab("")
+print(histplot3)
+
+cur_plotPath <- file.path(plotPath, 'parameters/')
+dir.create(cur_plotPath, recursive=TRUE, showWarnings=FALSE)
+filename <- file.path(cur_plotPath, paste0("parameters_internal.png"))
+ggsave(filename, histplot3, width = 0.5*29.7, height = 21.0, units = "cm", dpi = 300)
+
 # now the parameters that are not energy dependent and that were not adjusted in LM
 names <- enindep_par_names[!enindep_par_names %in% adj_enindep_par_names]
 histplot2 <- ggplot(data=plotDt[PARNAME %in% names],

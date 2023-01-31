@@ -317,7 +317,7 @@ talys$setPars(allParamDt)
 talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)
 talys$setNeeds(extNeedsDt)
 talys$setSexp(Sexp) # not sure if this is correct!!!
-talys$setMask(mask)
+# talys$setMask(mask) # do not apply mask to the random file creation
 if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
 talys$setEps(talys_finite_diff)
  
