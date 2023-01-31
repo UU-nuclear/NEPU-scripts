@@ -61,10 +61,13 @@ optGpDt <- read_object(6, "optGpDt")
 
 # compute the GLS Hessian
 # Smod maps from model parameters to optimzed parameters only
+gpHandler <- createSysCompGPHandler()
+sysCompHandler <- createSysCompHandler()
+sysCompHandler$addGPHandler(gpHandler)
 P0_all <- sysCompHandler$cov(optSysDt_allpars, optGpDt, ret.mat = TRUE)
 
-Smod <- optRes$jac
-tS_invCexp_S <- mult_xt_invCov_x(Smod, D, S0, X)
+JacobianLM <- optRes$jac
+tS_invCexp_S <- mult_xt_invCov_x(JacobianLM, D, S0, X)
 invP0_all <- solve(P0_all)
 H_gls <- (-invP0_all)
 optpars_indices <- optSysDt_optpars[, sort(IDX)]
@@ -285,17 +288,40 @@ ggplot(data=probDt, mapping=aes(x=xx,y=yy)) + theme_bw() +
 # If we see more points above the line our estimate is not conservative enough
 # If we see more points below the line our estimate is (too) conservative
 
-yy <- post_probs_real[2:length(post_probs_real)] - post_probs_real[1]
-xx <- post_probs[2:length(post_probs)] - post_probs[1]
-zz <- post_probs_GLS[2:length(post_probs_GLS)] - post_probs_GLS[1]
+truth <- post_probs_real[2:length(post_probs_real)] - post_probs_real[1] # true values
+georgs <- post_probs[2:length(post_probs)] - post_probs[1] # Georgs approximation
+gls <- post_probs_GLS[2:length(post_probs_GLS)] - post_probs_GLS[1] # GLS approximation
 
-probDt2 <- data.table(xx = xx,
-	yy = yy, zz = zz)
-ggplot(data=probDt2, mapping=aes(x=xx,y=yy)) + theme_bw() +
-	geom_point() +
-	geom_point(mapping=aes(x=zz,y=yy),col='red') +
+probDt2 <- data.table(GeorgsApproximation = georgs,
+	Truth = truth, GLS_approximation = gls)
+plot_MVN_approx <- ggplot(data=probDt2, mapping=aes(x=xx,y=yy)) + theme_bw() +
+	theme(text = element_text(size=4)) +
+	geom_point(aes(x=GeorgsApproximation,y=Truth,col="NDS 173 (2021) 239-284"),size=0.1,shape=0) +
+	geom_point(mapping=aes(x=GLS_approximation,y=Truth,col='GLS'),size=0.1,shape=1) +
 	xlab(TeX("$\\propto \\ln(P_{approx.})$")) +
 	ylab(TeX("$\\propto \\ln(P_{true})$")) +
+	scale_color_manual(name='posterior approximation',
+	                     breaks=c('GLS', 'NDS 173 (2021) 239-284'),
+	                     values=c('GLS'='red', 'NDS 173 (2021) 239-284'='blue')) +
 	geom_abline()
 
-# I should add the GLS estimate of the probability density!!!!
+filepath <- file.path(plotPath, paste0('posterior_approximations.png'))
+ggsave(filepath, plot_MVN_approx, width = 16*0.5, height = 9*0.5, units = "cm", dpi = 300)
+
+# We can see that most of the points with Georgs MVN approxiamtion lies above the line. This means that 
+# the approximated pdf is narrower than the true pdf, i.e. we will underestimate the uncertainty
+# Further we can see that all points using the GLS MVN approximation lies below the line, meaning the
+# uncertainties are overestimated, which would be conservative.
+
+# We could even use the GLS approximation to do rejection sampling, i.e sample from the GLS covariance
+# matrix and do rejection on the condition exp(yy-zz), where yy and z are defined as above, with the
+# current Cr-52 data this would lead to an average acceptance rate of 5.66%
+
+# By making a histogram of P_true - P_approx. we can see more detail. In the present case we can see
+# the Georgs approximation is indeed much closer (on average) to the true pdf. 
+# mean(georgs - truth) = 0.48 : Georgs
+# mean(gls - truth) = 11.04 : GLS
+# i.e. Georgs approximation lies closer to the ideal mean = 0. From the distribution hist(georgs-truth)
+# it is clear that the majority of samples have P_true > P_approx for Georgs approximation, meaning an
+# underestimation of the width of the distribution (i.e. the uncertainties as to small)
+# for hist(gls - truth) we observe that almost all samples have P_true < P_approx

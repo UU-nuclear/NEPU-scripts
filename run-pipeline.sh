@@ -41,7 +41,7 @@ apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf wil
 # echo "**********************************************************************"
 # echo "*                        step07                                      *"
 # echo "**********************************************************************"
-# apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/07_tune_talyspars.R $3 
+apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/07_tune_talyspars.R $3 
 # 
 # echo "**********************************************************************"
 # echo "*                        step07.5                                    *"
@@ -57,12 +57,12 @@ apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf wil
 # echo "*                        step11                                      *"
 # echo "**********************************************************************"
 # apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/11_calculate_posterior_approximation_with_defect.R $3
-
-echo "**********************************************************************"
-echo "*                        step12                                      *"
-echo "**********************************************************************"
-#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles.R $3
-#apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles_new.R $3
-apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles_test_energy-grid.R $3
+# 
+# echo "**********************************************************************"
+# echo "*                        step12                                      *"
+# echo "**********************************************************************"
+# #apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles.R $3
+# #apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles_new.R $3
+# apptainer exec instance://pipeline-inst mpirun -np 1 Rscript --vanilla script-Cr/12_create_randomfiles_test_energy-grid.R $3
 
 apptainer instance stop pipeline-inst
