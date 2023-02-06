@@ -86,6 +86,14 @@ talys$setNeeds(extNeedsDt)
 if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
 talys$setEps(talys_finite_diff)
 
+# We could speed up the calculation a bit here by adding a default mask:
+# We know that energy dependent parameters are never sensitive to the full
+# energy range, for example the parameter value at 10 MeV only affects
+# the cross section at 10 MeV and above, never below. So a default mask
+# could be made that limits the energy points needed for each energy
+# dependent parameter. This would cut the number of calculations for these
+# paramters in half.
+
 # now we perform the calculation of the Jacobian (aka sensitivity matrix).
 # Note concerning parameter transformation: values in refParamDt are assumed to
 # be in the original parameter space. 

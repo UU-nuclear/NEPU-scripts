@@ -17,8 +17,8 @@ library(RColorBrewer)
 ##################################################
 #       READ IN RESULTS NEEDED
 ##################################################
-optRes <- read_object(7,"optRes")
-optParamDt <- read_object(7, "optParamDt")
+optRes <- read_object(10,"optRes")
+optParamDt <- read_object(10, "optParamDt")
 FinalParCovMatLM <- as.matrix(optRes$parCovLM)
 
 ##################################################
@@ -48,7 +48,8 @@ energies <- as.numeric(substr(rownames(Cov_endep),regexpr("\\(",rownames(Cov_end
 ordering <- order(substr(rownames(Cov_endep),nchar(rownames(Cov_endep))-1,nchar(rownames(Cov_endep))),substr(rownames(Cov_endep),1,3),energies,decreasing=TRUE)
 Cov_endep <- Cov_endep[ordering,ordering]
 
-color_palette <- colorRampPalette(brewer.pal(8, "Blues"))(25)
+#color_palette <- colorRampPalette(brewer.pal(8, "Blues"))(25)
+color_palette<-colorRampPalette(c("red","white","blue"))
 heatmap.2(Cov_endep,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
 
 png(file=file.path(plotPath, 'FinalCov_endep_pars_LM.png'),

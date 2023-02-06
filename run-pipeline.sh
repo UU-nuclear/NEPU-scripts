@@ -6,11 +6,11 @@
 # 
 apptainer instance start --bind /TMC/alf $1 pipeline-inst # -- bind /TMC/alf will mount this directory in the container
 
-echo "**********************************************************************"
-echo "*                        step01                                      *"
-echo "**********************************************************************"
-apptainer exec instance://pipeline-inst start_EXFOR_mongoDB.sh $2
-apptainer exec instance://pipeline-inst Rscript --vanilla script-Cr/01_prepare_experimental_data.R $3
+#echo "**********************************************************************"
+#echo "*                        step01                                      *"
+#echo "**********************************************************************"
+#apptainer exec instance://pipeline-inst start_EXFOR_mongoDB.sh $2
+#apptainer exec instance://pipeline-inst Rscript --vanilla script-Cr/01_prepare_experimental_data.R $3
 
 echo "**********************************************************************"
 echo "*                        step02                                      *"
@@ -21,7 +21,7 @@ echo "**********************************************************************"
 echo "*                        step03                                      *"
 echo "**********************************************************************"
 apptainer exec instance://pipeline-inst Rscript --vanilla script-Cr/03_extract_experimental_uncertainties.R $3
-apptainer exec instance://pipeline-inst Rscript --vanilla script-Cr/visualization/plotExpData_withUnc.R $3
+apptainer exec instance://pipeline-inst Rscript --vanilla script/visualization/plotExpData_withUnc.R $3
 
 echo "**********************************************************************"
 echo "*                        step04                                      *"

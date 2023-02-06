@@ -96,7 +96,7 @@ ggsave(filename, histplot1, width = 0.5*29.7, height = 2*21.0, units = "cm", dpi
 energies <- str_extract(adj_endep_par_names,"\\(.+\\)")
 energies <- str_sub(energies,2,-2)
 
-plotDt[,EN:=NULL]
+#plotDt[,EN:=NULL]
 plotDt[PARNAME %in% adj_endep_par_names,EN:=rep(energies,times=.N/length(energies))]
 plotDt_endep <- plotDt[PARNAME %in% adj_endep_par_names]
 

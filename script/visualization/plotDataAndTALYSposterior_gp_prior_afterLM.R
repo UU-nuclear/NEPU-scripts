@@ -181,6 +181,8 @@ for (curReac in reactions) {
 
     #print(ggp)
     dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-    filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'_tmp.png'))
+    filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'.png'))
     ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
+    filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'_LE.png'))
+    ggsave(filepath, ggp+xlim(c(0.10)), width = 8.65, height = 5.6, units = "cm", dpi = 300)
 }

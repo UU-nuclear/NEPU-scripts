@@ -325,3 +325,49 @@ ggsave(filepath, plot_MVN_approx, width = 16*0.5, height = 9*0.5, units = "cm", 
 # it is clear that the majority of samples have P_true > P_approx for Georgs approximation, meaning an
 # underestimation of the width of the distribution (i.e. the uncertainties as to small)
 # for hist(gls - truth) we observe that almost all samples have P_true < P_approx
+
+
+# Create also a plot of the energy dependent parameters similar to the cross section plots
+
+# energyGridForParamsFull should be read from file, for now I reconstruct it
+#energyGridForParamsFull <- read_object(12, "energyGridForParamsFull")
+energyGridForParams_extension <- energyGridrandomFiles[energyGridrandomFiles>max(energyGridForParams)]
+energyGridForParams_extension <- energyGridForParams_extension[seq(3,length(energyGridForParams_extension),by=3)]
+energyGridForParams_extension <- c(energyGridForParams_extension,220)
+energyGridForParamsFull <- c(energyGridForParams,energyGridForParams_extension)
+
+allSysDt <- read_object(12,"allSysDt")
+endep_par_SysDt <- allSysDt[ERRTYPE=="talyspar_endep"]
+endep_par_indices <- endep_par_SysDt[,IDX]
+endep_parSets <- allParsets[endep_par_indices,]
+
+allParamDt <- read_object(12,"allParamDt")
+endep_ParamDt <- allParamDt[grepl("\\(.+\\)",PARNAME)]
+paramTrafo <- parameterTransform(
+                  x0 = unlist(endep_ParamDt[,PARVAL]),
+                  delta = endep_ParamDt[,unlist(PARVAL) - PARMIN])
+
+endep_parSets_ext <- paramTrafo$fun(endep_parSets)
+
+parameter_samplesDt <- data.table(EN=energyGridForParamsFull[endep_par_SysDt[,EN]],
+						PARNAME=endep_par_SysDt[,substring(EXPID,7)],
+						DATA = as.vector(endep_parSets_ext[,2:ncol(endep_parSets_ext)]),
+						LOGP = rep(post_probs2[2:length(post_probs2)] - post_probs2[1],each=length(energyGridForParamsFull[endep_par_SysDt[,EN]])),
+						LOGP_REAL = rep(post_probs_real[2:length(post_probs_real)]-post_probs_real[1],each=length(energyGridForParamsFull[endep_par_SysDt[,EN]]))
+						#LOGP_REAL = rep(post_probs_real[2:length(post_probs_real)],each=length(modDt$L1))
+						)
+
+parameter_modeDt <- data.table(EN=energyGridForParamsFull[endep_par_SysDt[,EN]],
+						PARNAME=endep_par_SysDt[,substring(EXPID,7)],
+						DATA = as.vector(endep_parSets_ext[,1])
+						)
+
+#pars_to_plot <- unique(parameter_samplesDt[,PARNAME])[1:6]
+pars_to_plot <- c("avadjust n","d1adjust n","v1adjust n",
+					"rvadjust n","avsoadjust n","rwdadjust n")
+
+plot_endep_pars <- ggplot(data=parameter_samplesDt[PARNAME %in% pars_to_plot & EN<maxEnergy],mapping = aes(x=EN,y=DATA)) + theme_bw() +
+		geom_line(aes(col=LOGP_REAL,group=LOGP_REAL),size=0.25) +
+		geom_line(data=parameter_modeDt[PARNAME %in% pars_to_plot & EN<maxEnergy],col="red",size=0.25) +
+		facet_wrap(~PARNAME,scales="free_y")
+print(plot_endep_pars)
