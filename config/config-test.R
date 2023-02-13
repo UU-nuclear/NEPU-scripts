@@ -5,11 +5,11 @@
 ##################################################
 
 # add a user library where we can install additional packages
-userLib <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts/R-libs-user"
-.libPaths( c( .libPaths(), userLib) )
+# userLib <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts/R-libs-user"
+# .libPaths( c( .libPaths(), userLib) )
 
 # working directory
-workdir <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts"
+workdir <- "/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts"
 setwd(workdir)
 
 source("config/required_packages.R")
