@@ -58,7 +58,7 @@ print("-----------------------------------------------------")
 # check that we can create the directory pointed to by savePathTalys
 # and that it does not already exists, to prevent overwriting stuff
 #savePathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid-test3/12"
-#stopifnot(dir.create(savePathTalys), showWarnings=TRUE, recursive=TRUE)
+stopifnot(dir.create(savePathTalys), showWarnings=TRUE, recursive=TRUE)
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # where to save output data (don't overwrite the old stuff)
@@ -273,7 +273,7 @@ ext_par_samples <- ext_par_samples + apply(opt_par_samples,2,conditional_mean_sh
 
 # calculate the mean of the sampled extra parameters
 #ext_pars_mean <- matrix(rowMeans(ext_par_samples),ncol=1)
-ext_pars_mean <- conditional_mean_shift(finalPars)
+ext_pars_mean <- matrix(conditional_mean_shift(finalPars),ncol=1)
 
 # bind the sampled optimized and extra parameter vectors to samples of 
 # the full parameter vector
@@ -286,6 +286,13 @@ optParset <- rbind(as.matrix(finalPars),ext_pars_mean)
 # bind together the 'best estimate' and the samples for the TALYS calculation
 allParsets <- cbind(optParset, variedParsets[,1:numTalysFiles])
 
+# make sure we have the endf='y' parameter in the parameter data.table
+
+if(!nrow(allParamDt[grepl("endf",PARNAME)])) {
+  arow <- copy(optParamDt[1])
+  arow[1,PARNAME:='endf']
+  arow[1,PARVAL:='y']
+}
 # perform calculations and save the result
 #talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
 # see step 07_tune_talyspars.R for more explanation

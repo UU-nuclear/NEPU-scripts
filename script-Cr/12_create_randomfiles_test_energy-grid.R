@@ -59,7 +59,7 @@ print("-----------------------------------------------------")
 # check that we can create the directory pointed to by savePathTalys
 # and that it does not already exists, to prevent overwriting stuff
 #savePathTalys <- "/TMC/alf/eval-fe56-singularity/outdata-hyper-par-prior-test-new-energy-grid-test3/12"
-#stopifnot(dir.create(savePathTalys), showWarnings=TRUE, recursive=TRUE)
+stopifnot(dir.create(savePathTalys), showWarnings=TRUE, recursive=TRUE)
 print(paste0("Storing talys results in: ", savePathTalys))
 
 # where to save output data (don't overwrite the old stuff)

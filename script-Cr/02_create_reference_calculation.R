@@ -97,7 +97,12 @@ refInpHeader <- list(projectile = "n",
                   mass = 52L,
                   energy = energyGrid,
 # FIXME: temporary to speed up calculation
-                  endf = "y",
+                  #endf = "y",
+                  outexcitation = "y",
+                  channels = "y",
+                  filechannels = "y",
+                  filetotal = "y",
+                  fileresidual = "y",
                   bins = 60)
 #                 template = paramTemplate)
 
@@ -219,8 +224,10 @@ talysHnds <- createTalysHandlers()
 talysHnd <- talysHnds$talysHnd
 
 startTime <- Sys.time()
+cat("Started calculations at", as.character(startTime), "\n")
 runObj <- talysHnd$run(list(refInpList), extNeedsDt)
 stopTime <- Sys.time()
+cat("Finished calculations at", as.character(stopTime), "\n")
 
 exec_time <- as.double(stopTime-startTime,units="mins")
 
