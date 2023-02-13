@@ -11,4 +11,4 @@
 #SBATCH -J talysTemp
 
 #don't I need to load the singularity module?
-apptainer exec /proj/naiss2023-22-58/ND-eval-pipeline mpirun -np 1 Rscript --vanilla script-Cr/02_create_reference_calculation.R /proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R
+apptainer exec --bind /proj/naiss2023-22-58/ /proj/naiss2023-22-58/NDeval-pipeline-no-stdout-redirect.sif mpirun -np 1 Rscript --vanilla script-Cr/02_create_reference_calculation.R /proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R

@@ -136,6 +136,8 @@ savePathTalys <- pathTalys
 # where to save plots produced by the scripts in eval-fe56/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
 
+tmp_dir <- file.path("/dev/shm",Sys.getenv(SLURM_JOB_ID))
+
 createTalysHandlers <- function() {
 
     # Initialize the talysR mpi interface
@@ -147,11 +149,11 @@ createTalysHandlers <- function() {
     #                 3) maxNumCPU set the number of requested talys workers. The number is an upper
     #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
     #                    the number of availible workers as given by the MPI interface.
-    runOpts <- list(TMPDIR = "/dev/shm/talysTemp")
+    runOpts <- list(TMPDIR = tmp_dir)
     talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0)
 
     # initialize an alternative TALYS handler
-    talysOptHnd <- createTalysFun(talysHnd)
+    talysOptHnd <- createTalysFun(talysHnd, TMPDIR=tmp_dir)
 
     # Difference between talysHnd and talysOptHnd:
     #   talysHnd is a lower-level interface that provides

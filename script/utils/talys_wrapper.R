@@ -14,7 +14,7 @@
 #  This function is used in config.R to create the wrapper object.
 #  The wrapper object is used in file 07_tune_talyspars.R 
 
-createTalysFun <- function(talysClust, print.info = TRUE) {
+createTalysFun <- function(talysClust, print.info, TMPDIR="/dev/shm/talysTemp") {
 
   # closure variables
 
@@ -26,6 +26,8 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
   
   thisParTrafoFun <- NULL
   thisParTrafoJac <- NULL
+
+  thisTMPDIR <- TMPDIR
 
   numPars <- NULL
   numNeeds<- NULL
@@ -184,7 +186,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
       redNeedsDt <- copy(thisNeedsDt)
       redNeedsDt[, c("PROJECTILE","MASS","ELEMENT","V1"):=NULL]
       refCalcJobs <<- talysClust$run(inpList, redNeedsDt, saveDir = saveDir,
-                                     calcsPerJob = 1000, runOpts=list(TMPDIR="/dev/shm/talysTemp"))
+                                     calcsPerJob = 1000, runOpts=list(TMPDIR=thisTMPDIR))
       
       res <- talysClust$result(refCalcJobs)
       calcIdcs <- which(!isCached)
@@ -229,7 +231,7 @@ createTalysFun <- function(talysClust, print.info = TRUE) {
       newJacCalcId <<- digest(jacInputsDt)
       if (!identical(jacCalcId, newJacCalcId) || !is.null(refCalcJobs)) {
         jacCalcJobs <<- talysClust$run(jacInputsDt$inputs, jacInputsDt$outspecs,
-                                      calcsPerJob = 1000, runOpts=list(TMPDIR="/dev/shm/talysTemp"))
+                                      calcsPerJob = 1000, runOpts=list(TMPDIR=thisTMPDIR))
         jacCalcId <<- newJacCalcId
       }
       
