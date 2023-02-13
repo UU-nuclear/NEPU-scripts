@@ -136,7 +136,7 @@ savePathTalys <- pathTalys
 # where to save plots produced by the scripts in eval-fe56/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
 
-tmp_dir <- file.path("/dev/shm",Sys.getenv(SLURM_JOB_ID))
+tmp_dir <- file.path("/dev/shm",Sys.getenv("SLURM_JOB_ID"))
 
 createTalysHandlers <- function() {
 
