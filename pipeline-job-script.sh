@@ -5,7 +5,7 @@
 # one for the main thread and one worker to do the talys calculation
 # so I will run it on a single node requsting two cores
 
-#SBATCH -A naiss2023-22-584
+#SBATCH -A naiss2023-22-58
 #SBATCH -p core -n 2
 #SBATCH -t 40:00
 #SBATCH -J talysTemp
