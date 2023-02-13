@@ -7,7 +7,7 @@
 
 #SBATCH -A naiss2023-22-58
 #SBATCH -p core -n 2
-#SBATCH -t 40:00
+#SBATCH -t 15:00
 #SBATCH -J talysTemp
 
 BASE_DIR=/proj/naiss2023-22-58
