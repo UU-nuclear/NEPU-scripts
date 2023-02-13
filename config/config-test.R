@@ -114,12 +114,12 @@ reltolLM <- 1e-5
 
 # where to save output data
 #outdataPath <- file.path(workdir, "/outdata-try1")
-outdataPath <- file.path(workdir, "/outdata-test1")
+outdataPath <- file.path(workdir, "outdata-test1")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 
 # optimization using the Levenberg-Marquardt algorithm should be stored
-savePathLM <- file.path(outdataPath, "/LMalgo")
+savePathLM <- file.path(outdataPath, "LMalgo")
 
 # random seed to create TALYS randomfiles
 talysFilesSeed <- 13
