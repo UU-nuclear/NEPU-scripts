@@ -22,4 +22,5 @@ CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R
 # apptainer exec --bind $BASE_DIR $SIF_FILE mpirun -np 1 --launch-agent 'apptainer exec $SIF_FILE orted' Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
 
 # or host-based MPI
+module load openmpi/4.0.2
 mpirun -np 1 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
