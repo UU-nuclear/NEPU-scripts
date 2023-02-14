@@ -13,7 +13,7 @@
 #SBATCH -J talysTemp
 
 BASE_DIR=/proj/naiss2023-22-58
-SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-no-stdout-redirect.sif
+SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham.sif
 SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
 #CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-mod-cov-func.R
 CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R
@@ -24,3 +24,4 @@ apptainer exec --bind $BASE_DIR $SIF_FILE mpirun -np 1 --launch-agent 'apptainer
 # or host-based MPI
 #module load openmpi/4.0.2
 #mpirun -np 1 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
+# the host based mpi doesn't work with Rmpi:
