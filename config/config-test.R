@@ -23,7 +23,8 @@ reacPat <- "\\(24-CR-52\\(N,[^)]+\\)[^,]*,,SIG\\)"
 # should pipeline be executed with a very 
 # small number of adjustable model parameters
 # for testing purposes
-fewParameterTest <- FALSE
+fewParameterTest <- TRUE
+max_number_of_free_pars <- 20
 
 # time interval to check for completed
 # TALYS calculation in seconds
@@ -36,7 +37,7 @@ mongo_colname <- "entries"
 
 # only use experimental data in that energy range
 minExpEn <- 1.8
-maxExpEn <- 50
+maxExpEn <- 20
 
 # Specify energy grid for the final random files created in step 9.
 # The grid used during the fit is based on this one, but limited to the range of
@@ -73,8 +74,8 @@ energyGridForParams <- c(1.e-06,energyGridForParams)
 #           par proj
 # 1    v1adjust    n
 # 2    d1adjust    n
-tmpPar <- paste0(c('v1','d1','w1','vso1','wso1','rc','av','avd','avso','aw','awso','rv','rvd','rvso','rwd','rwso','awd'),'adjust')
-tmpProj <- c('n','p','d','t','h','a')
+tmpPar <- paste0('v1',' adjust')
+tmpProj <- c('n')
 enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 #enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
 

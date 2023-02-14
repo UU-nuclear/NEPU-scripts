@@ -235,7 +235,8 @@ cat("talys execution time: ",exec_time,"\n")
 
 nbr_free_pars <- nrow(refParamDt[ADJUSTABLE==TRUE])
 
-cat("estimated coretime for full Jacobian: ", exec_time*nbr_free_pars/60, " corehours")
+cat("estimated coretime for full Jacobian: ", exec_time*nbr_free_pars/60, " corehours\n")
+cat("number of free parameters: ", nbr_free_pars,"\n")
 # save the information about the job for 
 # later recovery if something goes wrong
 save_output_objects(scriptnr, "runObj", overwrite)
