@@ -152,7 +152,7 @@ createTalysHandlers <- function() {
     #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
     #                    the number of availible workers as given by the MPI interface.
     runOpts <- list(TMPDIR = tmp_dir)
-    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0, needlog=TRUE, quiet=FALSE)
+    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0, needlog=FALSE, quiet=TRUE)
 
     # initialize an alternative TALYS handler
     talysOptHnd <- createTalysFun(talysHnd, TMPDIR=tmp_dir)
