@@ -37,7 +37,7 @@ mongo_colname <- "entries"
 
 # only use experimental data in that energy range
 minExpEn <- 1.8
-maxExpEn <- 20
+maxExpEn <- 50
 
 # Specify energy grid for the final random files created in step 9.
 # The grid used during the fit is based on this one, but limited to the range of
@@ -74,7 +74,7 @@ energyGridForParams <- c(1.e-06,energyGridForParams)
 #           par proj
 # 1    v1adjust    n
 # 2    d1adjust    n
-tmpPar <- paste0('v1',' adjust')
+tmpPar <- paste0('v1','adjust')
 tmpProj <- c('n')
 enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 #enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
@@ -138,6 +138,7 @@ savePathTalys <- pathTalys
 plotPath <- file.path(outdataPath, '/plots')
 
 tmp_dir <- file.path("/dev/shm",Sys.getenv("SLURM_JOB_ID"))
+cat("tmp_dir = ",tmp_dir)
 
 createTalysHandlers <- function() {
 
@@ -151,7 +152,7 @@ createTalysHandlers <- function() {
     #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
     #                    the number of availible workers as given by the MPI interface.
     runOpts <- list(TMPDIR = tmp_dir)
-    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0)
+    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0, needlog=TRUE, quiet=FALSE)
 
     # initialize an alternative TALYS handler
     talysOptHnd <- createTalysFun(talysHnd, TMPDIR=tmp_dir)
