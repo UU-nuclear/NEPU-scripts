@@ -18,10 +18,5 @@ SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
 #CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-mod-cov-func.R
 CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R
 
-# either with a launch agent and mpi inside the container
-# apptainer exec --bind $BASE_DIR $SIF_FILE mpirun -np 1 -d -mca plm_base_verbose 10 --launch-agent 'apptainer exec $SIF_FILE orted' Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
-
-# or host-based MPI
 module load openmpi/4.0.2
-mpirun -np 40 --output-filename 'slurm_'$SLURM_JOB_ID apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
-# the host based mpi doesn't work with Rmpi:
+mpirun -np 40 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/05_create_reference_jacobian.R $CONFIG_FILE
