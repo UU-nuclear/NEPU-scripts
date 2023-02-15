@@ -15,6 +15,47 @@ setwd(workdir)
 source("config/required_packages.R")
 source("config/required_sourcefiles.R")
 
+tmp_dir <- file.path("/dev/shm",Sys.getenv("SLURM_JOB_ID"))
+cat("tmp_dir = ",tmp_dir)
+
+createTalysHandlers <- function() {
+
+    # Initialize the talysR mpi interface
+
+    # Important note: 1) TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
+    #                    resides in main memory. TALYS produces many thousand files per run
+    #                    and normal disks and shared file systems cannot deal with this load
+    #                    so it is a good idea to store them in main memory.
+    #                 3) maxNumCPU set the number of requested talys workers. The number is an upper
+    #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
+    #                    the number of availible workers as given by the MPI interface.
+    runOpts <- list(TMPDIR = tmp_dir)
+    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0, needlog=FALSE, quiet=TRUE)
+
+    # initialize an alternative TALYS handler
+    talysOptHnd <- createTalysFun(talysHnd, TMPDIR=tmp_dir)
+
+    # Difference between talysHnd and talysOptHnd:
+    #   talysHnd is a lower-level interface that provides
+    #            the functions run, isRunning, and result.
+    #            The input specification is passed as a list
+    #            with input keywords and values and the output
+    #            specification as a datatable enumerating the
+    #            observables of interest
+
+    #   talysOptHnd provides the functions fun and jac which 
+    #               take a vector x as input and return either
+    #               a vector of observables (fun) or the Jacobian 
+    #               matrix (jac). Default parameter values and
+    #               which values are present in x is specified
+    #               via additional setter functions. Functions
+    #               provided by talysOptHnd rely on those 
+    #               provided by talysHnd.
+
+    list(talysHnd = talysHnd,
+         talysOptHnd = talysOptHnd)
+}
+
 
 # specify the reaction(s) to extract data fromthe EXFOR data base
 # target reaction strings matching this regular expression
@@ -136,44 +177,3 @@ savePathTalys <- pathTalys
 
 # where to save plots produced by the scripts in eval-fe56/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
-
-tmp_dir <- file.path("/dev/shm",Sys.getenv("SLURM_JOB_ID"))
-cat("tmp_dir = ",tmp_dir)
-
-createTalysHandlers <- function() {
-
-    # Initialize the talysR mpi interface
-
-    # Important note: 1) TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
-    #                    resides in main memory. TALYS produces many thousand files per run
-    #                    and normal disks and shared file systems cannot deal with this load
-    #                    so it is a good idea to store them in main memory.
-    #                 3) maxNumCPU set the number of requested talys workers. The number is an upper
-    #                    limit on the number of workers. If maxNumCPU=0 the number of workers will be
-    #                    the number of availible workers as given by the MPI interface.
-    runOpts <- list(TMPDIR = tmp_dir)
-    talysHnd <- initTALYSmpi(runOpts = runOpts, maxNumCPU=0, needlog=FALSE, quiet=TRUE)
-
-    # initialize an alternative TALYS handler
-    talysOptHnd <- createTalysFun(talysHnd, TMPDIR=tmp_dir)
-
-    # Difference between talysHnd and talysOptHnd:
-    #   talysHnd is a lower-level interface that provides
-    #            the functions run, isRunning, and result.
-    #            The input specification is passed as a list
-    #            with input keywords and values and the output
-    #            specification as a datatable enumerating the
-    #            observables of interest
-
-    #   talysOptHnd provides the functions fun and jac which 
-    #               take a vector x as input and return either
-    #               a vector of observables (fun) or the Jacobian 
-    #               matrix (jac). Default parameter values and
-    #               which values are present in x is specified
-    #               via additional setter functions. Functions
-    #               provided by talysOptHnd rely on those 
-    #               provided by talysHnd.
-
-    list(talysHnd = talysHnd,
-         talysOptHnd = talysOptHnd)
-}
