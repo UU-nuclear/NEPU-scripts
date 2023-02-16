@@ -13,7 +13,7 @@
 #SBATCH -J talysTemp
 
 BASE_DIR=/proj/naiss2023-22-58
-SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham.sif
+SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect.sif
 SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
 #CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-mod-cov-func.R
 CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-test.R
