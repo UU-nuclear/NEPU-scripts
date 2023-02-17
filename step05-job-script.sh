@@ -7,7 +7,7 @@
 # I will try to ask for 2 nodes to start with
 #SBATCH -p node -N 5
 #SBATCH -t 01:00:00
-#SBATCH -J talysTemp
+#SBATCH -J ND-pipeline-step05
 
 BASE_DIR=/proj/naiss2023-22-58
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect.sif

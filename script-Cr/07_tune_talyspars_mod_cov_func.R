@@ -13,15 +13,11 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-
-if (length(args)==0) {
-  #source("./config/config.R")
-  #stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if(length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
+} else if (length(args) > 1) {
+  stop("Script only accepts one argument.", call.=FALSE)
 }
 
 library(stringr)
@@ -282,7 +278,7 @@ loggerLM <- createLoggerLMalt(savePathLM)
 pinit <- refPar
 
 # The full Jacobian was calculated in step 05, no need to recalculate it 
-Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX]
+Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX] # should now be read as Sopt from select_parameters.R
 
 #cat("Started calculations at", as.character(Sys.time()), "\n")  
 #optRes <- LMalgo(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,

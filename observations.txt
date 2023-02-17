@@ -4,3 +4,24 @@ denser grid: energyGrid <- c(seq(0.1,10,by=0.3),seq(10.6,20,by=0.6),seq(20.2,30.
 less dense grid: energyGrid <- seq(0.1, 30.001, length = 50)
 
 There is an error in the parameter transformation. Although the formula should return the limits as x approaches +-inf it returns NaN for abs(x) > 170. In practice probably not much of a problem, but it could be.
+
+===================================================================
+
+I found a problem/pecularity with apptainer/singularity and running R inside it. When I run R inside the container on my local laptop, i.e
+
+singularity shell img.sif
+singularity> R
+
+R automatically adds a path to where to look for libraries, i.e 
+
+> .libPaths()
+[1] "/home/alf/R/x86_64-pc-linux-gnu-library/4.2" <----
+[2] "/usr/local/lib/R/site-library"              
+[3] "/usr/lib/R/site-library"                    
+[4] "/usr/lib/R/library" 
+
+This is problematic on my local computer since I am running the same R version outside the container. Since the first entry is pointing to my home directory packages installed there will override whatever I have installed in the container, which is entry [2]. This can lead to some unwanted and unexpected behaviour. This behaviour is defined in the file /etc/R/Renviron which is run at startup of each R session. It sets a environment varaible R_LIBS_USER which is used by R to construct .libPaths(), consequently setting the home directory as the top entry. The solution is to remove the line
+
+R_LIBS_USER=${R_LIBS_USER:-'%U'}
+
+from the file /etc/R/Renviron. This has to be done at build time, since this is part of the read-only file system of the apptainer image.
