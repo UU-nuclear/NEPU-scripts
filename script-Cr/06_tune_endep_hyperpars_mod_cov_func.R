@@ -188,9 +188,9 @@ optfuns$setPrior(priorExpectation,priorCovMat)
 library(optimParallel)
 # Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
-cl <- makeCluster(min(nCores,20))
+cl <- makeCluster(min(nCores,6))
 
-cat("number of cores used for optimParallel ", min(nCores,20),"\n")
+cat("number of cores used for optimParallel ", min(nCores,6),"\n")
 
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
