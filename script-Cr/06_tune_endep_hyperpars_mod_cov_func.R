@@ -65,66 +65,6 @@ print("-----------------------------------------------------")
 outputObjectNames <- c("optExpDt", "optSysDt", "optGpDt","sysCompHandler")
 check_output_objects(scriptnr, outputObjectNames)
 
-############# First: check which parameters are sensitive to data ###########
-# convert the sparse matrix given as data.table 
-# into a spase matrix type as defined in package Matrix
-# Spar <- with(fullSensDt,
-#              sparseMatrix(i = IDX1, j = IDX2, x = X,
-#                           dims = c(nrow(extNeedsDt), nrow(refParamDt))))
-# Sexp <- exforHandler$getJac(expDt, extNeedsDt, subents)
-# Sglob <- Sexp %*% Spar 
-# 
-# # safeguard
-# stopifnot(all(dim(Sglob) == c(nrow(expDt), nrow(refParamDt))))
-# 
-# # convert the sparse matrix Sglob into a datatable
-# SglobDt <- as.data.table(summary(Sglob))
-# setnames(SglobDt, c("IDX1", "IDX2", "X"))
-# 
-# # we (linearly) propagate all parameter values equal one
-# # to the model predictions
-# imp1 <- as.vector(Spar %*% rep(1, nrow(refParamDt)))
-# # we propagate hypothetical experimental values equal one
-# # to the model prediction
-# imp2 <- as.vector(t(Sexp) %*% rep(1, nrow(Sexp)))
-# # then we select observables on the model grid that
-# # are affected by both the backpropagation from the
-# # experiment and the forward propagation of model parameters
-# impIdx <- which(imp1 * imp2 != 0)
-# 
-# optSparDt <- copy(fullSensDt)
-# setkey(optSparDt, IDX1)
-# optSparDt <- optSparDt[J(impIdx)]
-# 
-# paramImpactDt <- SglobDt[, list(IMP = max(abs(X))), by = "IDX2"]
-# paramImpactDt <- paramImpactDt[order(IMP, decreasing = TRUE)]
-# selParIdcs <- paramImpactDt[IMP >= 1, IDX2]
-# 
-# setkey(optSparDt, IDX2)
-# mask <- optSparDt[J(selParIdcs), list(DSTIDX = IDX1, SRCIDX = IDX2)]
-# setkey(mask, SRCIDX, DSTIDX)
-# adjParIdcs <- unique(mask$SRCIDX)
-# 
-# # make a copy of the reference parameter datatable 
-# # and define what and what not we want to optimize
-# optParamDt <- copy(refParamDt)
-# setkey(optParamDt, IDX)
-# optParamDt[, ADJUSTABLE := FALSE]
-# optParamDt[J(adjParIdcs), ADJUSTABLE := TRUE]
-# 
-# # safeguard
-# stopifnot(sum(optParamDt$ADJUSTABLE) == length(adjParIdcs))
-# 
-# # find all energy dependent parameters which have at least one point that is adjustbale
-# adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.+\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
-# adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.+\\)"))
-# optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
-# optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
-# optParamDt[,tmp:=NULL] # remove the temporary column from the data table
-
-
-#############################################################################
-
 # prepare the data table with systematic components
 # this comprises both systematic experimental 
 # errors and the model parameters
@@ -248,7 +188,10 @@ optfuns$setPrior(priorExpectation,priorCovMat)
 library(optimParallel)
 # Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
-cl <- makeCluster(min(nCores,32))
+cl <- makeCluster(min(nCores,20))
+
+cat("number of cores used for optimParallel ", min(nCores,20))
+
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
 clusterExport(cl, c("optfuns","logLike","gradLogLike"), 

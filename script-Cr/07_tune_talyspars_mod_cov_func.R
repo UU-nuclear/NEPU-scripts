@@ -39,6 +39,8 @@ refParamDt <- read_object(2, "refParamDt")
 extNeedsDt <- read_object(2, "extNeedsDt")
 modList <- read_object(3, "modList")
 fullSensDt <- read_object(5, "fullSensDt") 
+optParamDt <- read_object(5, "optParamDt")
+mask <-  read_object(5,"maks")
 optExpDt <- read_object(6, "optExpDt")
 optSysDt <- read_object(6, "optSysDt")
 optGpDt <- read_object(6, "optGpDt")
@@ -51,77 +53,14 @@ print("----------------------script 07----------------------")
 print("-----------------------------------------------------")
 
 # define objects to be returned
-outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
-                       "refPar", "P0", "yexp", "D", "S0", "X",
+outputObjectNames <- c("optRes", "refPar", "P0", "yexp", "D", "S0", "X",
                        "optSysDt_allpars", "optSysDt_optpars")
 check_output_objects(scriptnr, outputObjectNames)
-
-# convert the sparse matrix given as data.table 
-# into a spase matrix type as defined in package Matrix
-Spar <- with(fullSensDt,
-             sparseMatrix(i = IDX1, j = IDX2, x = X,
-                          dims = c(nrow(extNeedsDt), nrow(refParamDt))))
-Sexp <- exforHandler$getJac(optExpDt, extNeedsDt, subents)
-Sglob <- Sexp %*% Spar 
-
-# safeguard
-stopifnot(all(dim(Sglob) == c(nrow(optExpDt), nrow(refParamDt))))
-
-# convert the sparse matrix Sglob into a datatable
-SglobDt <- as.data.table(summary(Sglob))
-setnames(SglobDt, c("IDX1", "IDX2", "X"))
-
-# we (linearly) propagate all parameter values equal one
-# to the model predictions
-imp1 <- as.vector(Spar %*% rep(1, nrow(refParamDt)))
-# we propagate hypothetical experimental values equal one
-# to the model prediction
-imp2 <- as.vector(t(Sexp) %*% rep(1, nrow(Sexp)))
-# then we select observables on the model grid that
-# are affected by both the backpropagation from the
-# experiment and the forward propagation of model parameters
-impIdx <- which(imp1 * imp2 != 0)
-
-optSparDt <- copy(fullSensDt)
-setkey(optSparDt, IDX1)
-optSparDt <- optSparDt[J(impIdx)]
-
-paramImpactDt <- SglobDt[, list(IMP = max(abs(X))), by = "IDX2"]
-paramImpactDt <- paramImpactDt[order(IMP, decreasing = TRUE)]
-selParIdcs <- paramImpactDt[IMP >= 1, IDX2]
-
-setkey(optSparDt, IDX2)
-mask <- optSparDt[J(selParIdcs), list(DSTIDX = IDX1, SRCIDX = IDX2)]
-setkey(mask, SRCIDX, DSTIDX)
-adjParIdcs <- unique(mask$SRCIDX)
-
-# make a copy of the reference parameter datatable 
-# and define what and what not we want to optimize
-optParamDt <- copy(refParamDt)
-setkey(optParamDt, IDX)
-optParamDt[, ADJUSTABLE := FALSE]
-optParamDt[J(adjParIdcs), ADJUSTABLE := TRUE]
-
-# safeguard
-stopifnot(sum(optParamDt$ADJUSTABLE) == length(adjParIdcs))
-
-# find all energy dependent parameters which have at least one point that is adjustbale
-adjustable_endep_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME[grepl("\\(.+\\)",optParamDt[ADJUSTABLE==TRUE]$PARNAME)]
-adjustable_endep_par_names <- unique(str_remove(adjustable_endep_par_names,"\\(.+\\)"))
-optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
-optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
-optParamDt[,tmp:=NULL] # remove the temporary column from the data table
 
 talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 # create the parameter transformation object
-adjParNames <- optParamDt[ADJUSTABLE==TRUE,PARNAME]
-for( i in 1:nrow(parRanges) ) {
-  optParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMIN:=parRanges[i]$min]
-  optParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
-}
-
 # set the parameter transformation to be centered at the prior mean/mode
 # the ranges of the parameters are the ones specified in the TALYS manual
 paramTrafo <- parameterTransform(
@@ -277,7 +216,12 @@ loggerLM <- createLoggerLMalt(savePathLM)
 #pinit <- read_object(7, "optRes")$par
 pinit <- refPar
 
-# The full Jacobian was calculated in step 05, no need to recalculate it 
+# The full Jacobian was calculated in step 05, no need to recalculate it
+Spar <- with(fullSensDt,
+             sparseMatrix(i = IDX1, j = IDX2, x = X,
+                          dims = c(nrow(extNeedsDt), nrow(refParamDt))))
+Sexp <- exforHandler$getJac(expDt, extNeedsDt, subents)
+Sglob <- Sexp %*% Spar 
 Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX] # should now be read as Sopt from select_parameters.R
 
 #cat("Started calculations at", as.character(Sys.time()), "\n")  
