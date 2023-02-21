@@ -4,8 +4,8 @@
 # more than a single node:
 
 #SBATCH -A naiss2023-22-58
-#SBATCH -p core -n 6
-#SBATCH -t 01:30:00
+#SBATCH -p core -n 8
+#SBATCH -t 00:15:00
 #SBATCH -J talysTemp
 
 BASE_DIR=/proj/naiss2023-22-58

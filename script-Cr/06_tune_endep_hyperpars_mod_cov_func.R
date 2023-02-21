@@ -188,13 +188,16 @@ optfuns$setPrior(priorExpectation,priorCovMat)
 library(optimParallel)
 # Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
-cl <- makeCluster(min(nCores,6))
+cl <- makeCluster(min(nCores,8))
 
-cat("number of cores used for optimParallel ", min(nCores,6),"\n")
+cat("number of cores used for optimParallel ", min(nCores,8),"\n")
 
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
 print(dummy)
+print("------")
+print(cl)
+print("------")
 clusterExport(cl, c("optfuns","logLike","gradLogLike"), 
               envir=environment())
 #optimParallel
@@ -223,3 +226,5 @@ save_output_objects(scriptnr, outputObjectNames, overwrite)
 
 print("---- optimised endep hyperparameters -----")
 print(optGpDt[ADJUSTABLE==TRUE],topn=nrow(optGpDt[ADJUSTABLE==TRUE]))
+
+stopCluster(cl)
