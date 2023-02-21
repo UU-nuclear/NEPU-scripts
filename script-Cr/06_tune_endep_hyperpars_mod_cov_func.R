@@ -188,7 +188,7 @@ optfuns$setPrior(priorExpectation,priorCovMat)
 library(optimParallel)
 # Setup of multicore optimization using optimparalell
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
-cl <- makeCluster(min(nCores,8))
+cl <- makeCluster(min(nCores,20))
 
 cat("cluster for optimParallel: \n")
 print(cl)
@@ -209,8 +209,7 @@ optRes <- optimParallel(par = initPars,
                         method = "L-BFGS-B",
                         lower = lowerLims, 
                         upper = upperLims, 
-                        #control = list(fnscale = -1,maxit=300)
-                        control = list(fnscale = -1,maxit=10)
+                        control = list(fnscale = -1,maxit=300)
 )
 cat("Finished optimization at", as.character(Sys.time()), "\n")
 
