@@ -190,7 +190,7 @@ library(optimParallel)
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
 cl <- makeCluster(min(nCores,8))
 
-cat("number of cores used for optimParallel ", min(nCores,8),"\n")
+cat("cluster for optimParallel: ", cl,"\n")
 
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
@@ -212,6 +212,10 @@ optRes <- optimParallel(par = initPars,
                         control = list(fnscale = -1,maxit=10)
 )
 cat("Finished optimization at", as.character(Sys.time()), "\n")
+
+print("------")
+print(optRes)
+print("------")
 
 newDts <- optfuns$getModifiedDts(optRes$par)
 
