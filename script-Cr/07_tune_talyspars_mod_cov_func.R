@@ -221,7 +221,7 @@ pinit <- refPar
 Spar <- with(fullSensDt,
              sparseMatrix(i = IDX1, j = IDX2, x = X,
                           dims = c(nrow(extNeedsDt), nrow(refParamDt))))
-Sexp <- exforHandler$getJac(expDt, extNeedsDt, subents)
+#Sexp <- exforHandler$getJac(expDt, extNeedsDt, subents)
 Sglob <- Sexp %*% Spar 
 Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX] # should now be read as Sopt from select_parameters.R
 
