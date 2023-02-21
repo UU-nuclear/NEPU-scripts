@@ -246,4 +246,4 @@ exec_time <- as.double(stopTime-startTime,units="hours")
 cat("total execution time: ",exec_time," hours\n")
 
 # save the needed files for reference
-#save_output_objects(scriptnr, outputObjectNames, overwrite)
+save_output_objects(scriptnr, outputObjectNames, overwrite)

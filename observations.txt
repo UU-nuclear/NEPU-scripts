@@ -25,3 +25,13 @@ This is problematic on my local computer since I am running the same R version o
 R_LIBS_USER=${R_LIBS_USER:-'%U'}
 
 from the file /etc/R/Renviron. This has to be done at build time, since this is part of the read-only file system of the apptainer image.
+
+=====================================================================
+
+outdata-mod-cov-func:
+
+The LM algorithm converged in (total) number of 12 iterations.
+
+This took 1.00 hours on 200 tasks, i.e 200 corehours (10% of the total monthly allocation)
+
+the core busy is full for the entire job. This has more to do with that the mpi slaves are 100% busy while waiting for instructions, than anything else. That behaviour may be changed with flags given to doMPI. It may be advicible to not use this many cores since between each Jacobian calculation there is a downtime when the function values are calculated, this is at the moment, set to maximum 32 parallel tasks.

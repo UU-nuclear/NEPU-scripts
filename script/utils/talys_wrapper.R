@@ -173,7 +173,6 @@ createTalysFun <- function(talysClust, print.info, TMPDIR="/dev/shm/talysTemp") 
           # the output will be linearly interpolated by TALYSeval
           # for the missing values (so we can use the same matrix
           # stucture for all calculations)
-          cat("masking\n")
           uniqueDstIdcs <- sort(unique(thisMask[,DSTIDX]))
           stopifnot(!any(is.na(thisNeedsDt[J(uniqueDstIdcs),L1])))
           inputDt$inputs[[1]]$energy <- sort(unique(thisNeedsDt[J(uniqueDstIdcs),L1]))
