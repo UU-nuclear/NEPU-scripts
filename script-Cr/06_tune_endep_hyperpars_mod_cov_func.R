@@ -190,7 +190,8 @@ library(optimParallel)
 nCores <- detectCores(all.tests = FALSE, logical = TRUE)
 cl <- makeCluster(min(nCores,8))
 
-cat("cluster for optimParallel: ", cl,"\n")
+cat("cluster for optimParallel: \n")
+print(cl)
 
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
