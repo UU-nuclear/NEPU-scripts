@@ -194,6 +194,7 @@ cat("number of cores used for optimParallel ", min(nCores,6),"\n")
 
 setDefaultCluster(cl=cl)
 dummy <- clusterEvalQ(cl, c(library(data.table)))
+print(dummy)
 clusterExport(cl, c("optfuns","logLike","gradLogLike"), 
               envir=environment())
 #optimParallel
@@ -204,7 +205,8 @@ optRes <- optimParallel(par = initPars,
                         method = "L-BFGS-B",
                         lower = lowerLims, 
                         upper = upperLims, 
-                        control = list(fnscale = -1,maxit=300)
+                        #control = list(fnscale = -1,maxit=300)
+                        control = list(fnscale = -1,maxit=10)
 )
 cat("Finished optimization at", as.character(Sys.time()), "\n")
 
