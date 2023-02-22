@@ -292,6 +292,7 @@ if(!nrow(allParamDt[grepl("endf",PARNAME)])) {
   arow <- copy(optParamDt[1])
   arow[1,PARNAME:='endf']
   arow[1,PARVAL:='y']
+  allParamDt <- rbind(allParamDt,arow)
 }
 # perform calculations and save the result
 #talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
