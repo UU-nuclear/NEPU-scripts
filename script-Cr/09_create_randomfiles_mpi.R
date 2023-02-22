@@ -24,6 +24,7 @@ if(length(args)==1) {
 }
 
 
+talysHnds <- createTalysHandlers()
 #################################################
 #       SCRIPT PARAMETERS
 ##################################################
@@ -150,7 +151,6 @@ allParamDt[, PARVAL:= parval]
 
 # see step 07_tune_talyspars.R for more explanation
 # about setting up the talys handler
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 talys$setPars(allParamDt)
 talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)

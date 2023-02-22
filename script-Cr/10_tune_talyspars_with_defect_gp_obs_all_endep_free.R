@@ -13,17 +13,14 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-
-if (length(args)==0) {
-  source("./config/config.R")
-  stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if(length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
+} else if (length(args) > 1) {
+  stop("Script only accepts one argument.", call.=FALSE)
 }
 
+talysHnds <- createTalysHandlers()
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -123,7 +120,6 @@ optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
 optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
 optParamDt[,tmp:=NULL] # remove the temporary column from the data table
 
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 # create the parameter transformation object

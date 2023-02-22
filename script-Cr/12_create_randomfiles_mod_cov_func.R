@@ -23,6 +23,7 @@ if(length(args)==1) {
   stop("Script only accepts one argument.", call.=FALSE)
 }
 
+talysHnds <- createTalysHandlers()
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -298,7 +299,6 @@ if(!nrow(allParamDt[grepl("endf",PARNAME)])) {
 #talysHnds$remHnd$ssh$execBash(paste0("mkdir -p '", pathTalys, "'; echo endofcommand"))
 # see step 07_tune_talyspars.R for more explanation
 # about setting up the talys handler
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 talys$setPars(allParamDt)
 talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)

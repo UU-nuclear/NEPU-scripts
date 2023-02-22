@@ -22,7 +22,7 @@ if(length(args)==1) {
   stop("Script only accepts one argument.", call.=FALSE)
 }
 
-
+talysHnds <- createTalysHandlers()
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -75,7 +75,6 @@ paramTrafo <- parameterTransform(
                   x0 = unlist(optParamDt[ADJUSTABLE==TRUE,PARVAL]),
                   delta = optParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 # define the default parameters

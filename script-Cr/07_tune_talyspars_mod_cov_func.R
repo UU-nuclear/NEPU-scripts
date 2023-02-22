@@ -20,6 +20,8 @@ if(length(args)==1) {
   stop("Script only accepts one argument.", call.=FALSE)
 }
 
+talysHnds <- createTalysHandlers()
+
 library(stringr)
 
 
@@ -58,7 +60,6 @@ outputObjectNames <- c("optRes", "refPar", "P0", "yexp", "D", "S0", "X",
                        "optSysDt_allpars", "optSysDt_optpars")
 check_output_objects(scriptnr, outputObjectNames)
 
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 # create the parameter transformation object

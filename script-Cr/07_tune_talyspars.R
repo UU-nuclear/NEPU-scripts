@@ -24,6 +24,9 @@ if (length(args)==0) {
   source(args[1])
 }
 
+
+talysHnds <- createTalysHandlers()
+
 library(stringr)
 
 
@@ -116,7 +119,6 @@ optParamDt$tmp = str_remove(optParamDt$PARNAME,"\\(.+\\)")
 optParamDt[tmp %in% adjustable_endep_par_names]$ADJUSTABLE=TRUE
 optParamDt[,tmp:=NULL] # remove the temporary column from the data table
 
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 # create the parameter transformation object

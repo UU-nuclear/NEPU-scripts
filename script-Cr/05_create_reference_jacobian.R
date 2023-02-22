@@ -26,6 +26,7 @@ if (length(args)==0) {
   source(args[1])
 }
 
+talysHnds <- createTalysHandlers()
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -70,7 +71,6 @@ paramTrafo <- parameterTransform(
                   delta = refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])
 
 # We let the talys_wrapper take care of creating the jacobian
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 
 talys$setPars(refParamDt)

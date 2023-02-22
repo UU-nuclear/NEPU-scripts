@@ -24,6 +24,7 @@ if (length(args)==0) {
   source(args[1])
 }
 
+talysHnds <- createTalysHandlers()
 
 #################################################
 #       SCRIPT PARAMETERS
@@ -84,7 +85,6 @@ paramTrafo <- parameterTransform(
 
 # see step 07_tune_talyspars.R for more explanation
 # about setting up the talys handler
-talysHnds <- createTalysHandlers()
 talys <- talysHnds$talysOptHnd
 talys$setPars(optParamDt)
 talys$setParTrafo(paramTrafo$fun, paramTrafo$jac)

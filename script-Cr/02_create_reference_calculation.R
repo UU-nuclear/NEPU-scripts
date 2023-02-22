@@ -36,6 +36,8 @@ if (length(args)==0) {
   source(args[1])
 }
 
+talysHnds <- createTalysHandlers()
+
 #################################################
 #       SCRIPT PARAMETERS
 ##################################################
@@ -220,7 +222,6 @@ extNeedsDt[, IDX := seq_len(.N)]
 # perform the reference calculation and save the output
 ################################################################
 
-talysHnds <- createTalysHandlers()
 talysHnd <- talysHnds$talysHnd
 
 startTime <- Sys.time()

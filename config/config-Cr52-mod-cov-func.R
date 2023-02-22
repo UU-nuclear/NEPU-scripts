@@ -21,7 +21,12 @@ createTalysHandlers <- function() {
 
     # Initialize the talysR mpi interface
 
-    # Important note: 1) TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
+    # Important note: 1) Scripts that will run talys under mpi should call this function at the very
+    #                    begining of the script. The execution of this function, blocks any futher
+    #                    execution of the R-scripts on the slave ranks (rank-id>0). The R code in the
+    #                    scripts should be executed only on the main thread, so call this as early
+    #                    as possible!
+    #                 2) TMPDIR = "/dev/shm" is an important specification because /dev/shm usually
     #                    resides in main memory. TALYS produces many thousand files per run
     #                    and normal disks and shared file systems cannot deal with this load
     #                    so it is a good idea to store them in main memory.
