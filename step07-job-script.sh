@@ -6,7 +6,7 @@
 
 # I will try to ask for 2 nodes to start with
 #SBATCH -p node -N 5
-#SBATCH -t 03:00:00
+#SBATCH -t 02:00:00
 #SBATCH -J ND-pipeline-step05
 
 BASE_DIR=/proj/naiss2023-22-58
