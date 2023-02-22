@@ -31,7 +31,7 @@ modDt <- read_object(3, "modDt") # this is the prior talys model mapped to the e
 subents <- read_object(1, "subents")
 modList <- read_object(3, "modList")
 expDt <- read_object(3, "expDt")
-energyGrid <- unlist(read_object(7, "optParamDt")[PARNAME=="energy",PARVAL])
+energyGrid <- unlist(read_object(5, "optParamDt")[PARNAME=="energy",PARVAL])
 
 # Set up the prior on observable GP
 

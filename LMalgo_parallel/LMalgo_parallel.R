@@ -122,8 +122,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
    
     debuginfo("calculating function values...")
     # calculate the function values at the proposal parameter sets
+    startTime <- Sys.time()
     fprops <- fn(pprops)
+    stopTime <- Sys.time()
     debuginfo("...done!")
+    debuginfo(paste("execution time:",as.double(stopTime-startTime,units="mins"),"minutes"))
     
     Lprop_min <- Inf
     Lprop_approx_min <- Inf
@@ -237,8 +240,11 @@ LMalgo_parallel <- function(fn, jac, pinit, p0, P0, yexp, D, S, X,
       fref <- fprops[,col_min]
 
       debuginfo("calculating Jacobian...")
+      startTime <- Sys.time()
       J <- jac(as.vector(pprops[,col_min]))
+      stopTime <- Sys.time()
       debuginfo("...done!")
+      debuginfo(paste("execution time:",as.double(stopTime-startTime,units="mins"),"minutes"))
       
       Lref <- Lprop_min
       accepted <- TRUE

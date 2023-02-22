@@ -40,6 +40,9 @@ refParamDt <- read_object(2, "refParamDt")
 extNeedsDt <- read_object(2, "extNeedsDt")
 modList <- read_object(3, "modList")
 fullSensDt <- read_object(5, "fullSensDt") 
+optParamDt <- read_object(5, "optParamDt")
+mask <- read_object(5, "mask")
+Sexp <- read_object(5, "Sexp")
 optExpDt <- read_object(6, "optExpDt")
 optSysDt <- read_object(6, "optSysDt")
 optGpDt <- read_object(6, "optGpDt")
@@ -48,22 +51,17 @@ yexp <- read_object(7, "yexp")
 D <- read_object(7, "D")
 S0 <- read_object(7, "S0k")
 X <- read_object(7, "Xk")
-optParamDt <- read_object(7, "optParamDt")
-mask <- read_object(7, "mask")
-Sexp <- read_object(7, "Sexp")
 optSysDt_allpars <- read_object(7,"optSysDt_allpars")
 optSysDt_optpars <- read_object(7,"optSysDt_optpars")
 #finalPars <- read_object(8, "finalPars")
 refPar <- read_object(7,"refPar")
+# results of the LM optimization before addition of the GP in the observable
+optRes7 <- read_object(7, "optRes")
+pinit <- optRes7$par
+Jinit <- optRes7$jac
 ##################################################
 #       START OF SCRIPT
 ##################################################
-
-# TODO: Right now this script is basically a copy paste of step07.
-# Should implement that the results from step07 about which parameters to keep adjustable is read
-# from step07 instead of redoing the calculation. This is mainly for cleanliness but also makes 
-# the execution less prone to errors since if I want to change something I don't need to do it in two 
-# sepparate scripts.
 
 # define objects to be returned
 outputObjectNames <- c("optRes", "optParamDt", "Sexp", "mask",
@@ -106,11 +104,6 @@ talys$setEps(talys_finite_diff)
 
 if (!dir.exists(savePathLM)) dir.create(savePathLM, recursive=TRUE)
 loggerLM <- createLoggerLMalt(savePathLM)
-
-# uncomment the line below to start from last parameterset of previous LM run
-optRes7 <- read_object(7, "optRes")
-pinit <- optRes7$par
-Jinit <- optRes7$jac
 
 cat("Started calculations at", as.character(Sys.time()), "\n")  
 source("LMalgo_parallel/LMalgo_parallel.R")
