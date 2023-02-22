@@ -30,8 +30,19 @@ from the file /etc/R/Renviron. This has to be done at build time, since this is 
 
 outdata-mod-cov-func:
 
-The LM algorithm converged in (total) number of 12 iterations.
+the number of free parameters is 506 (for which the Jacobian is calculated)
+
+The LM algorithm (step7) converged in (total) number of 12 iterations.
 
 This took 1.00 hours on 200 tasks, i.e 200 corehours (10% of the total monthly allocation)
 
 the core busy is full for the entire job. This has more to do with that the mpi slaves are 100% busy while waiting for instructions, than anything else. That behaviour may be changed with flags given to doMPI. It may be advicible to not use this many cores since between each Jacobian calculation there is a downtime when the function values are calculated, this is at the moment, set to maximum 32 parallel tasks.
+
+The LM algorithm (step10) converged in (total) number of 5 iterations.
+
+This took 26.68 mins = 0.44 hours on 100 tasks, i.e 44.5 corehours (2% of the total monthly allocation)
+
+with 200 tasks : 16.7 corehours/iteration
+with 100 tasks : 8.8 corehours/iteration
+
+definetly advicable to use a smaller number of cores for the LM algorithm
