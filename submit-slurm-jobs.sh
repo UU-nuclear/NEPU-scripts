@@ -10,3 +10,10 @@ JOBID_03=$(sbatch --dependency=afterok:${JOBID_02##* } pipeline-job-03.sh) &&
 JOBID_04=$(sbatch --dependency=afterok:${JOBID_03##* } pipeline-job-04.sh) &&
 JOBID_05=$(sbatch --dependency=afterok:${JOBID_04##* } pipeline-job-05.sh) &&
 JOBID_06=$(sbatch --dependency=afterok:${JOBID_05##* } pipeline-job-06.sh)
+
+echo $JOBID_01
+echo $JOBID_02
+echo $JOBID_03
+echo $JOBID_04
+echo $JOBID_05
+echo $JOBID_06
