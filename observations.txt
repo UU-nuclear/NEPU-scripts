@@ -46,3 +46,39 @@ with 200 tasks : 16.7 corehours/iteration
 with 100 tasks : 8.8 corehours/iteration
 
 definetly advicable to use a smaller number of cores for the LM algorithm
+
+=======================================================
+
+The creation of random files takes more computer time, I guess mainly due to overhead of creating all the files needed for the endf-file creation and the creation and moving of the tar-archieves.
+
+With 100 processes spread over 5 nodes, 1001 files (including the "central" file) was created in 1h:25min, so about 140 corehours, meaning 0.14 corehours/file.
+
+=======================================================
+
+The full pipeline (except step 01, which I didn't get to run on rackham yet) takes about 600 corehours.
+
+So with the current allocation (2000 corehours/month) I can do on average 1 run-through per week. This is similar to what I can do on galactica. However, the run-through on rackham takes significantly shorter time, due to the ability of more parallelization. The actual run-time is only a few hours on rackham while on galactica it takes several days.
+
+=======================================================
+
+A kink around 1.8 MeV appears in some cross-sections (most visible in the (n,el) channel). This is most likely due to the fact that I limited the energy grid for the parameters to start at the cut-off energy for data (i.e 1.8 MeV). The energy grid for the parameters is 
+
+energyGridForParams
+ [1] 1.00e-06 1.80e+00 2.40e+00 3.00e+00 3.60e+00 4.20e+00 4.80e+00 5.40e+00
+ [9] 6.00e+00 6.60e+00 7.20e+00 7.80e+00 9.00e+00 1.05e+01 1.20e+01 1.35e+01
+[17] 1.50e+01 1.80e+01 2.10e+01 2.40e+01 2.70e+01 3.00e+01 3.60e+01 4.20e+01
+[25] 4.80e+01 5.40e+01
+
+A point at 0 (1.00e-06) is added. The correlation is calculated from the radial covariance function in the index of the parameter grid. This means that the same correlation will happen between idx 0 and 1 as for idx 1 and 2, eventhough the energy difference is large. The easy solution is to not introduce this energy cut-off, but that may enlarge the parameter space by alot. An energy dependent parameter point always affect all cross section above the energy where it is specified. I can not just remove the lowest energy point, this will cause all energies below 1.8 MeV to use the prior value. What could be done (although it is quite cumbersome, programatically) is to not remove the points below the experimental energy-cutoff but enforce them to not be adjustable. A mask should then be introduced before sthe full Jacobian calculation in step05.
+
+If simply do not introduce the energy cut-off:
+
+Each energy-depenedent parameter has at the moment 26 points. If I simply do not introduce the energy cut-off for the parameters I will have 30 points instead. I have in total 102 energy dependent parameters in total, 31 of which are adjtusted in the LM algorithm. So adding the 30-26=4 points per parameter will enlarge the full Jacobian calculation by 408 calculations, and each Jacobian in the LM algorithm with 124.
+
+So 
+
+(124+506)/506 = 25% increase in computer power for the LM algorithm, and 
+
+(408+3629)/3629 = 12% increase in the full Jacobain calculation.
+
+This may be acceptable.

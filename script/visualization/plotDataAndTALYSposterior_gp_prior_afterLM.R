@@ -164,17 +164,17 @@ for (curReac in reactions) {
     ggp <- ggp + labs(title=curReac,subtitle=tex_label)
 
     ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
-                               size = 0.2, width = 0.25)
+                               linewidth = 0.2, width = 0.25)
     ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
 
     # plot the default TALYS model
-    ggp <- ggp + geom_line(data=curModDt, aes(x = L1, y = DATA), col="black", size=0.2, alpha=0.5,linetype = "dashed")
+    ggp <- ggp + geom_line(data=curModDt, aes(x = L1, y = DATA), col="black", linewidth=0.2, alpha=0.5,linetype = "dashed")
     #ggp <- ggp + geom_point(data=curModDt[,c("L1","DATA")], aes(x = L1, y = DATA), col="red", size=0.2)
 
     # plot the model posterior
-    ggp <- ggp + geom_line(aes(x=L1, y=MEAN), data=curPostDt, col="green", size=0.2)
+    ggp <- ggp + geom_line(aes(x=L1, y=MEAN), data=curPostDt, col="green", linewidth=0.2)
     ggp <- ggp + geom_ribbon(aes(x=L1, ymin=MEAN-UNC, ymax=MEAN+UNC, y=MEAN), data=curPostDt,fill="green",alpha=0.3)
-    ggp <- ggp + geom_line(aes(x=L1, y=MODE), data=curPostDt, col="red", size=0.2)
+    ggp <- ggp + geom_line(aes(x=L1, y=MODE), data=curPostDt, col="red", linewidth=0.2)
     #ggp <- ggp + xlim(c(0,10))
     #ggp <- ggp + facet_wrap(~REAC, scales='free_y')
 
@@ -184,5 +184,5 @@ for (curReac in reactions) {
     filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'.png'))
     ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
     filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'_LE.png'))
-    ggsave(filepath, ggp+xlim(c(0.10)), width = 8.65, height = 5.6, units = "cm", dpi = 300)
+    ggsave(filepath, ggp+xlim(c(0,10)), width = 8.65, height = 5.6, units = "cm", dpi = 300)
 }

@@ -72,7 +72,7 @@ filename <- file.path(cur_plotPath, paste0("parameters_internal.png"))
 ggsave(filename, histplot3, width = 0.5*29.7, height = 21.0, units = "cm", dpi = 300)
 
 # now the parameters that are not energy dependent and that were not adjusted in LM
-names <- enindep_par_names[!enindep_par_names %in% adj_enindep_par_names]
+names <- enindep_par_names[!(enindep_par_names %in% adj_enindep_par_names)]
 histplot2 <- ggplot(data=plotDt[PARNAME %in% names],
 					aes(y=PARNAME, x=parval,  fill=PARNAME)) +
 			geom_density_ridges(alpha=0.6, stat="binline", binwidth=0.01) +
@@ -91,7 +91,7 @@ print(histplot2)
 cur_plotPath <- file.path(plotPath, 'parameters/')
 dir.create(cur_plotPath, recursive=TRUE, showWarnings=FALSE)
 filename <- file.path(cur_plotPath, paste0("parameters_not_adjusted.png"))
-ggsave(filename, histplot1, width = 0.5*29.7, height = 2*21.0, units = "cm", dpi = 300)
+ggsave(filename, histplot2, width = 0.5*29.7, height = 2*21.0, units = "cm", dpi = 300)
 
 energies <- str_extract(adj_endep_par_names,"\\(.+\\)")
 energies <- str_sub(energies,2,-2)

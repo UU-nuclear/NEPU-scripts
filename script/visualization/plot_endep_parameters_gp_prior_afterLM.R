@@ -21,8 +21,8 @@ plotPath <- paste0(outdataPathRun, "/plots")
 #finalParamDt <- read_object(11, "finalParamDt", outdata_path = outdataPathRun)
 finalPars <- read_object(11, "finalPars", outdata_path = outdataPathRun)
 finalParCovmat <- read_object(11, "finalParCovmat", outdata_path = outdataPathRun)
-optSysDt_allpars <- read_object(07, "optSysDt_allpars", outdata_path = outdataPathRun) # all parameters
-optParamDt <- read_object(07,"optParamDt")
+optSysDt_allpars <- read_object(10, "optSysDt_allpars", outdata_path = outdataPathRun) # all parameters
+optParamDt <- read_object(10,"optParamDt")
 optGpDt <- read_object(06,"optGpDt")
 optSysDt_allpars <- read_object(10, "optSysDt_allpars")
 finalParamDt <- copy(optParamDt)
@@ -40,7 +40,7 @@ plotDt$UNC <- sqrt(diag(finalParCovmat))
 plotDt$DATAMIN <- paramTrafo$fun(finalPars - sqrt(diag(finalParCovmat)))
 plotDt$DATAMAX <- paramTrafo$fun(finalPars + sqrt(diag(finalParCovmat)))
 plotDt$EXPID <- sub('TALYS-','', plotDt$EXPID)
-
+plotDt[,energy:=energyGridForParams[EN]]
 
 # select only the parameters that are adjusted in the LM algorithm
 adjustable_par_names <- optParamDt[ADJUSTABLE==TRUE]$PARNAME
@@ -81,9 +81,9 @@ ggp1 <- ggp1 + scale_x_continuous(breaks=seq(0,50,5),minor_breaks=seq(0,50,1))
 ggp1 <- ggp1 + theme(
                     text = element_text(size=10))
 ggp1 <- ggp1 + xlab('energy') + ylab('parameter value relative to default')
-ggp1 <- ggp1 + geom_ribbon(aes(x=EN, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
-ggp1 <- ggp1 + geom_line(aes(x=EN, y=DATA))
-#ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=EN, y=DATA))
+ggp1 <- ggp1 + geom_ribbon(aes(x=energy, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
+ggp1 <- ggp1 + geom_line(aes(x=energy, y=DATA))
+ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=energy, y=DATA))
 ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4, scales="free_y")
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
