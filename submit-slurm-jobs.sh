@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash -l
 
 # submit a series of slurm jobs to perform the different steps in the pipeline, when one
 # job depends on the results of another, make sure that they are executed in the correct
