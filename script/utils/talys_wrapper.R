@@ -103,8 +103,11 @@ createTalysFun <- function(talysClust, print.info, TMPDIR="/dev/shm/talysTemp") 
   # helper functions
 
   getCachedVariable <- function(x, varname, tolerance=1.e-05) {
-    #idx <- which(sapply(cache, function(el) !is.null(el$x) && all(el$x == x)))
-    idx <- which(sapply(cache, function(el) !is.null(el$x) && all(abs(el$x - x) < tolerance)))
+    idx <- which(sapply(cache, function(el) !is.null(el$x) && all(el$x == x)))
+    #idx <- which(sapply(cache, function(el) !is.null(el$x) && all(abs(el$x - x) < tolerance)))
+    #if(length(idx) > 1) {
+      # there is more than one entry in the cache that matches, should not happen
+    #}
     stopifnot(length(idx) <= 1)
     if (length(idx)==0) NULL else cache[[idx]]$data[[varname]]
   }

@@ -28,6 +28,30 @@ from the file /etc/R/Renviron. This has to be done at build time, since this is 
 
 =====================================================================
 
+CALCULATION OF THE FULL JACOBIAN
+
+2916 parameters => 2916 talys-calculations
+
+5 nodes => 100 workers: 2405 s = 40 min = 2/3 h execution time
+
+=> 66.8 corehours in total
+
+1.37 coreminutes/calculation
+
+compare to a single calculation: 1.28 minutes, the scaling is very good
+
+in try2 ther are more parameters
+
+3222 parameters => 3222 talys-calculations
+
+5 nodes => 100 workers: 2880 s = 48 min = 0.8 h execution time
+
+=> 80 corehours in total
+
+1.49 coreminutes/calculation
+
+=====================================================================
+
 outdata-mod-cov-func:
 
 the number of free parameters is 506 (for which the Jacobian is calculated)
