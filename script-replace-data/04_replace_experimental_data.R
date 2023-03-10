@@ -35,6 +35,7 @@ expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
 
 expDt <- expDt[!is.na(UNC)]
+expDt <- expDt[L1>0.8]
 
 # define objects to be returned
 outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents")
@@ -142,7 +143,7 @@ for(curReac in unique(expDt$REAC)) {
 	}
 
 	unc_multiplier <- 1
-	par_uncs <- 0.1*unc_multiplier*pmax(abs(par_vals),0.01)
+	par_uncs <- 0.1*unc_multiplier*pmax(abs(par_vals),1)
 	par_uncs[1] <- max(abs(par_vals[1]),0.01)
 	par_uncs[2] <- max(first_derivatives)
 
