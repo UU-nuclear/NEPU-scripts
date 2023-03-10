@@ -142,8 +142,8 @@ for(curReac in unique(expDt$REAC)) {
 	}
 
 	unc_multiplier <- 1
-	par_uncs <- unc_multiplier*pmax(abs(par_vals),0.01)
-	par_uncs[1] <- max(10*abs(par_vals[1]),0.01)
+	par_uncs <- 0.1*unc_multiplier*pmax(abs(par_vals),0.01)
+	par_uncs[1] <- max(abs(par_vals[1]),0.01)
 	par_uncs[2] <- max(first_derivatives)
 
 #	par_uncs[1] <- max(abs(y[1]),1.)
