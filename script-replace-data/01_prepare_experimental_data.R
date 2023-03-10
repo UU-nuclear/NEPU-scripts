@@ -111,7 +111,7 @@ hasUncertainties <- hasValidUncertainties(subentList)
 subents <- subentList[isMapable & hasUncertainties]
 expDt <- exforHandler$extractData(subents, ret.values = TRUE)
 expDtFull <- copy(expDt)
-expDt <- expDt[L1 > minExpEn & L1 <= maxExpEn] do not introduce the cut-off energy
+expDt <- expDt[L1 > minExpEn & L1 <= maxExpEn] # do not introduce the cut-off energy
 expDt <- expDt[!(duplicated(expDt$EXPID) &  duplicated(expDt$L1)),] # removing duplicates same energy from same experiment
 expDt[, IDX := seq_len(.N)]
 
