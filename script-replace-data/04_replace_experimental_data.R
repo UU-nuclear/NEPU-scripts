@@ -35,7 +35,7 @@ expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
 
 expDt <- expDt[!is.na(UNC)]
-expDt <- expDt[L1>0.8]
+expDt <- expDt[L1>5]
 
 # define objects to be returned
 outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents")
