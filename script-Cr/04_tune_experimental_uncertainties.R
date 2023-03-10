@@ -78,9 +78,17 @@ for(curReac in unique(expDt$REAC)) {
 	curModDt <- modDt[REAC==curReac]
 	spline_func <- splinefun(curModDt$L1,curModDt$DATA)
 
+	threshold_idx <- which(curModDt[,DATA]==0)
+	if(length(threshold_idx)==0) {
+		threshold_energy <- curModDt$L1[1]
+	} else {
+		threshold_energy <- curModDt$L1[max(threshold_idx)]
+	}
+
 	En_max <- max(expDt[REAC==curReac]$L1) + 0.1
 	#curEnGrid <- seq(getThresEn(curReac, modDt, defaultThresEn), En_max, by = 0.1)
-	curEnGrid <- seq(curModDt$L1[1]-0.2, En_max, by = 0.1)
+	#curEnGrid <- seq(curModDt$L1[1]-0.2, En_max, by = 0.1)
+	curEnGrid <- seq(threshold_energy, En_max, by = 0.1)
 	#curEnGrid <- seq(0., En_max, by = 0.1)
 
 	# The model tends to fail when using the threshold from talys, i.e getThresEn():
@@ -100,11 +108,11 @@ for(curReac in unique(expDt$REAC)) {
 	#par_vals <- c(spline_func(curEnGrid[1]),spline_func(curEnGrid[1],deriv=1),second_derivatives)
 	par_vals <- c(y[1],first_derivatives[1],second_derivatives)
 	par_uncs <- par_vals
-	par_uncs[1] <- 10*y[1]
-	par_uncs[2] <- max(first_derivatives)
-	par_uncs[3:length(par_uncs)] <- max(second_derivatives)
+	par_uncs[1] <- max(10*y[1],0.1)
+	par_uncs[2] <- max(abs(first_derivatives))
+	par_uncs[3:length(par_uncs)] <- max(abs(second_derivatives))
 
-	par_vals[2:length(par_uncs)] <- 0
+	#par_vals[2:length(par_uncs)] <- 0
 
 	reacHandler$assignMapToReac("pw", curReac,
                             vals = par_vals,
@@ -256,22 +264,27 @@ S_extra <- sysCompHandler$map(expDt, updSysDt, ret.mat = TRUE)
 # prior on the second derivative of the polygon chain
 U_extra <- sysCompHandler$cov(updSysDt, ret.mat = TRUE)
 
+prior_polygon_chain_parameters <- sysDt[ERRTYPE=="pw"]$DATA
+prior_exp_data <- expDt[,DATAREF] # if the prior on the polygon chain parameters are taken from talys
 # posterior mean of the polygon chain parameters given the experimental data
 # and their covariance
-polygon_chain_parameters <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(getDt_DATA(expDt),Diagonal(x=expDt$UNC^2),S,U)
-#polygon_chain_parameters <- t(S %*% U) %*% mult_invCov_x(getDt_DATA(expDt),Diagonal(x=expDt$UNC^2),S,U)
+polygon_chain_parameters <- prior_polygon_chain_parameters +
+														t(S_pwl %*% P_pwl) %*% mult_invCov_x(expDt[,DATA]-prior_exp_data,Diagonal(x=expDt$UNC^2),S,U)
 updSysDt[ERRTYPE=="pw", DATA := as.vector(polygon_chain_parameters)]
 
 # posterior mean of the polygon chain parameters given the experimental data
 # ignoring the systematic errors in the data
-polygon_chain_parameters <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(getDt_DATA(expDt),Diagonal(x=expDt$UNC^2),S_pwl,P_pwl)
+polygon_chain_parameters <- prior_polygon_chain_parameters +
+														t(S_pwl %*% P_pwl) %*% mult_invCov_x(expDt[,DATA]-prior_exp_data,Diagonal(x=expDt$UNC^2),S_pwl,P_pwl)
 updSysDt[ERRTYPE=="pw", V1 := as.vector(polygon_chain_parameters)]
 
 # posterior mean of the polygon chain parameters given the experimental data
 # including the MLO added uncertainties
-polygon_chain_parameters <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(getDt_DATA(expDt),Diagonal(x=expDt$UNC^2),S_extra,U_extra)
-#polygon_chain_parameters <- t(S_extra %*% U_extra) %*% mult_invCov_x(getDt_DATA(expDt),Diagonal(x=expDt$UNC^2),S_extra,U_extra)
+polygon_chain_parameters <- prior_polygon_chain_parameters +
+														t(S_pwl %*% P_pwl) %*% mult_invCov_x(expDt[,DATA]-prior_exp_data,Diagonal(x=expDt$UNC^2),S_extra,U_extra)
+
 updSysDt[ERRTYPE=="pw", V2 := as.vector(polygon_chain_parameters)]
+
 
 for (curReac in unique(updSysDt[ERRTYPE=="pw"]$EXPID)) {
 

@@ -39,7 +39,7 @@ print("-----------------------------------------------------")
 print("----------------------script 01----------------------")
 print("-----------------------------------------------------")
 
-outputObjectNames <- c("subents", "expDt", "needsDt")
+outputObjectNames <- c("subents", "expDt", "needsDt", "expDtFull")
 check_output_objects(scriptnr, outputObjectNames)
 
 db <- connectExfor(mongo_colname, mongo_dbname, "mongodb://localhost")
@@ -110,6 +110,7 @@ hasUncertainties <- hasValidUncertainties(subentList)
 
 subents <- subentList[isMapable & hasUncertainties]
 expDt <- exforHandler$extractData(subents, ret.values = TRUE)
+expDtFull <- copy(expDt)
 expDt <- expDt[L1 > minExpEn & L1 <= maxExpEn] 
 expDt <- expDt[!(duplicated(expDt$EXPID) &  duplicated(expDt$L1)),] # removing duplicates same energy from same experiment
 expDt[, IDX := seq_len(.N)]

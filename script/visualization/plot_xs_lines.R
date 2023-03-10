@@ -362,12 +362,19 @@ parameter_modeDt <- data.table(EN=energyGridForParamsFull[endep_par_SysDt[,EN]],
 						DATA = as.vector(endep_parSets_ext[,1])
 						)
 
-#pars_to_plot <- unique(parameter_samplesDt[,PARNAME])[1:6]
-pars_to_plot <- c("avadjust n","d1adjust n","v1adjust n",
-					"rvadjust n","avsoadjust n","rwdadjust n")
+# find the energy dependent paramter names order by their length scale
+pars_to_plot <- optGpDt[PARNAME=="len"][order(PARVAL),EXPID]
+pars_to_plot <- sub("TALYS-","",pars_to_plot)
+
+# take only the first 6
+pars_to_plot <- pars_to_plot[1:6]
 
 plot_endep_pars <- ggplot(data=parameter_samplesDt[PARNAME %in% pars_to_plot & EN<maxEnergy],mapping = aes(x=EN,y=DATA)) + theme_bw() +
+		theme(text = element_text(size=4)) +
 		geom_line(aes(col=LOGP_REAL,group=LOGP_REAL),size=0.25) +
 		geom_line(data=parameter_modeDt[PARNAME %in% pars_to_plot & EN<maxEnergy],col="red",size=0.25) +
 		facet_wrap(~PARNAME,scales="free_y")
 print(plot_endep_pars)
+
+filepath <- file.path(plotPath, paste0('endep_par_samples.png'))
+ggsave(filepath, plot_endep_pars, width = 16*0.5, height = 9*0.5, units = "cm", dpi = 300)

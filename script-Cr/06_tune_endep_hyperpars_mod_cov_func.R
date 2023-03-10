@@ -90,7 +90,7 @@ curSysDt[,EN:=match(EN,energies),by=EN]
 gpHandler <- createSysCompGPHandler()
 parnames_endep <- unique(curSysDt[ERRTYPE == "talyspar_endep", EXPID])
 for (curParname in parnames_endep) {
-    gpHandler$addGP(curParname, curSysDt[EXPID==curParname,UNC][1], 100, 1e-4)
+    gpHandler$addGP(curParname, curSysDt[EXPID==curParname,UNC][1], length(energyGridForParams), 1e-4)
 }
 
 # prepare the experimental data

@@ -83,7 +83,7 @@ ggp1 <- ggp1 + theme(
 ggp1 <- ggp1 + xlab('energy') + ylab('parameter value relative to default')
 ggp1 <- ggp1 + geom_ribbon(aes(x=energy, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp1 <- ggp1 + geom_line(aes(x=energy, y=DATA))
-ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=energy, y=DATA))
+#ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=energy, y=DATA))
 ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4, scales="free_y")
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
@@ -122,7 +122,7 @@ ggp2 <- ggp2 + theme(axis.text=element_text(size=4),
                    axis.title.x=element_text(hjust=1),
                    plot.title=element_text(size=5))
 ggp2 <- ggp2 + xlab('parameter value relative to initial') + ylab('')
-ggp2 <- ggp2 + geom_errorbarh(aes(y=EXPID, xmin=RELATIVE_CHANGE_MIN, xmax=RELATIVE_CHANGE_MAX), size=0.5, height=0.3)
+ggp2 <- ggp2 + geom_errorbarh(aes(y=EXPID, xmin=RELATIVE_CHANGE_MIN, xmax=RELATIVE_CHANGE_MAX), linewidth=0.5, height=0.3)
 ggp2 <- ggp2 + geom_point(aes(y=EXPID, x=RELATIVE_CHANGE), col='red', size=0.75)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)

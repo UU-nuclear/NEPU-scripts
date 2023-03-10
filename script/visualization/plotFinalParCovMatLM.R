@@ -27,6 +27,8 @@ FinalParCovMatLM <- as.matrix(optRes$parCovLM)
 
 #set the names
 ParNames <- optParamDt[ADJUSTABLE==TRUE]$PARNAME
+
+
 colnames(FinalParCovMatLM) <- ParNames
 rownames(FinalParCovMatLM) <- ParNames
 
@@ -35,6 +37,7 @@ other_pars <- !grepl("\\(.+\\)",ParNames)
 
 Cov_endep <- FinalParCovMatLM[endep_pars,endep_pars]
 Cov_other <- FinalParCovMatLM[other_pars,other_pars]
+
 
 ##################################################
 #       PLOT ENERGY DEPENTENT PARS
@@ -48,6 +51,18 @@ energies <- as.numeric(substr(rownames(Cov_endep),regexpr("\\(",rownames(Cov_end
 ordering <- order(substr(rownames(Cov_endep),nchar(rownames(Cov_endep))-1,nchar(rownames(Cov_endep))),substr(rownames(Cov_endep),1,3),energies,decreasing=TRUE)
 Cov_endep <- Cov_endep[ordering,ordering]
 
+# set parameter names only for the central energy
+central_energy <- energyGridForParams[0.5*length(energyGridForParams)]
+
+endep_par_names <- colnames(Cov_endep)
+central_par_names <- grepl(paste0("\\(",central_energy,"\\)"),endep_par_names)
+endep_par_names[central_par_names] <- str_remove(endep_par_names[central_par_names],"\\(.+\\)")
+#endep_par_names[!central_par_names] <- ""
+endep_par_names <- str_remove(endep_par_names,"\\(.+\\)")
+
+colnames(Cov_endep) <- endep_par_names
+rownames(Cov_endep) <- endep_par_names
+
 #color_palette <- colorRampPalette(brewer.pal(8, "Blues"))(25)
 color_palette<-colorRampPalette(c("red","white","blue"))
 heatmap.2(Cov_endep,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
@@ -55,6 +70,15 @@ heatmap.2(Cov_endep,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",mar
 png(file=file.path(plotPath, 'FinalCov_endep_pars_LM.png'),
 width=1200, height=700)
 heatmap.2(Cov_endep,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
+dev.off()
+
+heatmap.2(Cov_endep,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
+
+png(file=file.path(plotPath, 'FinalCorr_endep_pars_LM.png'),
+width=1200, height=700)
+heatmap.2(cov2cor(Cov_endep),Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),
+  trace = "none",dendrogram="none",density.info = "none",
+  cexRow=1,cexCol=1)
 dev.off()
 
 ##################################################
@@ -67,6 +91,12 @@ png(file=file.path(plotPath, 'FinalCov_energy_indep_pars_LM.png'),
 width=1200, height=700)
 heatmap.2(Cov_other,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
 dev.off()
+
+png(file=file.path(plotPath, 'FinalCorr_energy_indep_pars_LM.png'),
+width=1200, height=700)
+heatmap.2(cov2cor(Cov_other),Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
+dev.off()
+
 
 ##################################################
 #       PLOT THE FULL PAR COV MATRIX
@@ -91,4 +121,9 @@ heatmap.2(FinalParCovMatLM,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="no
 png(file=file.path(plotPath, 'FinalParCovLM_full.png'),
 width=1200, height=700)
 heatmap.2(FinalParCovMatLM,Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
+dev.off()
+
+png(file=file.path(plotPath, 'FinalParCorrLM_full.png'),
+width=1200, height=700)
+heatmap.2(cov2cor(FinalParCovMatLM),Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",margins=c(8,8),trace = "none",dendrogram="none",density.info = "none")
 dev.off()

@@ -99,13 +99,13 @@ for(Reac in reaction_channels) {
 		min_bin_width <- 0.5
 		grid_length <- max(2,floor((maxE-minE)/min_bin_width + 1))
 
-		suggested_energyrid <- seq(minE,maxE,length.out=grid_length)
+		suggested_energygrid <- seq(minE,maxE,length.out=grid_length)
 
 		E1 <- minE - 1E-12 # 1E-12 to have the lowest experiment included in the first left-open interval
 		new_energyGrid <- c(E1)
 
-		for(i in seq(2,length(suggested_energyrid))) {
-			E2 <- suggested_energyrid[i]
+		for(i in seq(2,length(suggested_energygrid))) {
+			E2 <- suggested_energygrid[i]
 			n_experiments <- nrow(curExpDt[L1>E1 & L1<=E2])
 			if(n_experiments==1 & i>2) {
 				Eexp <- curExpDt[L1>E1 & L1<=E2]$L1
