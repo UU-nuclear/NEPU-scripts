@@ -79,7 +79,7 @@ mongo_dbname <- "exfor"
 mongo_colname <- "entries"
 
 # only use experimental data in that energy range
-minExpEn <- 1.8
+minExpEn <- 0.1
 maxExpEn <- 50
 
 # Specify energy grid for the final random files created in step 9.
@@ -88,7 +88,7 @@ maxExpEn <- 50
 # energyGridrandomFiles[1] < minExpEn
 # energyGridrandomFiles[length(energyGridrandomFiles)] > maxExpEn
 # Note that for proper error propagation the energy dependent paramters should cover the same range.
-energyGridrandomFiles <- c(0.01,seq(0.1,1.,0.1),seq(1.2,8.0,0.2),seq(8.5,15.0,0.5),seq(16.,30,1),seq(32,60,2),seq(65,80,5),seq(90,200,10))
+energyGridrandomFiles <- c(seq(0.1,1.,0.1),seq(1.2,8.0,0.2),seq(8.5,15.0,0.5),seq(16.,30,1),seq(32,60,2),seq(65,80,5),seq(90,200,10))
 
 # moved the creation of the energy grid used in the fit to script 02, in order to limit it to where there is data
 
