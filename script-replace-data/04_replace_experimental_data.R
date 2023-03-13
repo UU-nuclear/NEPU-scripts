@@ -113,10 +113,10 @@ for(curReac in unique(expDt$REAC)) {
 		par_vals <- c(y[1],first_derivatives[1],second_derivatives)
 	}
 
-	unc_multiplier <- 0.5
-	par_uncs <- 0.1*unc_multiplier*pmax(abs(par_vals),1)
-	par_uncs[1] <- max(abs(par_vals[1]),0.01)
-	par_uncs[2] <- 3*max(abs(first_derivatives[1]),0.01)
+	unc_multiplier <- 1
+	par_uncs <- unc_multiplier*pmax(abs(par_vals),1)
+	par_uncs[1] <- max(3*abs(par_vals[1]),0.01)
+	par_uncs[2] <- max(3*first_derivatives)
 
 	if(length(curEnGrid)>2) {
 		#par_uncs[3:length(par_uncs)] <- unc_multiplier*max(abs(second_derivatives))
