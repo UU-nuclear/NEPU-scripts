@@ -38,7 +38,7 @@ expDt <- expDt[!is.na(UNC)]
 
 # define objects to be returned
 outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents")
-#check_output_objects(scriptnr, outputObjectNames)
+check_output_objects(scriptnr, outputObjectNames)
 
 # try to change the data set that has an absolute systematic uncertainty to a relative one
 sysUncDt[ERRTYPE=="sys-abs"]$UNC <- 0.05
@@ -84,10 +84,10 @@ for(curReac in unique(expDt$REAC)) {
 
 	threshold_idx <- which(curModDt[,DATA]==0)
 	if(length(threshold_idx)==0) {
-		threshold_energy <- curModDt$L1[1] - 0.2
+		#threshold_energy <- curModDt$L1[1] - 0.2
 		threshold_idx <- 1
 	} else {
-		threshold_energy <- curModDt$L1[max(threshold_idx)]
+		#threshold_energy <- curModDt$L1[max(threshold_idx)]
 		threshold_idx <- max(threshold_idx)
 	}
 	
@@ -99,37 +99,9 @@ for(curReac in unique(expDt$REAC)) {
 
 	curEnGrid <- curModDt$L1[threshold_idx:max_idx]
 
-	#if(length(curEnGrid)<=2)
-	#	next
+	#cat(curReac,"\n")
+	#print(threshold_idx)
 
-	#if(curReac=="(24-CR-52(N,TOT),,SIG)")
-	#	curEnGrid <- curEnGrid <- seq(threshold_energy, En_max, by = 0.1)
-
-	cat(curReac,"\n")
-	print(threshold_idx)
-
-	#En_max <- max(expDt[REAC==curReac]$L1) + 0.1
-	#curEnGrid <- seq(threshold_energy, En_max, by = 0.1)
-
-	#En_max <- max(expDt[REAC==curReac]$L1) + 0.1
-	#curEnGrid <- seq(getThresEn(curReac, modDt, defaultThresEn), En_max, by = 0.1)
-	#curEnGrid <- seq(curModDt$L1[1]+0.1, En_max, by = 0.1)
-	#curEnGrid <- refParamDt[PARNAME=="energy",unlist(PARVAL)]
-	#curEnGrid <- curModDt[,L1]
-	
-	#minE <- expDt[REAC==curReac,min(L1)]
-	#maxE <- expDt[REAC==curReac,max(L1)]
-	#curEnGrid <- curEnGrid[curEnGrid>minE & curEnGrid<maxE]
-	#curEnGrid <- c(minE,curEnGrid,maxE)
-
-	# The model tends to fail when using the threshold from talys, i.e getThresEn():
-	# at least when there is experimental data below or close to the threshold
-	# probably because the accuracy of this threshold depends on the talys evaluation
-	# energy grid, which is not very accurate.
-
-	#cat("-------- ",curReac," --------\n")
-	#cat("threshold = ", getThresEn(curReac, modDt, defaultThresEn),"\n")
-	#cat("min. exp En = ", min(expDt[REAC==curReac,L1]),"\n")
 
 	#second_derivatives <- spline_func(curEnGrid[1:(length(curEnGrid)-2)],deriv=2)
 	y <- spline_func(curEnGrid)
@@ -146,18 +118,10 @@ for(curReac in unique(expDt$REAC)) {
 	par_uncs[1] <- max(abs(par_vals[1]),0.01)
 	par_uncs[2] <- max(first_derivatives)
 
-#	par_uncs[1] <- max(abs(y[1]),1.)
-#	#par_uncs[2] <- unc_multiplier*max(abs(first_derivatives))
-#	par_uncs[2] <- unc_multiplier*abs(first_derivatives[1])
-#
 	if(length(curEnGrid)>2) {
 		par_uncs[3:length(par_uncs)] <- unc_multiplier*max(abs(second_derivatives))
 		#par_uncs[3:length(par_uncs)] <- pmax(unc_multiplier*abs(second_derivatives),0.1)
 	}
-
-	#par_vals[2:length(par_uncs)] <- 0
-
-	#print(par_uncs)
 
 	reacHandler$assignMapToReac("pw", curReac,
                             vals = par_vals,
