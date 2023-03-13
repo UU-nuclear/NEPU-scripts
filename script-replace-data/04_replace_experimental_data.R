@@ -115,8 +115,8 @@ for(curReac in unique(expDt$REAC)) {
 
 	unc_multiplier <- 1
 	par_uncs <- unc_multiplier*pmax(abs(par_vals),1)
-	par_uncs[1] <- max(3*abs(par_vals[1]),0.01)
-	par_uncs[2] <- max(3*abs(first_derivatives))
+	par_uncs[1] <- max(0.1*abs(par_vals[1]),0.01)
+	par_uncs[2] <- max(abs(first_derivatives))
 
 	if(length(curEnGrid)>2) {
 		#par_uncs[3:length(par_uncs)] <- unc_multiplier*max(abs(second_derivatives))
@@ -170,8 +170,6 @@ updSysDt <- copy(sysDt)
 # set the seed for random number generator
 # to have reproducible results
 set.seed(tuneExpUncSeed)
-
-expDt <- expDt[L1>1.0]
 
 reac_map_assignment <- reacHandler$getMapAssignment()
 
