@@ -188,8 +188,8 @@ for (curReac in unique(expDt$REAC)) {
 	# create sysDt only containing systematic errors of
 	# experiments in current reaction channel
 	curSysDt <- sysDt[EXPID %in% paste0("EXPID-",curExpIds) | 
-	                  #grepl("^REACEXP", EXPID),]   
-	                  grepl(cur_EXPID_reac, EXPID),]   
+	                  grepl("^REACEXP", EXPID),]   
+	                  #grepl(cur_EXPID_reac, EXPID),]   
 	curSysDt[, IDX := seq_len(.N)]
 
 	# set up the current optimization problem
