@@ -171,6 +171,8 @@ updSysDt <- copy(sysDt)
 # to have reproducible results
 set.seed(tuneExpUncSeed)
 
+expDt <- expDt[L1>1.0]
+
 reac_map_assignment <- reacHandler$getMapAssignment()
 
 for (curReac in unique(expDt$REAC)) {
