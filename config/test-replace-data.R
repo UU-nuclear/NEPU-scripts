@@ -79,7 +79,7 @@ mongo_dbname <- "exfor"
 mongo_colname <- "entries"
 
 # only use experimental data in that energy range
-minExpEn <- 0.1
+minExpEn <- 1.0
 maxExpEn <- 50
 
 # Specify energy grid for the final random files created in step 9.
