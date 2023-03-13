@@ -35,7 +35,6 @@ expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
 
 expDt <- expDt[!is.na(UNC)]
-expDt <- expDt[L1>5]
 
 # define objects to be returned
 outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents")
@@ -344,6 +343,11 @@ updSysDt[ERRTYPE=="pw", V2 := as.vector(polygon_chain_parameters)]
 priorCovMat <- Diagonal(x=(sysDt[ERRTYPE=='pw',UNC])^2)
 polygon_chain_covMat <- priorCovMat - mult_xt_invCov_x((S_pwl %*% P_pwl),Diagonal(x=expDt$UNC^2),S_extra,U_extra)
 
+# I could replace this mapping below with something like this
+# SS <- sysCompHandler$map(curExpDt,curSysDt,ret.mat=TRUE)
+# XS_Poly_chain <- SS %*% (curSysDt[,V2])
+# curExpDt should here be a data.table with the energies of the knotpoints in the L1 column
+
 covmat_list <- list()
 for (curReac in unique(updSysDt[ERRTYPE=="pw"]$EXPID)) {
 
@@ -391,111 +395,11 @@ for (curReac in unique(updSysDt[ERRTYPE=="pw"]$EXPID)) {
 
 updSysDt[ERRTYPE=="pw",EN_POLY_CHAIN:=EnGridPolyChains]
 
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,INL-01",REAC:="(24-CR-52(N,INL)24-CR-52,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,P-01",REAC:="(24-CR-52(N,P)23-V-52,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,2N-01",REAC:="(24-CR-52(N,2N)24-CR-51,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,TOT-01",REAC:="(24-CR-52(N,TOT),,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,EL-01",REAC:="(24-CR-52(N,EL)24-CR-52,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,A-01",REAC:="(24-CR-52(N,A)22-TI-49,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,D-01",REAC:="(24-CR-52(N,D)23-V-51,,SIG)"]
-
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,X-01",REAC:="(24-CR-52(N,X)1-H-1,,SIG)"]
-updSysDt[ERRTYPE=="pw" & EXPID=="REACEXP-N,X-02",REAC:="(24-CR-52(N,X)2-HE-4,,SIG)"]
-
-ggp1 <- ggplot(expDt) + theme_bw() +
-theme(text=element_text(size=2),
-		axis.text=element_text(size=2),
-	    axis.title=element_text(size=3),
-	    plot.title=element_text(size=3),
-	    legend.text=element_text(size=2),
-	    legend.title=element_text(size=2)) +
-xlab("energy [MeV]") + ylab("cross section [mbarn]") +
-guides(col = "none") +
-geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
-                               linewidth = 0.1, width = 0.3) +
-geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
-                           linewidth = 0.1, width = 0.2) +
-geom_point(aes(x = L1, y = DATA, col = EXPID),size=0.2) +
-
-new_scale_colour() +
-
-geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.'), linewidth = 0.1) +
-geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.'), linewidth = 0.1) +
-geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_MLO, col='extra sys. unc.'), linewidth = 0.1) +
-geom_ribbon(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_MLO - XS_POLY_CHAIN_MLO_UNC,
-	ymax = XS_POLY_CHAIN_MLO - XS_POLY_CHAIN_MLO_UNC, fill='extra sys. unc.'), alpha=0.3) +
-#geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR, col='prior'), linewidth = 0.1) +
-scale_color_manual(name='Regression Model',
-                     breaks=c('orig. sys. unc.', 'only stat. unc.', 'extra sys. unc.','prior'),
-                     values=c('extra sys. unc.'='green', 'only stat. unc.'='red', 'orig. sys. unc.'='black','prior'='blue')) +
-ylim(0,NA) +
-facet_wrap(~ REAC, ncol=3, scales='free')
-
-dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
-filepath <- file.path(plotPath, 'DataReplacement.png')
-#ggsave(filepath, ggp1, width = 53, height = 29.8125, units = "cm", dpi = 300)
-ggsave(filepath, ggp1, width = 0.2*53, height = 0.2*29.8125, units = "cm", dpi = 300)
-
-plotDir <- file.path(plotPath, 'DataReplacement')
-dir.create(plotDir, recursive=TRUE, showWarnings=FALSE)
-for(channel in unique(expDt[,REAC])) {
-	cur_expDt <- expDt[REAC==channel]
-	cur_SysDt <- updSysDt[REAC==channel]
-	cur_modDt <- modDt[REAC==channel]
-
-	ggp1 <- ggplot(cur_expDt) + theme_bw() +
-	theme(text=element_text(size=2),
-			axis.text=element_text(size=2),
-		    axis.title=element_text(size=3),
-		    plot.title=element_text(size=3),
-		    legend.text=element_text(size=2),
-		    legend.title=element_text(size=2)) +
-	xlab("energy [MeV]") + ylab("cross section [mbarn]") +
-	guides(col = "none") +
-	geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
-	                               linewidth = 0.1, width = 0.3) +
-	geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
-	                           linewidth = 0.1, width = 0.2) +
-	geom_point(aes(x = L1, y = DATA, col = EXPID),size=0.2) +
-
-	new_scale_colour() +
-	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.'), linewidth = 0.1) +
-	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.'), linewidth = 0.1) +
-	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_MLO, col='extra sys. unc.'), linewidth = 0.1) +
-	#geom_line(data = cur_modDt, aes(x = L1, y = DATA), col='cyan', linewidth = 0.1) +
-	geom_ribbon(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_MLO - XS_POLY_CHAIN_MLO_UNC,
-	ymax = XS_POLY_CHAIN_MLO + XS_POLY_CHAIN_MLO_UNC), fill="green", alpha=0.3) +
-	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR, col='prior'), linewidth = 0.1) +
-	#geom_ribbon(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_PRIOR - XS_POLY_CHAIN_PRIOR_UNC,
-	#ymax = XS_POLY_CHAIN_PRIOR + XS_POLY_CHAIN_PRIOR_UNC), fill="blue", alpha=0.3) +
-	
-	#geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR), linewidth = 0.1, col='cyan') +
-	scale_color_manual(name='Regression Model',
-	                     breaks=c('orig. sys. unc.', 'only stat. unc.', 'extra sys. unc.','prior'),
-	                     values=c('extra sys. unc.'='green', 'only stat. unc.'='red', 'orig. sys. unc.'='black','prior'='blue'))
-
-
-
-	filename <- file.path(plotDir, paste0(channel,'.png'))
-	ggsave(filename, ggp1, width = 0.2*53, height = 0.2*29.8125, units = "cm", dpi = 300)
-
-	expID <- reac_map_assignment[REAC==channel,EXPID]
-	curCovMat <- covmat_list[[expID]]
-
-	
-	
-	# save plots of the correlation matrices also
-	ncolors <- 256
-	color_palette<-colorRampPalette(c("red","white","blue"))(ncolors)
-	png(file=file.path(plotDir, paste0(channel,'_corrMat.png')),
-	width=1200, height=700)
-	heatmap.2(cov2cor(as.matrix(curCovMat)),
-	  Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",
-	  margins=c(8,8),trace = "none",dendrogram="none",density.info = "none",
-	  breaks=seq(-1.,1.,length.out = ncolors+1))
-	dev.off()
+for(row_idx in seq_len(nrow(reac_map_assignment))) {
+	expID <- reac_map_assignment[row_idx,EXPID]
+	reac <- reac_map_assignment[row_idx,REAC]
+	updSysDt[ERRTYPE=="pw" & EXPID==expID, REAC:=reac]
 }
-
 
 # now create a data.table with "experimental" data
 
@@ -556,6 +460,7 @@ fake_expDt <- exforHandler$extractData(fake_subents, ret.values = TRUE)
 # create the full covariance matrix for the fake expDt, from the blocks of each
 # reaction channel
 full_covMat <- bdiag(covmat_list)
+fake_expDt[,TOT_UNC:=sqrt(diag(full_covMat))]
 
 # remove points that do not have data
 idx_to_keep <- c()
@@ -576,17 +481,6 @@ fake_expDt[,DIDX:=seq_len(.N)]
 full_covMat <- full_covMat[idx_to_keep,idx_to_keep]
 
 save_output_objects(scriptnr, outputObjectNames, overwrite)
-
-# save a plot of the final full correlation matrices also
-ncolors <- 256
-color_palette<-colorRampPalette(c("red","white","blue"))(ncolors)
-png(file=file.path(plotDir, paste0('Full_corrMat.png')),
-width=1200, height=700)
-heatmap.2(cov2cor(as.matrix(full_covMat)),
-  Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",
-  margins=c(8,8),trace = "none",dendrogram="none",density.info = "none",
-  breaks=seq(-1.,1.,length.out = ncolors+1))
-dev.off()
 
 # it should be fine to use the same needsDt since the energy range of calculations did not change
 # this should also mean that the reference Jacobian should be exactly the same (if not there is something wrong)
@@ -609,3 +503,129 @@ dev.off()
 #
 # A1 <- mult_xt_invCov_x(fake_expDt[,DATA],full_covMat,Stest,U)
 # A2 <- t(fake_expDt[,DATA]) %*% x2
+
+
+# create some plots of the result
+ggp1 <- ggplot(expDt) + theme_bw() +
+theme(text=element_text(size=2),
+		axis.text=element_text(size=2),
+	    axis.title=element_text(size=3),
+	    plot.title=element_text(size=3),
+	    legend.text=element_text(size=2),
+	    legend.title=element_text(size=2)) +
+xlab("energy [MeV]") + ylab("cross section [mbarn]") +
+guides(col = "none") +
+geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+                               linewidth = 0.1, width = 0.3) +
+geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+                           linewidth = 0.1, width = 0.2) +
+geom_point(aes(x = L1, y = DATA, col = EXPID),size=0.2) +
+
+new_scale_colour() +
+
+geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.'), linewidth = 0.1) +
+geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.'), linewidth = 0.1) +
+geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_MLO, col='extra sys. unc.'), linewidth = 0.1) +
+geom_ribbon(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_MLO - XS_POLY_CHAIN_MLO_UNC,
+	ymax = XS_POLY_CHAIN_MLO + XS_POLY_CHAIN_MLO_UNC), fill='green', alpha=0.3) +
+#geom_line(data = updSysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR, col='prior'), linewidth = 0.1) +
+scale_color_manual(name='Regression Model',
+                     breaks=c('orig. sys. unc.', 'only stat. unc.', 'extra sys. unc.','prior'),
+                     values=c('extra sys. unc.'='green', 'only stat. unc.'='red', 'orig. sys. unc.'='black','prior'='blue')) +
+#ylim(0,NA) +
+facet_wrap(~ REAC, ncol=3, scales='free')
+
+dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
+filepath <- file.path(plotPath, 'DataReplacement.png')
+#ggsave(filepath, ggp1, width = 53, height = 29.8125, units = "cm", dpi = 300)
+ggsave(filepath, ggp1, width = 0.2*53, height = 0.2*29.8125, units = "cm", dpi = 300)
+
+plotDir <- file.path(plotPath, 'DataReplacement')
+dir.create(plotDir, recursive=TRUE, showWarnings=FALSE)
+for(channel in unique(expDt[,REAC])) {
+	cur_expDt <- expDt[REAC==channel]
+	cur_SysDt <- updSysDt[REAC==channel]
+	cur_modDt <- modDt[REAC==channel]
+
+	ggp1 <- ggplot(cur_expDt) + theme_bw() +
+	theme(text=element_text(size=2),
+			axis.text=element_text(size=2),
+		    axis.title=element_text(size=3),
+		    plot.title=element_text(size=3),
+		    legend.text=element_text(size=2),
+		    legend.title=element_text(size=2)) +
+	xlab("energy [MeV]") + ylab("cross section [mbarn]") +
+	guides(col = "none") +
+	geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+	                               linewidth = 0.1, width = 0.3) +
+	geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+	                           linewidth = 0.1, width = 0.2) +
+	geom_point(aes(x = L1, y = DATA, col = EXPID),size=0.2) +
+
+	new_scale_colour() +
+	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN, col='orig. sys. unc.'), linewidth = 0.1) +
+	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_STAT, col='only stat. unc.'), linewidth = 0.1) +
+	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_MLO, col='extra sys. unc.'), linewidth = 0.1) +
+	#geom_line(data = cur_modDt, aes(x = L1, y = DATA), col='cyan', linewidth = 0.1) +
+	geom_ribbon(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_MLO - XS_POLY_CHAIN_MLO_UNC,
+	ymax = XS_POLY_CHAIN_MLO + XS_POLY_CHAIN_MLO_UNC), fill="green", alpha=0.3) +
+	geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR, col='prior'), linewidth = 0.1) +
+	#geom_ribbon(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, ymin = XS_POLY_CHAIN_PRIOR - XS_POLY_CHAIN_PRIOR_UNC,
+	#ymax = XS_POLY_CHAIN_PRIOR + XS_POLY_CHAIN_PRIOR_UNC), fill="blue", alpha=0.3) +
+	
+	#geom_line(data = cur_SysDt[ERRTYPE=="pw"],aes(x = EN_POLY_CHAIN, y = XS_POLY_CHAIN_PRIOR), linewidth = 0.1, col='cyan') +
+	scale_color_manual(name='Regression Model',
+	                     breaks=c('orig. sys. unc.', 'only stat. unc.', 'extra sys. unc.','prior'),
+	                     values=c('extra sys. unc.'='green', 'only stat. unc.'='red', 'orig. sys. unc.'='black','prior'='blue'))
+
+
+
+	filename <- file.path(plotDir, paste0(channel,'.png'))
+	ggsave(filename, ggp1, width = 0.2*53, height = 0.2*29.8125, units = "cm", dpi = 300)
+
+	expID <- reac_map_assignment[REAC==channel,EXPID]
+	curCovMat <- covmat_list[[expID]]
+
+	# save plots of the correlation matrices also
+	ncolors <- 256
+	color_palette<-colorRampPalette(c("red","white","blue"))(ncolors)
+	png(file=file.path(plotDir, paste0(channel,'_corrMat.png')),
+	width=1200, height=700)
+	heatmap.2(cov2cor(as.matrix(curCovMat)),
+	  Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",
+	  margins=c(8,8),trace = "none",dendrogram="none",density.info = "none",
+	  breaks=seq(-1.,1.,length.out = ncolors+1))
+	dev.off()
+}
+
+# save a plot of the final full correlation matrices also
+ncolors <- 256
+color_palette<-colorRampPalette(c("red","white","blue"))(ncolors)
+png(file=file.path(plotDir, paste0('Full_corrMat.png')),
+width=1200, height=700)
+heatmap.2(cov2cor(as.matrix(full_covMat)),
+  Rowv=NA,Colv=NA,symm=TRUE,col=color_palette,scale="none",
+  margins=c(8,8),trace = "none",dendrogram="none",density.info = "none",
+  breaks=seq(-1.,1.,length.out = ncolors+1))
+dev.off()
+
+ggp1 <- ggplot(expDt) + theme_bw() +
+theme(text=element_text(size=2),
+		axis.text=element_text(size=2),
+	    axis.title=element_text(size=3),
+	    plot.title=element_text(size=3),
+	    legend.text=element_text(size=2),
+	    legend.title=element_text(size=2)) +
+xlab("energy [MeV]") + ylab("cross section [mbarn]") +
+guides(col = "none") +
+geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+                               linewidth = 0.1, width = 0.3) +
+geom_errorbar(aes(x = L1, ymin = DATA - ORIGUNC, ymax = DATA + ORIGUNC, col = EXPID),
+                           linewidth = 0.1, width = 0.2) +
+geom_point(aes(x = L1, y = DATA, col = EXPID),size=0.2) +
+geom_ribbon(data = fake_expDt,aes(x = L1, ymin = DATA - TOT_UNC,
+	ymax = DATA + TOT_UNC), fill='green', alpha=0.3) +
+geom_errorbar(data = fake_expDt,aes(x = L1, ymin = DATA - TOT_UNC,
+	ymax = DATA + TOT_UNC), col='black',
+                           linewidth = 0.1, width = 0.2) +
+facet_wrap(~ REAC, ncol=3, scales='free')
