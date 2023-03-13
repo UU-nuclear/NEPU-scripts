@@ -116,11 +116,11 @@ for(curReac in unique(expDt$REAC)) {
 	unc_multiplier <- 1
 	par_uncs <- 0.1*unc_multiplier*pmax(abs(par_vals),1)
 	par_uncs[1] <- max(abs(par_vals[1]),0.01)
-	par_uncs[2] <- max(first_derivatives)
+	par_uncs[2] <- max(abs(first_derivatives[1]),0.01)
 
 	if(length(curEnGrid)>2) {
-		par_uncs[3:length(par_uncs)] <- unc_multiplier*max(abs(second_derivatives))
-		#par_uncs[3:length(par_uncs)] <- pmax(unc_multiplier*abs(second_derivatives),0.1)
+		#par_uncs[3:length(par_uncs)] <- unc_multiplier*max(abs(second_derivatives))
+		par_uncs[3:length(par_uncs)] <- pmax(unc_multiplier*abs(second_derivatives),0.1)
 	}
 
 	reacHandler$assignMapToReac("pw", curReac,
