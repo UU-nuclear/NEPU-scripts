@@ -113,7 +113,7 @@ for(curReac in unique(expDt$REAC)) {
 		par_vals <- c(y[1],first_derivatives[1],second_derivatives)
 	}
 
-	unc_multiplier <- 1
+	unc_multiplier <- 3
 	par_uncs <- unc_multiplier*pmax(abs(par_vals),1)
 	par_uncs[1] <- max(abs(par_vals[1]),0.01)
 	par_uncs[2] <- max(abs(first_derivatives))
