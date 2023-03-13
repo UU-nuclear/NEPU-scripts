@@ -426,6 +426,7 @@ fake_expDt <- exforHandler$extractData(fake_subents, ret.values = TRUE)
 full_covMat <- bdiag(covmat_list)
 fake_expDt[,TOT_UNC:=sqrt(diag(full_covMat))]
 
+minExpEnergy <- 1.8
 # remove points that do not have data
 idx_to_keep <- c()
 for(channel in reacs) {
@@ -433,7 +434,7 @@ for(channel in reacs) {
 	grid_points_to_keep <- c()
 	for(grid_i in seq(from=1,to=(length(curEnGrid)-1))) {
 		npoints_in_bin <- sum(expDt[REAC==channel,L1] > curEnGrid[grid_i] & expDt[REAC==channel,L1] <= curEnGrid[grid_i+1])
-		if(npoints_in_bin) grid_points_to_keep <- c(grid_points_to_keep,grid_i,grid_i+1)
+		if(npoints_in_bin & curEnGrid[grid_i]>=minExpEnergy) grid_points_to_keep <- c(grid_points_to_keep,grid_i,grid_i+1)
 	}
 	grid_points_to_keep <- unique(grid_points_to_keep)
 	idx_to_keep <- c(idx_to_keep,fake_expDt[REAC==channel,IDX][1] + grid_points_to_keep - 1)
