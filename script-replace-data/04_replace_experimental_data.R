@@ -115,7 +115,7 @@ for(curReac in unique(expDt$REAC)) {
 
 	unc_multiplier <- 1
 	par_uncs <- unc_multiplier*pmax(abs(par_vals),1)
-	par_uncs[1] <- max(0.1*abs(par_vals[1]),0.01)
+	par_uncs[1] <- max(abs(par_vals[1]),0.01)
 	par_uncs[2] <- max(abs(first_derivatives))
 
 	if(length(curEnGrid)>2) {
