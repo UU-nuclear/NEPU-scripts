@@ -34,10 +34,10 @@ modDt <- read_object(3, "modDt") # default model prediction mapped to experiment
 expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
 
-expDt <- expDt[!is.na(UNC)]
+#expDt <- expDt[!is.na(UNC)]
 
 # define objects to be returned
-outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents")
+outputObjectNames <- c("fake_expDt", "full_covMat", "fake_subents","needsDt","extNeedsDt")
 check_output_objects(scriptnr, outputObjectNames)
 
 # try to change the data set that has an absolute systematic uncertainty to a relative one
@@ -442,8 +442,38 @@ for(channel in reacs) {
 
 fake_expDt <- fake_expDt[idx_to_keep]
 fake_expDt[,IDX:=seq_len(.N)]
-fake_expDt[,DIDX:=seq_len(.N)]
+#fake_expDt[,DIDX:=seq_len(.N)]
 full_covMat <- full_covMat[idx_to_keep,idx_to_keep]
+
+#####################################################
+
+# create the object that tells talys which calculations it needs to do
+
+needsDt <- exforHandler$needs(fake_expDt, fake_subents)
+
+################################################################
+# extend the energy points in needsDt to a regular grid
+# for the calculation. We always can go back to the 
+# experimental energies using linear interpolation
+################################################################
+
+# create the energy grid
+ExpEn_min <- min(fake_expDt[,L1])
+ExpEn_max <- max(fake_expDt[,L1])
+
+#energyGrid <- energyGridrandomFiles[energyGridrandomFiles>=minExpEn & energyGridrandomFiles<=maxExpEn]
+tmp_idx <- which(energyGridrandomFiles>=ExpEn_min & energyGridrandomFiles<=ExpEn_max)
+tmp_idx <- c(max(tmp_idx[1]-2,1),max(tmp_idx[1]-1,1),tmp_idx,tmp_idx[length(tmp_idx)]+1)
+tmp_idx <- unique(tmp_idx)
+energyGrid <- energyGridrandomFiles[tmp_idx]
+
+extNeedsDt <- needsDt[,{
+    stopifnot(all(L2 == 0) & all(L3 == 0))
+    list(L1 = defineEnergyGrid(L1, energyGrid, enPolicy="compgrid"),
+         L2 = 0, L3 = 0)
+}, by=c("PROJECTILE", "ELEMENT", "MASS", "REAC")]
+
+extNeedsDt[, IDX := seq_len(.N)]
 
 save_output_objects(scriptnr, outputObjectNames, overwrite)
 
@@ -594,3 +624,4 @@ geom_errorbar(data = fake_expDt,aes(x = L1, ymin = DATA - TOT_UNC,
 	ymax = DATA + TOT_UNC), col='black',
                            linewidth = 0.1, width = 0.2) +
 facet_wrap(~ REAC, ncol=3, scales='free')
+

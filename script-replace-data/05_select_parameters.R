@@ -29,11 +29,14 @@ overwrite <- FALSE
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-subents <- read_object(1, "subents")
+#subents <- read_object(1, "subents")
+subents <- read_object(4, "fake_subents")
 refParamDt <- read_object(2, "refParamDt")
-extNeedsDt <- read_object(2, "extNeedsDt")
+#extNeedsDt <- read_object(2, "extNeedsDt")
+needsDt <- read_object(1, "needsDt")
 fullSensDt <- read_object(5, "fullSensDt") 
-expDt <- read_object(3, "expDt")
+#expDt <- read_object(3, "expDt")
+expDt <- read_object(4, "fake_expDt")
 
 ##################################################
 #      define objects to be returned 
@@ -45,6 +48,14 @@ check_output_objects(scriptnr, outputObjectNames)
 ##################################################
 #      
 ##################################################
+
+extNeedsDt <- needsDt[,{
+    stopifnot(all(L2 == 0) & all(L3 == 0))
+    list(L1 = defineEnergyGrid(L1, energyGrid, enPolicy="compgrid"),
+         L2 = 0, L3 = 0)
+}, by=c("PROJECTILE", "ELEMENT", "MASS", "REAC")]
+
+extNeedsDt[, IDX := seq_len(.N)]
 
 
 # convert the sparse matrix given as data.table 

@@ -41,7 +41,7 @@ overwrite <- FALSE
 
 refInpList <- read_object(2, "refInpList")
 refParamDt <- read_object(2, "refParamDt")
-extNeedsDt <- read_object(2, "extNeedsDt") 
+extNeedsDt <- read_object(4, "extNeedsDt") 
 
 ##################################################
 #       START OF SCRIPT
