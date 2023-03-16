@@ -181,7 +181,7 @@ for( i in 1:nrow(parRanges) ) {
   refParamDt[grepl(parRanges[i]$keyword,PARNAME),PARMAX:=parRanges[i]$max]
 }
 
-# convert the parameter specification (specifiaclly the uncertainty) to the internal parameter space
+# convert the parameter specification (specifically the uncertainty) to the internal parameter space
 paramTrafo <- parameterTransform(
                   x0 = unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL]),
                   delta = refParamDt[ADJUSTABLE==TRUE,unlist(PARVAL) - PARMIN])

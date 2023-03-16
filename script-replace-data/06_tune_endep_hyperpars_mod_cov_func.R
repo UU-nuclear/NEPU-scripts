@@ -39,14 +39,16 @@ overwrite <- FALSE
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-subents <- read_object(1, "subents")
+subents <- read_object(4, "fake_subents")
 refParamDt <- read_object(2, "refParamDt")
-extNeedsDt <- read_object(2, "extNeedsDt")
+#extNeedsDt <- read_object(2, "extNeedsDt")
+extNeedsDt <- read_object(4, "extNeedsDt")
 modList <- read_object(3, "modList")
-expDt <- read_object(3, "expDt")
+expDt <- read_object(4, "fake_expDt")
 fullSensDt <- read_object(5, "fullSensDt")
 Sexp <- read_object(5,"Sexp")
 optParamDt <- read_object(5, "optParamDt")
+exp_covMat <- read_object(4,"full_covMat")
 
 source("script-Cr/MLOwithPrior.R")
 library(parallel)
@@ -67,6 +69,8 @@ check_output_objects(scriptnr, outputObjectNames)
 # prepare the data table with systematic components
 # this comprises both systematic experimental 
 # errors and the model parameters
+
+extNeedsDt[,IDX:=seq_len(.N)]
 
 talysHandler <- createSysCompModelHandler()
 talysHandler$setRef(extNeedsDt, fullSensDt, refParamDt,
@@ -93,6 +97,7 @@ for (curParname in parnames_endep) {
 
 # prepare the experimental data
 curExpDt <- copy(expDt)
+curExpDt[,UNC:=TOT_UNC]
 setkey(curExpDt, IDX)
 setkey(extNeedsDt, IDX)
 # REFDATA contains the cross sections of the reference model
@@ -133,17 +138,30 @@ sysCompHandler$addGPHandler(gpHandler)
 
 # setup optimization specification
 
+curExpDt[,EXPID:=as.character(EXPID)]
+
 optfuns <- createMLOptimFuns()
 optfuns$setDts(curExpDt, curSysDt, gpDt,
                sysCompHandler = sysCompHandler)
+Smodel <- sysCompHandler$map(curExpDt, curSysDt, ret.mat = TRUE) # Jacobian of the model
+Pmodel <- sysCompHandler$cov(curSysDt,gpDt, ret.mat=TRUE) # Prior model parameter covariance matrix
+residual <- getDt_DATA(curExpDt) - getDt_REFDATA(curExpDt) -
+      Smodel %*% (getDt_DATA(curSysDt) - getDt_REFDATA(curSysDt))
+optfuns$setdDSP(residual,exp_covMat,Smodel,Pmodel)
 
 # create a tempory data table with the uncertainty for each parameter
 tmp <- curSysDt[ERRTYPE=="talyspar_endep"]
 tmp[,DIDX:=NULL]
 tmp[,IDX:=NULL]
 tmp[,EN:=NULL]
-tmp[,ORIGIDX:=NULL]
+#tmp[,ORIGIDX:=NULL]
 tmp <- unique(tmp)
+
+# reorder tmp to the order of gpDt
+setorder(tmp,EXPID)
+ranking <- gpDt[PARNAME=="sigma",rank(EXPID)]
+tmp <- tmp[ranking]
+
 stopifnot(gpDt[PARNAME=="sigma"]$EXPID == tmp$EXPID)
 gpDt[PARNAME=="sigma",PARUNC:=tmp$UNC]
 # They should have the same order, but should make some reordering of tmp
@@ -208,7 +226,7 @@ optRes <- optimParallel(par = initPars,
                         lower = lowerLims, 
                         upper = upperLims, 
                         control = list(fnscale = -1,maxit=300)
-)
+          )
 cat("Finished optimization at", as.character(Sys.time()), "\n")
 
 print("------")

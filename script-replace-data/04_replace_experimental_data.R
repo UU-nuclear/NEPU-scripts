@@ -11,6 +11,7 @@ if(length(args)==1) {
 }
 
 
+talysHnds <- createTalysHandlers()
 #################################################
 #       SCRIPT PARAMETERS
 ##################################################
@@ -33,6 +34,7 @@ modList <- read_object(3, "modList")
 modDt <- read_object(3, "modDt") # default model prediction mapped to experimental energies
 expDt <- read_object(3, "expDt")
 sysUncDt <- read_object(3, "sysUncDt")
+refInpList <- read_object(2, "refInpList")
 
 #expDt <- expDt[!is.na(UNC)]
 
@@ -473,7 +475,18 @@ extNeedsDt <- needsDt[,{
          L2 = 0, L3 = 0)
 }, by=c("PROJECTILE", "ELEMENT", "MASS", "REAC")]
 
-extNeedsDt[, IDX := seq_len(.N)]
+# augment extNeedsDt with the default talys predictions (simplest way is to just run a talys calculation)
+talysHnd <- talysHnds$talysHnd
+
+startTime <- Sys.time()
+cat("Started calculations at", as.character(startTime), "\n")
+runObj <- talysHnd$run(list(refInpList), extNeedsDt)
+stopTime <- Sys.time()
+cat("Finished calculations at", as.character(stopTime), "\n")
+
+rawRes <- talysHnd$result(runObj)
+
+extNeedsDt <- rawRes[[1]]$result
 
 save_output_objects(scriptnr, outputObjectNames, overwrite)
 

@@ -88,6 +88,10 @@ createMLOptimFuns <- function() {
     # covariance = prior covariance matrix of the
     # parameters to optimize
 
+    #cat("length(this$idxSetStat) = ",length(this$idxSetStat),"\n")
+    #cat("length(this$idxSetSys) = ",length(this$idxSetSys),"\n")
+    #cat("length(this$idxSetGp) = ",length(this$idxSetGp),"\n")
+
     # check that there is an expectation value for all ADJUSTABLEs
     stopifnot(length(expectation) == length(this$idxSetStat) + length(this$idxSetSys) + length(this$idxSetGp))
 
@@ -246,6 +250,17 @@ createMLOptimFuns <- function() {
 
   }
 
+  setdDSP <- function(d=NULL,D=NULL,S,P) { # function to set the members of this explicitly, normally not used
+    this$d <- d
+    this$D <- D
+    this$S <- S
+    this$P <- P
+  }
+
+  setSysCompHandler <- function(sysCompHandler) {
+    this$sysCompHandler <- sysCompHandler
+  }
+
   list(setDts = setDts,
        getModifiedDts = getModifiedDts,
        setPrior = setPrior,
@@ -255,7 +270,9 @@ createMLOptimFuns <- function() {
        logPost = locLogPost,
        gradLogPost = locGradLogPost,
        logPrior = locLogPrior,
-       gradLogPrior = locGradLogPrior
+       gradLogPrior = locGradLogPrior,
+       setdDSP = setdDSP,
+       setSysCompHandler = setSysCompHandler
        )
 }
 
