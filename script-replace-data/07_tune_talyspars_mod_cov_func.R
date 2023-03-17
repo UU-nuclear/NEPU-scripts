@@ -36,9 +36,10 @@ overwrite <- FALSE
 #       OUTPUT FROM PREVIOUS STEPS
 ##################################################
 
-subents <- read_object(1, "subents")
+subents <- read_object(4, "fake_subents")
 refParamDt <- read_object(2, "refParamDt")
-extNeedsDt <- read_object(2, "extNeedsDt")
+#extNeedsDt <- read_object(2, "extNeedsDt")
+extNeedsDt <- read_object(4, "extNeedsDt")
 modList <- read_object(3, "modList")
 full_covMat <- read_object(4, "full_covMat")
 fullSensDt <- read_object(5, "fullSensDt") 
@@ -48,6 +49,8 @@ Sexp <-  read_object(5,"Sexp")
 optExpDt <- read_object(6, "optExpDt")
 optSysDt <- read_object(6, "optSysDt")
 optGpDt <- read_object(6, "optGpDt")
+
+extNeedsDt[,IDX:=seq_len(.N)]
 
 ##################################################
 #       START OF SCRIPT
@@ -198,6 +201,10 @@ talysSel <- !expSel
 P0 <- P[talysSel, talysSel]
 X <- P[expSel, expSel] 
 S0 <- S[, expSel]
+# hack to not map the systematic experimental errors, which are already taken into account
+# in full_covMat: set all elemtents to 0
+S0[,] <- 0
+
 #D <- Diagonal(x = optExpDt$UNC^2)
 D <- full_covMat
 yexp <- getDt_DATA(optExpDt)
