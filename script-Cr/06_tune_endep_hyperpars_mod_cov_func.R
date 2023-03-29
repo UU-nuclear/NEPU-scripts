@@ -157,7 +157,7 @@ setkey(gpDt, IDX)
 lowerLims <- rep(NA_real_, nrow(gpDt))
 upperLims <- rep(NA_real_, nrow(gpDt))
 lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- 0.1*gpDt[ADJUSTABLE==TRUE & PARNAME=="sigma",PARUNC]
-lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 6
+lowerLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 10
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "sigma"] <- gpDt[ADJUSTABLE==TRUE & PARNAME=="sigma",PARUNC]
 upperLims[gpDt$ADJUSTABLE & gpDt$PARNAME == "len"] <- 3*length(energyGridForParams)
 
