@@ -104,7 +104,7 @@ modelSysDt <- talysHandler$createSysDt()
 
 setkey(updSysDt, IDX)
 optSysDt <- rbind(updSysDt, modelSysDt, fill=TRUE)
-optSysDt <- curSysDt[!grepl("REACEXP-", EXPID)]
+optSysDt <- optSysDt[!grepl("REACEXP-", EXPID)]
 optSysDt[, IDX := seq_len(.N)]
 optSysDt[, ADJUSTABLE := FALSE]
 

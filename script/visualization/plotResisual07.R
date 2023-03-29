@@ -126,11 +126,13 @@ S_pwl <- sysCompHandler$map(optExpDt, sys_pwl_Dt, ret.mat = TRUE)
 P_pwl <- sysCompHandler$cov(sys_pwl_Dt, optGpDt, ret.mat = TRUE)
 
 
-GPmean <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(optExpDt$DATA-optExpDt$REFDATA,Diagonal(x=optExpDt$UNC^2),S,U)
+#GPmean <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(optExpDt$DATA-optExpDt$REFDATA,Diagonal(x=optExpDt$UNC^2),S,U)
+GPmean <- t(S_pwl %*% P_pwl) %*% mult_invCov_x(optExpDt$DATA-optExpDt$REFDATA,Diagonal(x=optExpDt$UNC^2),S_pwl,P_pwl)
 sys_pwl_Dt[,DATA:=as.vector(GPmean)]
 
 currReac <- "(26-FE-56(N,P)25-MN-56,,SIG)"
 #currReac <- "(26-FE-56(N,TOT),,SIG)"
+currReac <- mapAssignment[,unique(REAC)][1]
 
 
 currReac2 <- mapAssignment[REAC==currReac]$EXPID
@@ -140,12 +142,12 @@ ggp <- ggp + theme_bw() + theme(legend.position="none")
 ggp <- ggp + theme(axis.text=element_text(size=9),
                    axis.title=element_text(size=10),
                    strip.text=element_text(size=8))
-ggp <- ggp + xlab('enegy [MeV]') + ylab('residual [mbarn]')
+ggp <- ggp + xlab('energy (MeV)') + ylab('residual (mbarn)')
 
 ggp <- ggp + geom_errorbar(aes(x=L1, ymin=RESIDUAL-UNC, ymax=RESIDUAL+UNC, col=EXPID), alpha=0.3)
 ggp <- ggp + geom_point(aes(x=L1, y=RESIDUAL), size=0.2, alpha=0.6)
 ggp <- ggp + geom_ribbon(aes(x=L1, ymin=-LMUNC, ymax=+LMUNC, col='red'), alpha=0.3)
-ggp <- ggp + geom_line(data=sys_pwl_Dt[EXPID==currReac2],aes(x=EN,y=DATA))
+ggp <- ggp + geom_line(data=sys_pwl_Dt[EXPID==currReac2],aes(x=EN,y=DATA),col='red')
 
 # Try it for a single reaction =========================
 

@@ -3,7 +3,7 @@
 #SBATCH -A naiss2023-22-58
 
 #SBATCH -p node -N 3
-#SBATCH -t 01:30:00
+#SBATCH -t 01:00:00
 #SBATCH -J job-04-global
 
 BASE_DIR=/proj/naiss2023-22-58

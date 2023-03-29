@@ -83,8 +83,9 @@ ggp1 <- ggp1 + theme(
 ggp1 <- ggp1 + xlab('energy') + ylab('parameter value relative to default')
 ggp1 <- ggp1 + geom_ribbon(aes(x=energy, ymin=DATAMIN, ymax=DATAMAX), alpha=0.3)
 ggp1 <- ggp1 + geom_line(aes(x=energy, y=DATA))
-#ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=energy, y=DATA))
-ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4, scales="free_y")
+ggp1 <- ggp1 + geom_point(data=plotDt_adjustables[ERRTYPE=='talyspar_endep' & PARNAME %in% adjustable_par_names],aes(x=energy, y=DATA),size=0.5)
+#ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4, scales="free_y")
+ggp1 <- ggp1 + facet_wrap(~ EXPID, ncol=4)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 filepath <- file.path(plotPath, 'endep_parameters_with_gp_obs.png')
