@@ -79,7 +79,7 @@ mongo_dbname <- "exfor"
 mongo_colname <- "entries"
 
 # only use experimental data in that energy range
-minExpEn <- 1.3
+minExpEn <- 1.0
 maxExpEn <- 50
 
 # Specify energy grid for the final random files created in step 9.
@@ -167,7 +167,7 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
- numTalysFiles <- 300
+numTalysFiles <- 300
 
 # where to store the TALYS results
 # content of TALYS result directories is stored as tar archives
