@@ -47,7 +47,7 @@ Sexp <-  read_object(5,"Sexp")
 #optExpDt <- read_object(6, "optExpDt")
 optExpDt <- read_object(3, "expDt")
 #optSysDt <- read_object(6, "optSysDt")
-optSysDt <- read_object(4, "updSysDt")
+updSysDt <- read_object(4, "updSysDt")
 #optGpDt <- read_object(6, "optGpDt")
 
 ##################################################
@@ -95,6 +95,19 @@ talys$setMask(mask)
 if(!exists("talys_finite_diff")) talys_finite_diff <- 0.01
 talys$setEps(talys_finite_diff)
 
+# prepare the TALYS handler to map from model parameters to predictions
+talysHandler <- createSysCompModelHandler()
+talysHandler$setRef(extNeedsDt, fullSensDt, refParamDt,
+                    exforHandler, c(subents, modList$SUBENT))
+talysHandler$setPrior(refParamDt)
+modelSysDt <- talysHandler$createSysDt()
+
+setkey(updSysDt, IDX)
+optSysDt <- rbind(updSysDt, modelSysDt, fill=TRUE)
+optSysDt <- curSysDt[!grepl("REACEXP-", EXPID)]
+optSysDt[, IDX := seq_len(.N)]
+optSysDt[, ADJUSTABLE := FALSE]
+
 # sanity check: check if we have set up the model correctly
 # refPar <- optParamDt[ADJUSTABLE == TRUE, unlist(PARVAL)]
 # fn <- talys$fun(refPar)
@@ -103,8 +116,8 @@ talys$setEps(talys_finite_diff)
 # The ADJUST column in optParamDt defines
 # which TALYS parameters (both energy-dependent and 
 # -independent) should be optimized
-optExpDt[, ADJUSTABLE := NULL]
-optSysDt[, ADJUSTABLE := NULL]
+#optExpDt[, ADJUSTABLE := NULL]
+#optSysDt[, ADJUSTABLE := NULL]
 #optGpDt[, ADJUSTABLE := NULL]
 
 # Both optParamDt and optSysDt contain the TALYS parameters.
@@ -160,11 +173,7 @@ stopifnot(optSysDt[grepl("TALYS",EXPID),PARNAME] == optParamDt$PARNAME[optParamD
 normHandler <- createSysCompNormHandler("DATAREF")
 normHandler$addSysUnc("EXPID", "", 0, 0, FALSE)
 
-# prepare the TALYS handler to map from model parameters to predictions
-talysHandler <- createSysCompModelHandler()
-talysHandler$setRef(extNeedsDt, fullSensDt, refParamDt,
-                    exforHandler, c(subents, modList$SUBENT))
-talysHandler$setPrior(refParamDt)
+
 
 
 # create global handler and register the individual handlers
