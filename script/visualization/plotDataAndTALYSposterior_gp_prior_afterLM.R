@@ -62,6 +62,7 @@ RandomFilesNeedsDt <- needsDt[,{
 }, by=c("PROJECTILE", "ELEMENT", "MASS", "REAC")]
 RandomFilesNeedsDt[, IDX := seq_len(.N)]
 
+allResults[is.na(allResults)] <- 0
 sampledResults <- allResults[,2:ncol(allResults)]
 
 Sexp <- exforHandler$getJac(optExpDt,RandomFilesNeedsDt,subents)
@@ -184,5 +185,5 @@ for (curReac in reactions) {
     filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'.png'))
     ggsave(filepath, ggp, width = 8.65, height = 5.6, units = "cm", dpi = 300)
     filepath <- file.path(plotPath, paste0('posterior_TALYS_with_gp_obs_', curReac,'_LE.png'))
-    ggsave(filepath, ggp+xlim(c(1,3)), width = 8.65, height = 5.6, units = "cm", dpi = 300)
+    ggsave(filepath, ggp+xlim(c(0,30)), width = 8.65, height = 5.6, units = "cm", dpi = 300)
 }
