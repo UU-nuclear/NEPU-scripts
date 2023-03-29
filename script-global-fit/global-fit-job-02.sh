@@ -6,7 +6,7 @@
 
 #SBATCH -p node -N 5
 #SBATCH -t 01:20:00
-#SBATCH -J job-02-ND-pipeline
+#SBATCH -J job-02-global
 
 BASE_DIR=/proj/naiss2023-22-58
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect-new.sif
