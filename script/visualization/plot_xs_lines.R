@@ -201,7 +201,8 @@ for(calc in seq_len(ncol(allParsets)))
 #####################################
 
 defaultMinEnergy <- 1
-maxEnergy <- 200
+maxEnergy <- 50
+minEnergy <- 1.5
 
 # reoder the data so that the REAC keyword is correct
 reorder <- function(x)
@@ -227,19 +228,23 @@ modeDt <- data.table(L1=modDt$L1,
 						LOGP_REAL = rep(post_probs_real[1],length(modDt$L1))
 						)
 
-plot_MVNprob <- ggplot(data=samplesDt[L1<maxEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
+plot_MVNprob <- ggplot(data=samplesDt[L1<maxEnergy & L1>=minEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
 		geom_line(aes(col=LOGP,group=LOGP),size=0.25) +
 		geom_point(data=expDt[L1<maxEnergy],alpha=0.25,size=0.1) +
 		geom_errorbar(data=expDt[L1<maxEnergy],aes(ymin=DATA-UNC,ymax=DATA+UNC),alpha=0.25) +
-		geom_line(data=modeDt[L1<maxEnergy],col='red',size=0.25) +
+		geom_line(data=modeDt[L1<maxEnergy & L1>=minEnergy],col='red',size=0.25) +
+		xlab("Incident Energy (MeV)") +
+		ylab("Cross Section (mbarn)") +
 		facet_wrap(~REAC,scales="free_y")
 print(plot_MVNprob)
 
-plot_REALprob <- ggplot(data=samplesDt[L1<maxEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
+plot_REALprob <- ggplot(data=samplesDt[L1<maxEnergy & L1>=minEnergy],mapping = aes(x=L1,y=DATA)) + theme_bw() +
 		geom_line(aes(col=LOGP_REAL,group=LOGP_REAL),size=0.25) +
 		geom_point(data=expDt[L1<maxEnergy],alpha=0.25,size=0.1) +
 		geom_errorbar(data=expDt[L1<maxEnergy],aes(ymin=DATA-UNC,ymax=DATA+UNC),alpha=0.25) +
-		geom_line(data=modeDt[L1<maxEnergy],col='red',size=0.25) +
+		geom_line(data=modeDt[L1<maxEnergy & L1>=minEnergy],col='red',size=0.25) +
+		xlab("Incident Energy (MeV)") +
+		ylab("Cross Section (mbarn)") +
 		facet_wrap(~REAC,scales="free_y")
 print(plot_REALprob)
 
@@ -247,13 +252,13 @@ dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 filepath <- file.path(plotPath, paste0('sampled_xs_MVNprob.png'))
 ggsave(filepath, plot_MVNprob, width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
 filepath <- file.path(plotPath, paste0('sampled_xs_MVNprob2.png'))
-ggsave(filepath, plot_MVNprob+xlim(0,5), width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
+ggsave(filepath, plot_MVNprob+xlim(0,50), width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
 
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 filepath <- file.path(plotPath, paste0('sampled_xs_REALprob.png'))
 ggsave(filepath, plot_REALprob, width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
 filepath <- file.path(plotPath, paste0('sampled_xs_REALprob2.png'))
-ggsave(filepath, plot_REALprob+xlim(0,5), width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
+ggsave(filepath, plot_REALprob+xlim(0,50), width = 16*1.5, height = 9*1.5, units = "cm", dpi = 300)
 
 # check how good our approximated posterior pdf is:
 
