@@ -34,6 +34,8 @@ for (curReac in reactions) {
 
     ggp <- ggp + geom_errorbar(aes(ymin = DATA - UNC, ymax = DATA + UNC),
                                linewidth = 0.2, width = 0.25)
+    #ggp <- ggp + geom_errorbar(aes(ymin = DATA - ORIG_UNC, ymax = DATA + ORIG_UNC, col=EXPID),
+    #                           linewidth = 0.2, width = 0.25)
     ggp <- ggp + geom_point(aes(col=EXPID),size=0.25)
     ggp <- ggp + geom_line(data=modDt[REAC==curReac],col='red',linewidth = 0.2)
 
