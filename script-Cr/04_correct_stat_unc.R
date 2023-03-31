@@ -110,6 +110,7 @@ for(reac in reac_channels) {
 		expDt_upd_unc[EXPID==experiment,UNC:=sqrt(pred_exp$nugs)]
 
 		# save a figure
+		dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 		filepath <- file.path(plotPath, paste0('hetGPfit_',reac,'_',experiment,'.png'))
 		ggsave(filepath, ggp, width = 16*0.75, height = 9*0.75, units = "cm", dpi = 300)
 
