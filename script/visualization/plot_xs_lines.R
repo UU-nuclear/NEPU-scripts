@@ -202,7 +202,7 @@ for(calc in seq_len(ncol(allParsets)))
 
 defaultMinEnergy <- 1
 maxEnergy <- 50
-minEnergy <- 1.5
+minEnergy <- 0
 
 # reoder the data so that the REAC keyword is correct
 reorder <- function(x)

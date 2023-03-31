@@ -10,7 +10,19 @@
 
 # working directory
 workdir <- "/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts"
-setwd(workdir)
+local_workdir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts"
+
+tryCatch(
+    expr = {
+        setwd(workdir)
+        cat("setting workdir to",workdir,"\n")
+    },
+    error = function(e){
+        cat("setting workdir to",local_workdir,"\n")
+        workdir <<- local_workdir
+        setwd(workdir)
+    }
+)
 
 source("config/required_packages.R")
 source("config/required_sourcefiles.R")
