@@ -31,6 +31,8 @@ reac <- "(24-CR-52(N,TOT),,SIG)"
 curModDt <- modDt[REAC==reac]
 
 
+startTime <- Sys.time()
+cat("Started calculations at", as.character(startTime), "\n")
 #First the Matern5_2
 
 X <- matrix(curModDt$L1, ncol = 1)
@@ -108,3 +110,6 @@ pred_hetGP_exp_SqrExp <- as.data.table(predict(x = Xgrid, object = model_hetGP_e
 pred_hetGP_exp_SqrExp[,L1:=Xgrid]
 
 save_output_objects(scriptnr, "pred_hetGP_exp_SqrExp", overwrite)
+
+stopTime <- Sys.time()
+cat("Finished calculations at", as.character(stopTime), "\n")
