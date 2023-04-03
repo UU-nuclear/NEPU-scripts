@@ -164,9 +164,12 @@ for (curReac in reactions) {
     ggp <- ggp + xlab("energy (MeV)") + ylab("cross section (mbarn)")
     ggp <- ggp + labs(title=curReac,subtitle=tex_label)
 
-    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+#    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC), col = "black",
+#                               linewidth = 0.2, width = 0.25)
+#    ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
+    ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UPDUNC, ymax = DATA + UPDUNC, col = EXPID),
                                linewidth = 0.2, width = 0.25)
-    ggp <- ggp + geom_point(aes(x = L1, y = DATA), size=0.25)
+    ggp <- ggp + geom_point(aes(x = L1, y = DATA, col = EXPID), size=0.25)
 
     # plot the default TALYS model
     ggp <- ggp + geom_line(data=curModDt, aes(x = L1, y = DATA), col="black", linewidth=0.2, alpha=0.5,linetype = "dashed")
