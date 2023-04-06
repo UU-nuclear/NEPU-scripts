@@ -24,14 +24,16 @@ library(ggplot2)
 library(data.table)
 
 outputObjectNames <- c("expDt_upd_unc")
+check_output_objects(scriptnr, outputObjectNames)
 
 # a script to test the idea of inflating the random uncertainty from resonance like data
 # 
 # We are trying to fit the average (smooth) cross section. The data in the low energy region
 # is however not representative of this mean. They follow a different distribution, due to the resonance-
-# like structure. Therefore, their weight in the fit should be representative of that these are samples
-# from this distribution. If we do not do this the propagated uncertainty will be an underestimation of
-# the true uncertainty.
+# like structure. Therefore, their weight in the fit should be representative of that the experimental
+# points are samples from this distribution.
+# If we do not do this the propagated uncertainty will be an underestimation of the true uncertainty.
+# Additionally, the resonance range constrain the average cross-section too much, leading to a poor fit/
 
 # The simple way of doing this would be to calculate the standard deviation
 # from a model (GLS fit) in each energy interval and inflate the uncertainty of the data points to this,
@@ -41,10 +43,10 @@ outputObjectNames <- c("expDt_upd_unc")
 #    the mean cross section.
 # 2) We then fit a het. GP to the data using this length scale. The het. GP estimates the variance of the 
 #    data around a mean (with the length scale extracted from talys)
-# 3) This can then be used to replace the uncertainty of the experimental data points, to be represtative
+# 3) This can then be used to replace the uncertainty of the experimental data points, to be representative
 #    of the distribution around the mean.
 # So what we are doing is to estimate, using the GP, the distribution of data around a representative mean.
-# We do not move the data points, but only inflate their uncertainty by considering them as samples from
+# We do not move the data points, but only inflate their "uncertainty" by considering them as samples from
 # the determined distribution. This will then reflect in a larger uncertainty in the mean cross section once
 # we fit the talys model
 
@@ -53,6 +55,7 @@ expDt <- read_object(3,"expDt")
 modDt <- read_object(3, "modDt")
 
 expDt_upd_unc <- copy(expDt)
+expDt_upd_unc[,ORIG_UNC:=UNC]
 
 reac_channels <- expDt[,unique(REAC)]
 for(reac in reac_channels) {
@@ -78,6 +81,16 @@ for(reac in reac_channels) {
 
 		# the detection of the abrupt change of binning is more difficult than I thought
 		# I will leave it for now and treat all data the same
+
+		# I select data sets to apply this correction to based on the minimum distance between
+		# measured energies. The data set is considered "high resolution data" is the minimum
+		# energy distance is smaller/equal Ec = 0.05 = 50 keV
+		setorder(curExpDt,L1)
+		energies <- curExpDt$L1
+		nn <- length(energies)
+		dE <- energies[2:nn]-energies[1:nn-1]
+		dE <- c(dE[1],dE) # the distance for the first point is to the next point
+		if(min(dE) > 0.05) next
 
 		X <- matrix(curExpDt$L1, ncol = 1)
 		Z <- curExpDt$DATA
@@ -106,49 +119,18 @@ for(reac in reac_channels) {
 		ggp <- ggp + geom_line(aes(x=L1, y=mean),data=pred_exp, col='blue')
 
 		# store the fitted nuggets as updated stat. unc. in expDt
-		expDt_upd_unc[EXPID==experiment,ORIG_UNC:=UNC]
-		expDt_upd_unc[EXPID==experiment,UNC:=sqrt(pred_exp$nugs)]
+		expDt_upd_unc[EXPID==experiment,UNC:=pmax(sqrt(pred_exp$nugs),ORIG_UNC)]
 
 		# save a figure
 		dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 		filepath <- file.path(plotPath, paste0('hetGPfit_',reac,'_',experiment,'.png'))
 		ggsave(filepath, ggp, width = 16*0.75, height = 9*0.75, units = "cm", dpi = 300)
 
-
-		# limit to the region of resonance structure
-		# any data binned broader than 10 keV is considered as
-		# a measurement of the average cross section, its
-		# statistical uncertainty will be unchanged
- #		Ec <- 0.2 # 10 keV
- #
- #		# data with energy spacing below Ec are considered as resonance data
- #		# data with energy spacing larger than Ec are considered as average cross-section
- #		setorder(curExpDt,L1)
- #		energies <- curExpDt$L1
- #		nn <- length(energies)
- #		dE <- energies[2:nn]-energies[1:nn-1]
- #		dE <- c(dE[1],dE) # the distance for the first point is to the next point
- #		curExpDt[,dE := dE]
- #
- #		# create plots of the data selection to see that it makes sense
- #		curExpDt[,res_data := dE<Ec]
- #
- #		ggp <- ggplot(data=curExpDt)
- #		ggp <- ggp + theme_bw() + theme(legend.position="none")
- #		ggp <- ggp + theme(axis.text=element_text(size=4),
- #		                   axis.title=element_text(size=4),
- #		                   strip.text=element_text(size=3))
- #		ggp <- ggp + geom_line(aes(x=L1, y=DATA, col=res_data))
- #		ggp <- ggp + geom_errorbar(aes(x = L1, ymin = DATA - UNC, ymax = DATA + UNC, col=res_data),
- #                               size = 0.2, width = 0.25)
- #		ggp <- ggp + geom_line(aes(x=L1, y=DATA),data=curModDt,col='red')
- #		ggp <- ggp + geom_line(aes(x=L1, y=DATA),data=curModDt,col='red')
- #
- #		# save the figure
- #		dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
- #		filepath <- file.path(plotPath, paste0('tmp_',reac,'_',experiment,'.png'))
- #		ggsave(filepath, ggp)
 	}
 }
+
+# replace the expDt data.table from step 03 with the corrected one
+expDt <- expDt_upd_unc
+save_output_objects(3L, "expDt", TRUE)
 
 save_output_objects(scriptnr, outputObjectNames, overwrite)
