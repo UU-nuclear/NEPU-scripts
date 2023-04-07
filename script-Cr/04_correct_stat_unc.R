@@ -54,6 +54,8 @@ check_output_objects(scriptnr, outputObjectNames)
 expDt <- read_object(3,"expDt")
 modDt <- read_object(3, "modDt")
 
+setorder(expDt,REAC,EXPID,L1)
+
 expDt_upd_unc <- copy(expDt)
 expDt_upd_unc[,ORIG_UNC:=UNC]
 
@@ -85,8 +87,8 @@ for(reac in reac_channels) {
 		# I select data sets to apply this correction to based on the minimum distance between
 		# measured energies. The data set is considered "high resolution data" is the minimum
 		# energy distance is smaller/equal Ec = 0.05 = 50 keV
-		setorder(curExpDt,L1)
-		energies <- curExpDt$L1
+		# setorder(curExpDt,L1)
+		energies <- sort(curExpDt$L1)
 		nn <- length(energies)
 		dE <- energies[2:nn]-energies[1:nn-1]
 		dE <- c(dE[1],dE) # the distance for the first point is to the next point
