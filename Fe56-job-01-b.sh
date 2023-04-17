@@ -16,7 +16,7 @@ SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
 SCRIPT_DIR_ALT=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script
 CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Fe56.R
 
-apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR_ALT/03_extract_experimental_uncertainties.R $CONFIG_FILE
+apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/03_extract_experimental_uncertainties_alt.R $CONFIG_FILE
 
 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/04_correct_stat_unc.R $CONFIG_FILE
 
