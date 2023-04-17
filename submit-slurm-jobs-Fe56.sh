@@ -13,6 +13,7 @@ JOBID_05=$(sbatch --dependency=afterok:${JOBID_04##* } Fe56-job-05.sh) &&
 JOBID_06=$(sbatch --dependency=afterok:${JOBID_05##* } Fe56-job-06.sh)
 
 echo $JOBID_01
+echo $JOBID_01b
 echo $JOBID_02
 echo $JOBID_03
 echo $JOBID_04
