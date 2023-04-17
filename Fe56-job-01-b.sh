@@ -7,7 +7,7 @@
 
 #SBATCH -A naiss2023-22-58
 #SBATCH -p core -n 20
-#SBATCH -t 3:00
+#SBATCH -t 03:00:00
 #SBATCH -J job-01-ND-pipeline
 
 BASE_DIR=/proj/naiss2023-22-58
