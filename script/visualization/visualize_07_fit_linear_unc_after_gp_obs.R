@@ -33,16 +33,21 @@ fitResult <- as.numeric(as.vector(optRes$fn))
 fitUnc <- as.numeric(as.vector(optRes$stdAsyFitErrLM))
 J <- optRes$jac
 
-# plot the results
-
+############################
 # reconstruct experimental covariance matrix
-sysCompHandler <- createSysCompHandler()
-normHandler <- createSysCompNormHandler(dataref='DATAREF')
-normHandler$addSysUnc('EXPID', unique(expDt$EXPID), 0, 0, TRUE)
-sysCompHandler$addHandler(normHandler)
-S_syserr <- sysCompHandler$map(expDt, sysDt, ret.mat=TRUE)
-Cov_syserr <- sysCompHandler$cov(sysDt, ret.mat=TRUE)
-totunc_exp <- sqrt(expDt$UNC^2 + rowSums((S_syserr %*% Cov_syserr) * S_syserr))
+normHandler2 <- createSysCompNormHandler("DATAREF")
+normHandler2$addSysUnc("EXPID", "", 0, 0, TRUE)
+
+sysCompHandler2 <- createSysCompHandler()
+sysCompHandler2$addHandler(normHandler2)
+
+S <- sysCompHandler2$map(expDt, updSysDt, ret.mat = TRUE)
+updX <- sysCompHandler2$cov(updSysDt, ret.mat = TRUE)
+statUnc <- getDt_UNC(expDt)
+
+totunc_exp <- sqrt(statUnc^2 + diag(S %*% updX %*% t(S)))
+############################
+
 tmpExpDt <- copy(expDt)
 setkey(tmpExpDt, IDX)
 tmpExpDt[, UNC := totunc_exp]
@@ -52,6 +57,8 @@ tmpExpDt[, LMUNC := fitUnc]
 D = Diagonal(x = getDt_UNC(expDt)^2)
 chi2_ref <- chisquare(tmpExpDt[,DATA-DATAREF], D, SX, X)
 chi2_lm <- chisquare(tmpExpDt[,DATA-LMFIT], D, SX, X)
+
+# plot the results
 
 #hist(tmpExpDt[,(DATA-DATAREF)/UNC], breaks=100)
 #qqnorm(tmpExpDt[,DATA-DATAREF], pch = 1, frame = FALSE)
