@@ -34,7 +34,8 @@ for (curReac in reactions) {
     #                           linewidth = 0.2, width = 0.25)
     ggp <- ggp + geom_point(aes(x = L1, y = DATA, col=EXPID), size=0.25)
 
-    ggp <- ggp + scale_x_continuous(breaks=energyGridrandomFiles, limits=c(0.0,30))
+    #ggp <- ggp + scale_x_continuous(breaks=energyGridrandomFiles, limits=c(0.0,30))
+    ggp <- ggp + scale_x_continuous(breaks=seq(from=0,to=30,by=1),limits=c(0.0,30))
 #
 #    energy_cutoff <- 1.8
 #    ## Fit  a piece-wise linear model on the talys-energy grid

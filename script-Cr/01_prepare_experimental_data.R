@@ -90,6 +90,11 @@ queryStr <- makeQueryStr(
 it <- exforIterator(queryStr)
 subentList <- list()
 while (!is.null((curSub <- it$getNext()))) {
+    if(exists("exclude_exfor_entries")) {
+        if(curSub$ID %in% exclude_exfor_entries) {
+            next
+        }
+    }
     #if (curSub$ID %in% c("23313002", "23313003"))
     #    next # because measured at angles (wrong EXFOR classification)
     if (curSub$ID %in% c("13840005","12830008")) {

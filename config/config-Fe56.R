@@ -94,6 +94,9 @@ mongo_colname <- "entries"
 minExpEn <- 1.0
 maxExpEn <- 50
 
+# exclude exfor entries if needed
+exclude_exfor_entries <- c("23313002", "23313003") # (n,inel) measured at angles (wrong EXFOR classification)
+
 # Specify energy grid for the final random files created in step 9.
 # The grid used during the fit is based on this one, but limited to the range of
 # the experimental data. Therefore the following must hold
