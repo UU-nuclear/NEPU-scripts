@@ -8,7 +8,7 @@ if(length(args)==1) {
   stop("Script only accepts one argument.", call.=FALSE)
 }
 
-scriptnr <- 20L
+scriptnr <- 21L
 overwrite <- FALSE
 
 dir.create(file.path(outdataPath,scriptnr), recursive=TRUE, showWarnings=FALSE)
@@ -23,10 +23,18 @@ modDt <- read_object(3, "modDt")
 
 # test different GP covariance functions on the difficult data set
 # 13840002
+# experiment <- "13840002"
+# curExpDt <- expDt[EXPID==experiment]
+# #curExpDt <- curExpDt[L1<3] # just to test the script on my laptop
+# 
+# reac <- "(24-CR-52(N,TOT),,SIG)"
+# curModDt <- modDt[REAC==reac]
+
 experiment <- "13840002"
 curExpDt <- expDt[EXPID==experiment]
 #curExpDt <- curExpDt[L1<3] # just to test the script on my laptop
 
+#reac <- "(24-CR-52(N,TOT),,SIG)"
 reac <- "(24-CR-52(N,TOT),,SIG)"
 curModDt <- modDt[REAC==reac]
 
