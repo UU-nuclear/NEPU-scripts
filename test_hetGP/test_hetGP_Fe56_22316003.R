@@ -59,7 +59,7 @@ settings <- list(return.hom = TRUE) # To keep homoskedastic model used for train
 
 # model the data with a heteroschedastic GP
 model_hetGP_exp_Mat5_2 <- mleHetGP(X = X, Z = Z,
-	covtype = "Matern5_2", settings = settings, known = list(theta=model_hetGP$theta))
+	covtype = "Matern5_2", settings = settings, known = list(theta=mod_length_scale))
 
 save_output_objects(scriptnr, "model_hetGP_exp_Mat5_2", overwrite)
 
@@ -97,7 +97,7 @@ settings <- list(return.hom = TRUE) # To keep homoskedastic model used for train
 
 # model the data with a heteroschedastic GP
 model_hetGP_exp_SqrExp <- mleHetGP(X = X, Z = Z,
-	covtype = "Gaussian", settings = settings, known = list(theta=model_hetGP$theta))
+	covtype = "Gaussian", settings = settings, known = list(theta=mod_length_scale))
 
 save_output_objects(scriptnr, "model_hetGP_exp_SqrExp", overwrite)
 
