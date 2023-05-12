@@ -1,19 +1,17 @@
 #!/bin/bash -l
 
-# this job script is specific for steps 02-04 of the pipeline that does not use
-# more than two cores:
-# one for the main thread and one worker to do the talys calculation
-# so I will run it on a single node requsting two cores
-
 #SBATCH -A naiss2023-22-58
-#SBATCH -p core -n 1
-#SBATCH -t 5:00
-#SBATCH -J job-05-ND-pipeline
+
+#SBATCH -p node -N 3
+#SBATCH -t 03:00:00
+#SBATCH -J job-04-ND-pipeline
 
 BASE_DIR=/proj/naiss2023-22-58
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect-new.sif
 SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
-CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-mod-cov-func-try4.R
+CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-hetGP.R
 
-apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/11_calculate_posterior_approximation_with_defect_GLS.R $CONFIG_FILE
-
+module load openmpi/4.0.2
+mpirun -np 60 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/07_tune_talyspars_mod_cov_func.R $CONFIG_FILE
+mpirun -np 2 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/07_5_addGPobs.R $CONFIG_FILE
+mpirun -np 60 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/10_tune_talyspars_with_defect_mod_cov_func.R $CONFIG_FILE
