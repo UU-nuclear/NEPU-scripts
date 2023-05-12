@@ -96,7 +96,6 @@ colnames(subents[[idx_22433007]]$DATA$TABLE) <- c("EN-ERR", "ERR-2", "EN", "DATA
 subents[[idx_22433007]]$DATA$DESCR <- c("EN-ERR", "ERR-2", "EN", "DATA", "ERR-S", "ERR-T")
 names(subents[[idx_22433007]]$DATA$UNIT) <- c("EN-ERR", "ERR-2", "EN", "DATA", "ERR-S", "ERR-T")
 
-
 rawUncDt <- getAvailableUncertainties(expDt, subents, dataref.col = "DATAREF")
 expUncDt <- compactifyUncDt(rawUncDt)
 expUncStruc <- splitUncDt(expUncDt)
