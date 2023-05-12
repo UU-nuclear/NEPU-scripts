@@ -79,13 +79,15 @@ nvar <- 1
 model_hetGP_talys_SqrExp <- mleHomGP(X = X, Z = Z, covtype = "Gaussian")
 mod_length_scale <- model_hetGP_talys_SqrExp$theta
 
-save_output_objects(scriptnr, "model_hetGP_talys_Mat5_2", overwrite)
+#save_output_objects(scriptnr, "model_hetGP_talys_Mat5_2", overwrite)
+save_output_objects(scriptnr, "model_hetGP_talys_SqrExp", overwrite)
 
 Xgrid <- matrix(curModDt$L1, ncol=1)
 pred_hetGP_talys_SqrExp <- as.data.table(predict(x = Xgrid, object = model_hetGP_talys_SqrExp))
 pred_hetGP_talys_SqrExp[,L1:=Xgrid]
 
-save_output_objects(scriptnr, "pred_hetGP_talys_Mat5_2", overwrite)
+#save_output_objects(scriptnr, "pred_hetGP_talys_Mat5_2", overwrite)
+save_output_objects(scriptnr, "pred_hetGP_talys_SqrExp", overwrite)
 
 #==================== then experiment ======================================
 
