@@ -95,16 +95,30 @@ while (!is.null((curSub <- it$getNext()))) {
             next
         }
     }
-    #if (curSub$ID %in% c("23313002", "23313003"))
+    # if (curSub$ID %in% c("23313002", "23313003"))
     #    next # because measured at angles (wrong EXFOR classification)
-    if (curSub$ID %in% c("13840005","12830008")) {
-        # subentry 13840005 is obviously wrong, it comes from the same experiment as subentry 13840002,
-        # but is, according to the entry, from a different run. It shows a completely different XS.
-        # subentry 12830008 agrees with 13840005
-        next
-    }
+    # if (curSub$ID %in% c("13840005","12830008")) {
+    #     # subentry 13840005 is obviously wrong, it comes from the same experiment as subentry 13840002,
+    #     # but is, according to the entry, from a different run. It shows a completely different XS.
+    #     # subentry 12830008 agrees with 13840005
+    #     next
+    # }
     subentList <- c(subentList, list(curSub))
 }
+
+############## Intervention ###############################################################################
+# SUBENTRY 22870003
+# The subentry is classified as (n,inl), but according to A.J.M. Plompen the data is only a lower
+# limit of the cross section above 4 MeV incident neutron energy (there is an explanation of this
+# in the publication Nuclear Physics, Section A, Vol.786, p.1 (2007), sect. 4.2.1). Therefore we 
+# will truncate the data, removing all data above 4 MeV from the evaluation.
+idx_22870003 <- which(sapply(subentList, function(x) {x$ID=="22870003"}))
+stopifnot(subentList[[idx_22870003]]$ID == "22870003") # just double check that we change the correct subent
+
+data_table <- subentList[[idx_22870003]]$DATA$TABLE
+data_table <- data_table[EN<4]
+subentList[[idx_22870003]]$DATA$TABLE <- data_table
+###########################################################################################################
 
 # just keep the subentries that can be mapped to
 # TALYS predictions by package talysExforMapping
