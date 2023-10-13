@@ -383,3 +383,16 @@ print(plot_endep_pars)
 
 filepath <- file.path(plotPath, paste0('endep_par_samples.png'))
 ggsave(filepath, plot_endep_pars, width = 16*0.5, height = 9*0.5, units = "cm", dpi = 300)
+
+# maxEnergy <- 200
+# par_to_plot <- "rvadjust n"
+# 
+# tmp_plotDt <- parameter_samplesDt[PARNAME %in% par_to_plot & EN<maxEnergy]
+# tmp_plotDt <- tmp_plotDt[(2*35):(35*8)]
+# plot_endep_pars <- ggplot(data=tmp_plotDt,mapping = aes(x=EN,y=DATA)) + theme_bw() +
+# 		theme(text = element_text(size=4)) +
+# 		geom_line(aes(col=LOGP_REAL,group=LOGP_REAL),size=0.25) +
+# 		geom_line(data=parameter_modeDt[PARNAME %in% par_to_plot & EN<maxEnergy],col="red",size=0.25)+
+# 		geom_point(data=parameter_modeDt[PARNAME %in% par_to_plot & EN<maxEnergy],col="red",size=0.25)
+# 		#facet_wrap(~PARNAME,scales="free_y")
+# print(plot_endep_pars)
