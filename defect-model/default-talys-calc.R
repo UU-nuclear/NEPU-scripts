@@ -18,7 +18,7 @@ outSpec <- data.table(REAC = "CS/TOT",
                       L2 = 0, L3 = 0) 
 
 startTime <- Sys.time()
-runObj <- talysClustObj$run(paramList, outSpec, saveDir="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model")
+runObj <- talysClustObj$run(paramList, outSpec, saveDir="/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts/defect-model/")
 stopTime <- Sys.time()
 
 exec_time <- as.double(stopTime-startTime,units="mins")
