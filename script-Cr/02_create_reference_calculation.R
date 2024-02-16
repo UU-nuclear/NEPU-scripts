@@ -25,15 +25,11 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-
-if (length(args)==0) {
-  source("./config/config.R")
-  stop("No config file supplied, using default file config.R", call.=FALSE)
-} else if (length(args) > 1) {
-  stop("Script only accepts one argument.", call.=FALSE)
-} else {
+if(length(args)==1) {
   print(paste0("Setting as config file: ", args[1]))
   source(args[1])
+} else if (length(args) > 1) {
+  stop("Script only accepts one argument.", call.=FALSE)
 }
 
 talysHnds <- createTalysHandlers()
@@ -114,6 +110,7 @@ if (isTRUE(fewParameterTest)) {
         print(paste("limiting the number of free parameters to",max_number_of_free_pars))
         adjParList <- adjParList[1:max_number_of_free_pars]
     } else {
+        print("limiting the number of free parameters to 3")
         adjParList <- adjParList[1:3]
     }
 }

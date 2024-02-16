@@ -235,9 +235,11 @@ Jinit <- Sglob[,optParamDt[ADJUSTABLE==TRUE]$IDX] # should now be read as Sopt f
 startTime <- Sys.time()
 cat("Started calculations at", as.character(startTime), "\n")
 source("LMalgo_parallel/LMalgo_parallel.R")
+nproc <- 31
+if(exists("max_nproc")) nproc <- min(nproc,max_nproc)
 optRes <- LMalgo_parallel(talys$fun, talys$jac, pinit = pinit, p0 = refPar, P0 = P0, D = D, S = S0, X = X, yexp =yexp,
                  lower = rep(-Inf, length(refPar)), upper = rep(Inf, length(refPar)), logger = loggerLM,
-                 control = list(maxit = maxitLM, reltol = reltolLM, steptol=0.1*talys$getEps(), acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = 31, strategy = "gain"),J=Jinit)
+                 control = list(maxit = maxitLM, reltol = reltolLM, steptol=0.1*talys$getEps(), acc = FALSE, alpha=0.75, acc_step = 1e-1, nproc = nproc, strategy = "gain"),J=Jinit)
 
 stopTime <- Sys.time()
 cat("Finished calculations at", as.character(stopTime), "\n")
