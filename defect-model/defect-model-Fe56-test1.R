@@ -73,7 +73,7 @@ hyper_par_energy_grid <- seq(from=minE, to=maxE, length.out =8)
 
 # ===============================================
 
-hetGP_model <- function(hyper_pars, model, observed, observed_cov_mat, nugget=1e-04) {
+hetGP_model <- function(n_sigmas, hyper_pars, model, observed, observed_cov_mat, nugget=1e-04) {
 
 	cov_func <- function(x1, x2, length_scale) {
 		d_over_l <- abs(x1-x2)/length_scale
@@ -106,8 +106,8 @@ hetGP_model <- function(hyper_pars, model, observed, observed_cov_mat, nugget=1e
 
 	make_cov_mat <- function(hyper_pars, model, nugget=1e-04) {
 
-		sigmas <- hyper_pars[1:length(hyper_pars)-1]
-		len <- hyper_pars[length(hyper_pars)]
+		sigmas <- hyper_pars[1:n_sigmas]
+		len <- hyper_pars[n_sigmas + 1]
 
 		priors <- list()
 		for(reac in model$parsDt[,unique(REAC)]) {
@@ -185,9 +185,19 @@ hetGP_model <- function(hyper_pars, model, observed, observed_cov_mat, nugget=1e
 		L <- as.vector(-0.5*(length(observed)*log(2*pi) + log_det_cov + chi_square))
 
 		# GP prior on the sigmas vector
-
-		sigmas <- hyper_pars[1:length(hyper_pars)-1]
-		chi_square <- (sigmas - sqrt(0.1)) %*% solve(sigmas_prior_cov_mat, (sigmas-sqrt(0.1))) # expectation centered at sqrt(0.1)
+		
+		# the amplitude of the GP on sigmas covariance function
+		# sigma0 <- 1 # 0.01 correspond to a 10% relative error on the talys prediction
+		# the GP prior on sigmas covariance matrix:
+		sigmas_prior_cov_mat <- latent_cov_mat(cur_hyper_pars[length(cur_hyper_pars)-1], cur_hyper_pars[length(cur_hyper_pars)])
+		
+		tmp <- determinant(sigmas_prior_cov_mat)
+		stopifnot(tmp$sign == 1)
+		log_det_sigmas_prior_cov_mat <- tmp$modulus
+		
+		sigmas <- hyper_pars[1:n_sigmas]
+		# right now the mean of teh latent GP is sqrt(0.1): should be set to some estimate based on the data
+		chi_square <- (sigmas - sqrt(0.1)) %*% solve(sigmas_prior_cov_mat, (sigmas-sqrt(0.1)))
 
 		P <- as.vector(-0.5*(length(sigmas)*log(2*pi) + log_det_sigmas_prior_cov_mat + chi_square))
 
@@ -262,21 +272,15 @@ hetGP_model <- function(hyper_pars, model, observed, observed_cov_mat, nugget=1e
 
 		return(cur_cov_mat_exp)
 	}
+	
+	latent_cov_mat <- function(sigma, len) {
+	  Matrix(outer(hyper_par_energy_grid,hyper_par_energy_grid,cov_func, length_scale=len))*sigma
+	}
 
 	# member variables used by both log_likelihood() and grad_log_likelihood()
 	cur_hyper_pars <- hyper_pars
 	cur_cov_mat <- make_cov_mat(cur_hyper_pars, model)
 	cur_cov_mat_exp <-  model$jac %*% cur_cov_mat %*% t(model$jac)
-
-	# the amplitude of the GP on sigmas covariance function
-	sigma0 <- 1 # 0.01 correspond to a 10% relative error on the talys prediction
-	# the GP prior on sigmas covariance matrix: at the moment this is constant, with a constant length scale
-	sigmas_prior_cov_mat <- Matrix(outer(hyper_par_energy_grid,hyper_par_energy_grid,cov_func, length_scale=1.25))*sigma0
-
-	# and so is the log(determinant)
-	tmp <- determinant(sigmas_prior_cov_mat)
-	stopifnot(tmp$sign == 1)
-	log_det_sigmas_prior_cov_mat <- tmp$modulus
 
 	n_calls <- 0
 
@@ -290,16 +294,19 @@ hetGP_model <- function(hyper_pars, model, observed, observed_cov_mat, nugget=1e
 guessSigma <- seq(from=0.2, to=0.1, length.out=length(hyper_par_energy_grid))
 # guessSigma <- c(0.9,0.671,0.3,0.1)
 guessLen <- min(diff(energies))*3
-hyper_pars_init <- c(guessSigma,guessLen)
+
+guess_latent_sigma <- 1
+guess_latent_len <- 1.25
+hyper_pars_init <- c(guessSigma, guessLen, guess_latent_sigma, guess_latent_len)
 # hyper_pars_init <- c(0.88333830 0.65310938 0.29088514 0.09821135 0.01513433)
 # hyper_pars_init <- c(0.11656545, 0.15463725, 0.09103543, 0.11805153, 0.11115000, 0.08886865, 0.03450786, 0.02291360)
 
-min_hyper_pars <- c(rep(1e-03,length(guessSigma)),min(diff(energies)))
-max_hyper_pars <- c(rep(1,length(guessSigma)),10)
+min_hyper_pars <- c(rep(1e-03,length(guessSigma)),min(diff(energies)), 0.1, 0.1)
+max_hyper_pars <- c(rep(1,length(guessSigma)),10, 10, 10)
 
 
 GP_prior_mean <-  expDt[,RESIDUAL]
-myGPmodel <- hetGP_model(hyper_pars_init, model, GP_prior_mean, Diagonal(x=expDt[,UNC^2]))
+myGPmodel <- hetGP_model(length(guessSigma),hyper_pars_init, model, GP_prior_mean, Diagonal(x=expDt[,UNC^2]))
 
 # graphical representation of the guess parameters
 expDt[,PRIOR_GP_UNC:=sqrt(diag(myGPmodel$get_exp_cov_mat(hyper_pars_init)))]
@@ -323,7 +330,7 @@ ggp
 # ggsave(filepath, ggp, width = 29.7, height = 21.0, units = "cm", dpi = 300)
 
 # if you restart
-hyper_pars_init <- optim_res$par
+# hyper_pars_init <- optim_res$par
 # optim_control <- list(fnscale=-1)
 # optim_control <- list(fnscale=-1, trace=6, REPORT=1, ndeps=c(rep(1e-3,length(hyper_pars_init)-1),1e-05))
 optim_control <- list(fnscale=-1, trace=6, REPORT=1, ndeps=c(rep(1e-3,length(hyper_pars_init)-1),1e-05), maxit=40)
