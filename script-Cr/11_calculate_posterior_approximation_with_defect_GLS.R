@@ -72,10 +72,10 @@ optpars_indices <- optSysDt_optpars[, sort(IDX)]
 stopifnot(all(P0_all[optpars_indices, optpars_indices] == P0))
 
 # compute the GLS Hessian
-# Smod maps from model parameters to optimzed parameters only
+# Smod maps from model parameters to optimized parameters only
 Smod <- optRes$jac
 tS_invCexp_S <- mult_xt_invCov_x(Smod, D, S0, X)
-invP0_all <- solve(P0_all)
+# invP0_all <- solve(P0_all)
 H_gls <- (-solve(P0_all))
 H_gls[optpars_indices, optpars_indices] <- H_gls[optpars_indices, optpars_indices] - (tS_invCexp_S)
 
@@ -102,7 +102,7 @@ p0_insensitive <- p0[-optpars_indices]
 Sigma_22 <- finalParCovmat[optpars_indices,optpars_indices]
 # (prior) covariance between insensitive and optimized parameters
 Sigma_12 <- finalParCovmat[-optpars_indices,optpars_indices]
-# updated insensitive paramters according to the conditional MVN
+# updated insensitive parameters according to the conditional MVN
 p_insensitive <- p0_insensitive + Sigma_12 %*% solve(Sigma_22,p_opt - p0_opt)
 
 finalPars <- unlist(refParamDt[ADJUSTABLE==TRUE,PARVAL])

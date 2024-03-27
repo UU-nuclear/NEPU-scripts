@@ -14,7 +14,7 @@
 #' a sparse Jacobain matrix to map between the model parameters and the
 #' experimental data in expDt.
 #' 
-defect_model <- function(energies, talys_calc_dir, expDt) {
+defect_model <- function(energies, talys_calc_dir, expDt, include_channels=NULL) {
 
 	expDt <- copy(expDt) # create a copy to not change the input one by reference
 	# We read results of a talys calculation to get the open exclusive reaction channels
@@ -78,7 +78,7 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 	elastic_xs_dt <- as.data.table(read.table(file.path(talys_calc_dir, "elastic.tot"), col.names=c("E","xs")))
 	elastic_xs_dt[,ID:="CS/EL"]
 	xs_dt <- rbind(exl_xs_dt,elastic_xs_dt)
-
+	
 	# create data.table for the model defect
 	defectDt <- data.table(
 		REAC = rep(xs_dt[,unique(ID)], each=length(energies)),
@@ -107,20 +107,21 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 			# is the very last energy the channel is below the threshold for all
 			# energies in the energy grid and should not be included in the model
 			# at all.
-			# without this if statement I allways get one free parameter for each channel
+			# without this if statement I always get one free parameter for each channel
 			# at the highest energygrid point
 			defectDt[REAC==reac][seq(threshold_idx,defectDt[REAC==reac,.N])]$V1 <- 1
 		}
 	}
 	defectDt <- defectDt[V1!=0,]
-
+	
+	# finally set the parameters from the default TALYS calculation
+	for(reac in defectDt[,unique(REAC)]) {
+	  defectDt[REAC==reac,V1:=approx(x=xs_dt[ID==reac,E], y=xs_dt[ID==reac,xs], xout=L1)$y]
+	}
+	
 	# create an index column to use for the creation of the Jacobian
 	defectDt[, IDX:=seq_len(.N)]
 
-	# finally set the parameters from the default TALYS calculation
-	for(reac in defectDt[,unique(REAC)]) {
-		defectDt[REAC==reac,V1:=approx(x=xs_dt[ID==reac,E], y=xs_dt[ID==reac,xs], xout=L1)$y]
-	}
 
 	# now I can get out derived cross section in the following way
 	# total cross-section
@@ -189,7 +190,7 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 	excl_reacs_exp <- expDt[REACID %in% defectDt[,unique(REAC)],unique(REACID)]
 	incl_reacs_exp <- expDt[!(REACID %in% excl_reacs_exp),unique(REACID)]
 	incl_reacs_exp <- incl_reacs_exp[incl_reacs_exp!="CS/TOT"]
-
+	
 	# loop over all talys reaction identifiers for exclusive channels in expDt
 	JacobiansDt <- data.table()
 	for(reacid in excl_reacs_exp) {
@@ -203,7 +204,12 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 		# create the data.table for the linear interpolation
 		# Jacobian of the current channel
 
-		JacobiansDt <- rbind(JacobiansDt,linear_interpolation(curDefectDt,curExpDt))
+		this_JacobiansDt <- linear_interpolation(curDefectDt,curExpDt)
+		if(is.null(include_channels)) {
+		  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+		} else if(reacid %in% include_channels) {
+		  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+		}
 	}
 
 	# production cross-sections
@@ -250,7 +256,12 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 			maxE <- curDefectDt[,max(L1)]
 			curExpDt <- expDt[REACID==reac_exp & L1>=minE & L1<=maxE]
 
-			JacobiansDt <- rbind(JacobiansDt,linear_interpolation(curDefectDt,curExpDt))
+			this_JacobiansDt <- linear_interpolation(curDefectDt,curExpDt)
+			if(is.null(include_channels)) {
+			  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+			} else if(reacid %in% include_channels) {
+			  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+			}
 			
 		}
 	}
@@ -264,7 +275,12 @@ defect_model <- function(energies, talys_calc_dir, expDt) {
 			maxE <- curDefectDt[,max(L1)]
 			curExpDt <- expDt[REACID=="CS/TOT" & L1>=minE & L1<=maxE]
 
-			JacobiansDt <- rbind(JacobiansDt,linear_interpolation(curDefectDt,curExpDt))
+			this_JacobiansDt <- linear_interpolation(curDefectDt,curExpDt)
+			if(is.null(include_channels)) {
+			  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+			} else if(reacid %in% include_channels) {
+			  JacobiansDt <- rbind(JacobiansDt,this_JacobiansDt)
+			}
 		}
 	}
 
