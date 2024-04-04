@@ -17,5 +17,3 @@ CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Fe56.R
 
 module load openmpi/4.0.2
 mpirun -np 2 apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $SCRIPT_DIR/02_create_reference_calculation.R $CONFIG_FILE
-
-

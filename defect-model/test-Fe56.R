@@ -196,6 +196,7 @@ hyper_pars_optim <- optim_res$par
 # F = 51877.1
 # final  value 51877.128049 
 # converged
+hyper_pars_optim <- c(0.406154, 0.36997, 0.333784, 0.29778, 0.261661, 0.225592, 0.189486, 0.153439, 0.117371, 0.0812536, 0.00247959, 0.326652, 4.88091)
 ##################################################
 prior_cov_exp <- myGPmodel$mapping_matrix %*% myGPmodel$get_pars_cov_mat(hyper_pars_optim) %*% t(myGPmodel$mapping_matrix)
 expDt[,PRIOR_GP_UNC:=sqrt(diag(prior_cov_exp))]
@@ -205,7 +206,7 @@ ggp <- ggplot(data=expDt) +
   geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC)) +
   geom_line(aes(x=L1,y=default_prediction),col='orange') +
   geom_ribbon(aes(x=L1,ymin=default_prediction-PRIOR_GP_UNC, ymax=default_prediction+PRIOR_GP_UNC), fill='orange', alpha=0.5) +
-  facet_wrap(~ REAC, ncol=1, scales="free_y") +
+  facet_wrap(~ REAC, ncol=2, scales="free_y") +
   labs(x="neutron energy (MeV)", y="cross section (mbarn)") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), 
@@ -342,7 +343,56 @@ while(minE<expDt[,max(L1)]) {
   minE <- maxE
   maxE <- minE + 0.25
 }
+################################################################################
+# illustration of the optimized prior
+n_channels <- length(smooth_model$parsDt[,unique(REAC)])
+model_energies <- smooth_model$parsDt[,unique(L1)]
+channel_idx = 0
+idx2 <- c()
+for(reac in smooth_model$parsDt[,unique(REAC)]) {
+  target_dt <- data.table(L1 = model_energies, EnergyIndex = channel_idx + seq_along(model_energies))
+  idx2 <- c(idx2, smooth_model$parsDt[REAC==reac][target_dt, on=.(L1), nomatch= 0L][,EnergyIndex])
+  channel_idx <- channel_idx + length(model_energies)
+}
+idx1 <- smooth_model$parsDt[,IDX]
+value <- smooth_model$parsDt[,V1]
 
+mapping_matrix_pars <- sparseMatrix(idx1,idx2,x=value)
+mapping_matrix <- smooth_model$jac %*% mapping_matrix_pars
+
+prior_cov <- mapping_matrix %*% myGPmodel$get_pars_cov_mat(hyper_pars_optim) %*% t(mapping_matrix)
+fake_expDt[,PRIOR_GP_UNC:=sqrt(diag(prior_cov))]
+
+ggp <- ggplot(data=expDt) +
+  geom_errorbar(aes(x=L1, ymin=DATA-TOT_UNC, ymax=DATA+TOT_UNC), col='grey') +
+  geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC)) +
+  geom_ribbon(aes(x=L1,ymin=default_prediction-1.96*PRIOR_GP_UNC, ymax=default_prediction+1.96*PRIOR_GP_UNC),data=fake_expDt , fill='orange', alpha=0.5) +
+  facet_wrap(~ REAC, ncol=2, scales="free_y") +
+  labs(x="neutron energy (MeV)", y="cross section (mbarn)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+ggp
+
+
+filepath <- file.path(plotPath, 'Fe-56_1.00-5.00MeV-prior.pdf')
+ggsave(filepath, ggp,  width=0.5*297, height=0.5*210, units='mm')
+filepath <- file.path(plotPath, 'Fe-56_1.00-5.00MeV-prior.png')
+ggsave(filepath, ggp,  width=0.5*297, height=0.5*210, units='mm')
+
+################################################################################
+# Illustration of the starting point
+
+ggp <- ggplot(data=expDt) +
+  geom_errorbar(aes(x=L1, ymin=DATA-TOT_UNC, ymax=DATA+TOT_UNC), col='grey') +
+  geom_errorbar(aes(x=L1, ymin=DATA-UNC, ymax=DATA+UNC)) +
+  geom_line(aes(x=L1,y=default_prediction),data=fake_expDt , col='red') +
+  facet_wrap(~ REAC, ncol=2, scales="free_y") +
+  labs(x="neutron energy (MeV)", y="cross section (mbarn)") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+ggp
 ################################################################################
 # plot covariance matrices
 library(reshape2)
