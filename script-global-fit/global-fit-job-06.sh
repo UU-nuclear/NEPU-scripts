@@ -2,12 +2,12 @@
 
 # this job script is specifical for step 05 of the pipeline
 
-#SBATCH -A naiss2023-22-58
+#SBATCH -A naiss2024-22-324
 #SBATCH -p node -N 5
 #SBATCH -t 02:00:00
 #SBATCH -J job-06-global
 
-BASE_DIR=/proj/naiss2023-22-58
+BASE_DIR=/proj/naiss2024-22-324
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect-new.sif
 SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-global-fit
 CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Cr52-global-fit.R

@@ -5,12 +5,12 @@
 # one for the main thread and one worker to do the talys calculation
 # so I will run it on a single node requsting two cores
 
-#SBATCH -A naiss2023-22-58
+#SBATCH -A naiss2024-22-324
 #SBATCH -p core -n 20
 #SBATCH -t 03:00:00
 #SBATCH -J job-01-ND-pipeline
 
-BASE_DIR=/proj/naiss2023-22-58
+BASE_DIR=/proj/naiss2024-22-324
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect-new.sif
 SCRIPT_DIR=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script-Cr
 SCRIPT_DIR_ALT=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/script

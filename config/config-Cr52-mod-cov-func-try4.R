@@ -9,7 +9,7 @@
 # .libPaths( c( .libPaths(), userLib) )
 
 # working directory
-workdir <- "/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts"
+workdir <- "/proj/naiss2024-22-324/ND-eval-pipeline/eval-fe56-scripts"
 local_workdir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts"
 
 tryCatch(

@@ -24,7 +24,7 @@ nmbr_of_calcs <- 1
 severalParamLists <- replicate(nmbr_of_calcs,paramList,simplify=FALSE)
 
 startTime <- Sys.time()
-# runObj <- talysClustObj$run(severalParamLists, outSpec, saveDir="/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts/defect-model/")
+# runObj <- talysClustObj$run(severalParamLists, outSpec, saveDir="/proj/naiss2024-22-324/ND-eval-pipeline/eval-fe56-scripts/defect-model/")
 runObj <- talysClustObj$run(severalParamLists, outSpec, saveDir="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/test_calc")
 stopTime <- Sys.time()
 
