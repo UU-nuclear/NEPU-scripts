@@ -170,7 +170,7 @@ maxitLM <- 30
 reltolLM <- 1e-5
 
 # where to save output data
-outdataPath <- file.path(workdir, "/outdata-fe56-hetGP")
+outdataPath <- file.path(workdir, "outdata-Fe56-hetGP")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 
