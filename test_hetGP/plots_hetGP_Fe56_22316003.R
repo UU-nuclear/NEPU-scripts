@@ -71,7 +71,7 @@ print(ggp)
 #ggp + scale_color_manual(breaks=c('GP', 'default','prior'),
 #                       values=c('extra sys. unc.'='green', 'only stat. unc.'='red', 'orig. sys. unc.'='black','prior'='blue'))
 
-plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/pics-for-JEFF-meeting-2023-spring"
+plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/pics-for-JEFF-meeting-2023-spring"
 
 filepath <- file.path(plotPath, paste0('hetGPfit_Fe56_22316003.pdf'))
 ggsave(filepath, ggp, width = 130*2/3, height = 56.1, units = "mm")
@@ -124,7 +124,7 @@ ggp <- ggp + geom_line(aes(x=L1, y=DATA),data=curModDt[L1<21],col='red',linewidt
 ggp <- ggp + coord_cartesian(xlim=c(0,20))
 print(ggp)
 
-plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/pics-for-JEFF-meeting-2023-spring"
+plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/pics-for-JEFF-meeting-2023-spring"
 
 filepath <- file.path(plotPath, paste0('hetGPfit_Fe56_22316003_noGP.pdf'))
 ggsave(filepath, ggp, width = 130*2/3, height = 56.1, units = "mm")

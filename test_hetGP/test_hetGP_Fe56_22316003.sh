@@ -12,6 +12,6 @@
 
 BASE_DIR=/proj/naiss2024-22-324
 SIF_FILE=$BASE_DIR/ND-eval-pipeline/NDeval-pipeline-rackham-with-stdout-redirect-new.sif
-CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/config/config-Fe56.R
+CONFIG_FILE=$BASE_DIR/ND-eval-pipeline/NEPU-scripts/config/config-Fe56.R
 
-apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $BASE_DIR/ND-eval-pipeline/eval-fe56-scripts/test_hetGP/test_hetGP_Fe56_22316003.R $CONFIG_FILE
+apptainer exec --bind $BASE_DIR $SIF_FILE Rscript --vanilla $BASE_DIR/ND-eval-pipeline/NEPU-scripts/test_hetGP/test_hetGP_Fe56_22316003.R $CONFIG_FILE

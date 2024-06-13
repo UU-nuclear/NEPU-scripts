@@ -11,8 +11,8 @@ source("defect-model/defect-model.R")
 
 expDt <- read_object(3, "expDt")
 expDt[,UNC:=ORIG_UNC] # UNC was replaced using hetGP
-#talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/test_calc-Fe56"
-talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/talys-fit-fe56"
+#talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/defect-model/test_calc-Fe56"
+talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/defect-model/talys-fit-fe56"
 
 # test on reduced energy range
 setorder(expDt,REAC,L1)

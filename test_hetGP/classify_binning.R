@@ -40,7 +40,7 @@ ggp
 
 ###################################
 
-library("bcp",lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/R-user-libs/")
+library("bcp",lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/R-user-libs/")
 
 
 bcp.1a <- bcp(curExpDt[,dE],w0=0.9,p0=1.e-3)
@@ -52,8 +52,8 @@ plot(bcp.1b, main="Univariate Change Point Example")
 
 ###################################
 
-library(zoo,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/R-user-libs/")
-library(changepoint,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/R-user-libs/")
+library(zoo,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/R-user-libs/")
+library(changepoint,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/R-user-libs/")
 # change in mean
 ansmean=cpt.mean(curExpDt[,dE], method = 'BinSeg')
 plot(ansmean,cpt.col='blue')
@@ -61,7 +61,7 @@ print(ansmean)
 
 #####################################
 
-library(EnvCpt,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/R-user-libs/")
+library(EnvCpt,lib.loc="/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/R-user-libs/")
 
 fit_envcpt = envcpt(curExpDt[,dE])  # Fit all models at once
 fit_envcpt$summary  # Show log-likelihoods

@@ -68,7 +68,7 @@ ggp <- ggp + xlim(1,5)
 print(ggp)
 
 
-plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/pics-for-JEFF-meeting-2023-spring"
+plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/pics-for-JEFF-meeting-2023-spring"
 
 filepath <- file.path(plotPath, paste0('hetGPfit.png'))
 ggsave(filepath, ggp, width = 3*8.65, height = 3*5.6, units = "cm", dpi = 300)
