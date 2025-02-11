@@ -8,7 +8,7 @@ source("config/config-Fe56.R")
 source("defect-model/defect-model.R")
 source("defect-model/structureGPmodel.R")
 
-plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/figures"
+plotPath <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/defect-model/figures"
 dir.create(plotPath, recursive=TRUE, showWarnings=FALSE)
 # prepare the experimental data
 expDt <- read_object(3, "expDt")
@@ -126,7 +126,7 @@ if(energies[length(energies)] < expDt[,max(L1)]) energies <- c(energies, expDt[,
 
 ##########################################
 # Initiate the defect model
-talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/talys-fit-fe56"
+talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/defect-model/talys-fit-fe56"
 
 # first a model that will give me the default talys prediction for all channels
 # so i can calculate the residual

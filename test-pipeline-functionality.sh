@@ -10,8 +10,8 @@ SIF_FILE=$BASE_DIR/NEPU-with-rstudio.sif
 EXFOR_DB_DIR=$BASE_DIR/../exfor_db/
 
 # These paths are relative to BASE_DIR
-SCRIPT_DIR=$BASE_DIR/eval-fe56-scripts/script-Cr
-CONFIG_FILE=$BASE_DIR/eval-fe56-scripts/config/config-test-functionality.R
+SCRIPT_DIR=$BASE_DIR/NEPU-scripts/script-Cr
+CONFIG_FILE=$BASE_DIR/NEPU-scripts/config/config-test-functionality.R
 
 
 # start an instance of the pipeline apptainer/singularity image

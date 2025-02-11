@@ -65,7 +65,7 @@ if(energies[length(energies)] < expDt[,max(L1)]) energies <- c(energies, expDt[,
 
 ##########################################
 # Initiate the defect model
-talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts/defect-model/talys-fit-fe56"
+talys_calc_dir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts/defect-model/talys-fit-fe56"
 model <- defect_model(energies, talys_calc_dir, expDt)
 pars <- model$parsDt[,V1]
 

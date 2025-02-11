@@ -5,12 +5,12 @@
 ##################################################
 
 # add a user library where we can install additional packages
-# userLib <- "/TMC/alf/pipeline/eval-Cr-isotopes/eval-fe56-scripts/R-libs-user"
+# userLib <- "/TMC/alf/pipeline/eval-Cr-isotopes/NEPU-scripts/R-libs-user"
 # .libPaths( c( .libPaths(), userLib) )
 
 # working directory
-workdir <- "/proj/naiss2023-22-58/ND-eval-pipeline/eval-fe56-scripts"
-local_workdir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/eval-fe56-scripts"
+workdir <- "/proj/naiss2024-22-324/ND-eval-pipeline/NEPU-scripts"
+local_workdir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts"
 
 tryCatch(
     expr = {
@@ -173,7 +173,7 @@ maxitLM <- 30
 reltolLM <- 1e-5
 
 # where to save output data
-outdataPath <- file.path(workdir, "/outdata-Cr52-hetGP")
+outdataPath <- file.path(workdir, "outdata-Cr52-hetGP")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 

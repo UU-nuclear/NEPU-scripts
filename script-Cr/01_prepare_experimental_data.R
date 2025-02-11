@@ -113,11 +113,13 @@ while (!is.null((curSub <- it$getNext()))) {
 # in the publication Nuclear Physics, Section A, Vol.786, p.1 (2007), sect. 4.2.1). Therefore we 
 # will truncate the data, removing all data above 4 MeV from the evaluation.
 idx_22870003 <- which(sapply(subentList, function(x) {x$ID=="22870003"}))
-stopifnot(subentList[[idx_22870003]]$ID == "22870003") # just double check that we change the correct subent
+if (length(idx_22870003) > 0) {
+   stopifnot(subentList[[idx_22870003]]$ID == "22870003") # just double check that we change the correct subent
 
-data_table <- subentList[[idx_22870003]]$DATA$TABLE
-data_table <- data_table[EN<4]
-subentList[[idx_22870003]]$DATA$TABLE <- data_table
+   data_table <- subentList[[idx_22870003]]$DATA$TABLE
+   data_table <- data_table[EN<4]
+   subentList[[idx_22870003]]$DATA$TABLE <- data_table
+}
 ###########################################################################################################
 
 # just keep the subentries that can be mapped to
