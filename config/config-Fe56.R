@@ -9,8 +9,8 @@
 # .libPaths( c( .libPaths(), userLib) )
 
 # working directory
-workdir <- "/proj/naiss2024-22-324/ND-eval-pipeline/NEPU-scripts"
-local_workdir <- "/home/alf/projects/NucDat/NAISS/UPPMAX/2023-22-58/NEPU-scripts"
+workdir <- paste0(Sys.getenv("HOME"), "/Public/NEPU/ND-eval-pipeline/NEPU-scripts")
+local_workdir <- paste0(Sys.getenv("HOME"), "/Public/NEPU/ND-eval-pipeline/NEPU-scripts")
 
 tryCatch(
     expr = {

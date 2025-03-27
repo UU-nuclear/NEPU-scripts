@@ -42,7 +42,7 @@ print("-----------------------------------------------------")
 outputObjectNames <- c("subents", "expDt", "needsDt", "expDtFull")
 check_output_objects(scriptnr, outputObjectNames)
 
-db <- connectExfor(mongo_colname, mongo_dbname, "mongodb://localhost")
+db <- connectExfor(mongo_colname, mongo_dbname, "mongodb://exfor.physics.uu.se")
 
 # target reaction strings matching this regular expression
 
