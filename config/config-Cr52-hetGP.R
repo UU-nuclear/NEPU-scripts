@@ -139,8 +139,8 @@ enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 #enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
 
 # specification of the TALYS input file used as template
-# param_template_path <- file.path(workdir,"indata/n_Fe_056.inp")
-# I think that it should not really matter that this file is for Fe-56, only the parameters are extracted from the file
+# param_template_path <- file.path(workdir,"indata/n_Cr_052.inp")
+# I think that it should not really matter that this file is for Cr-52, only the parameters are extracted from the file
 # the target and projectile are specified sepparately
 # the input will be searched for in the indata directory, if not found there, it will be downloaded from
 # https://tendl.web.psi.ch/tendl_2019/
@@ -184,7 +184,7 @@ savePathLM <- file.path(outdataPath, "/LMalgo")
 talysFilesSeed <- 13
 
 # number of TALYS randomfiles to be created
-numTalysFiles <- 300
+numTalysFiles <- 1000
 
 # where to store the TALYS results
 # content of TALYS result directories is stored as tar archives

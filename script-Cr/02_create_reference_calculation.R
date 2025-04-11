@@ -90,9 +90,9 @@ tmp_idx <- c(max(tmp_idx[1]-2,1),max(tmp_idx[1]-1,1),tmp_idx,tmp_idx[length(tmp_
 tmp_idx <- unique(tmp_idx)
 energyGrid <- energyGridrandomFiles[tmp_idx]
 
-refInpHeader <- list(projectile = "n",
-                  element = "Cr",
-                  mass = 52L,
+refInpHeader <- list(projectile = tendl_projectile,
+                  element = tendl_element,
+                  mass = tendl_mass,
                   energy = energyGrid,
 # FIXME: temporary to speed up calculation
                   #endf = "y",

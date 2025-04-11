@@ -74,7 +74,7 @@ createTalysHandlers <- function() {
 
 # specify the reaction(s) to extract data fromthe EXFOR data base
 # target reaction strings matching this regular expression
-reacPat <- "\\(26-FE-56\\(N,[^)]+\\)[^,]*,,SIG\\)"
+reacPat <- "\\(74-W-184\\(N,[^)]+\\)[^,]*,,SIG\\)"
 
 # should pipeline be executed with a very 
 # small number of adjustable model parameters
@@ -95,7 +95,7 @@ minExpEn <- 1.0
 maxExpEn <- 50
 
 # exclude exfor entries if needed
-exclude_exfor_entries <- c("23313002", "23313003") # (n,inel) measured at angles (wrong EXFOR classification)
+exclude_exfor_entries <- c("22468008", "22827018") # Some problem with percent scale
 
 # Specify energy grid for the final random files created in step 9.
 # The grid used during the fit is based on this one, but limited to the range of
@@ -136,14 +136,14 @@ enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 #enParDt <- enParDt[!(par=='rcadjust' & proj=='n')] # remove Coloumb radius for the neutron
 
 # specification of the TALYS input file used as template
-# param_template_path <- file.path(workdir,"indata/n_Fe_056.inp")
-# I think that it should not really matter that this file is for Fe-56, only the parameters are extracted from the file
+# param_template_path <- file.path(workdir,"indata/n_W_184.inp")
+# I think that it should not really matter that this file is for W-184, only the parameters are extracted from the file
 # the target and projectile are specified sepparately
 # the input will be searched for in the indata directory, if not found there, it will be downloaded from
 # https://tendl.web.psi.ch/tendl_2019/
 # use the following keywords to specify which nuclide and projectile
-tendl_element <- "Fe"
-tendl_mass <- 56
+tendl_element <- "W"
+tendl_mass <- 184
 tendl_projectile <- "n"
 
 
@@ -170,7 +170,7 @@ maxitLM <- 30
 reltolLM <- 1e-5
 
 # where to save output data
-outdataPath <- file.path(workdir, "outdata-Fe56-hetGP")
+outdataPath <- file.path(workdir, "outdata-W184-hetGP")
 dir.create(outdataPath, recursive=TRUE, showWarnings=FALSE)
 
 # specify the directory were status information and plots during the 
@@ -189,5 +189,5 @@ numTalysFiles <- 1000
 pathTalys <- file.path(outdataPath, "random-files")
 savePathTalys <- pathTalys
 
-# where to save plots produced by the scripts in eval-fe56/script/visualization
+# where to save plots produced by the scripts in eval-w184/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
