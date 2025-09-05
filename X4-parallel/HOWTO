@@ -1,0 +1,10 @@
+apptainer shell ../NEPU-with-rstudio.sif
+
+./build_EXFOR_mongoDB.sh
+
+mongod --fork --logpath test-db/log/mongod.log --dbpath test-db/db
+mongod --dbpath test-db/db --shutdown
+
+mongosh exfor.physics.uu.se
+
+show dbs

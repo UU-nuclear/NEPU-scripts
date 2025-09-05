@@ -1,0 +1,3 @@
+NEPU-apptainer/install-scripts-singularity/build_EXFOR_mongoDB.sh
+NEPU-apptainer/install-scripts-singularity/create_exfor_mongodb.R
+NEPU-apptainer/install-scripts-singularity/05_download_exfor_data.sh
