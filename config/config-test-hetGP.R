@@ -93,7 +93,7 @@ pollTime <- 1
 
 # settings to retrieve EXFOR entries from
 # the MongoDb database
-mongo_dbname <- "exfor"
+mongo_dbname <- "X4-2021-03-08"
 mongo_colname <- "entries"
 
 # only use experimental data in that energy range
