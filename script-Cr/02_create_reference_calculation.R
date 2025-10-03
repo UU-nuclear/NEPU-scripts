@@ -66,11 +66,11 @@ check_output_objects(scriptnr, outputObjectNames)
 ################################################################
 
 tendl_mass_str <- sprintf("%03d",tendl_mass)
-param_template_path <- paste0(workdir,"/indata/",tendl_projectile,"_",tendl_element,"_",tendl_mass_str,".inp")
+param_template_path <- paste0(workdir, "/indata/", tendl_projectile, "_", tendl_element, "_", tendl_mass_str, "_", tendl_year, ".inp")
 if(!file.exists(param_template_path)) {
     # the file is not on disk: download from tendl
     # note: at present only works for tendl_projectile = n
-    tendl_url <- paste0("https://tendl.web.psi.ch/tendl_2019/neutron_file/",tendl_element,"/",tendl_element,tendl_mass_str,"/input/talys.inp.0000")
+    tendl_url <- paste0("https://tendl.web.psi.ch/tendl_", tendl_year, "/neutron_file/", tendl_element, "/", tendl_element, tendl_mass_str, "/input/talys.inp.0000")
     if(download.file(tendl_url, destfile=param_template_path, method="curl")) {
         stop(paste("not able to find parameter template on disk, nor at:",tendl_url))
     }

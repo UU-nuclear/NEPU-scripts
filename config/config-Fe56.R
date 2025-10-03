@@ -142,6 +142,7 @@ enParDt <- data.table(expand.grid(par = tmpPar, proj = tmpProj))
 # the input will be searched for in the indata directory, if not found there, it will be downloaded from
 # https://tendl.web.psi.ch/tendl_2019/
 # use the following keywords to specify which nuclide and projectile
+tendl_year <- 2019
 tendl_element <- "Fe"
 tendl_mass <- 56
 tendl_projectile <- "n"
