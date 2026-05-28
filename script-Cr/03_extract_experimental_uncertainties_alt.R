@@ -74,7 +74,11 @@ expDt[, REFDATA := 0]
 #         inhomogenous and/or non-linear functions that should
 #         approximated by a first order Taylor polynomial
 
-rawUncDt <- getAvailableUncertainties(expDt, subents, dataref.col = "DATAREF")
+if ( pppcomp == "yes" ) {
+  rawUncDt <- getAvailableUncertainties(expDt, subents, dataref.col = "DATAREF")
+} else {
+  rawUncDt <- getAvailableUncertainties(expDt, subents)
+}
 expUncDt <- compactifyUncDt(rawUncDt)
 expUncStruc <- splitUncDt(expUncDt)
 
@@ -103,7 +107,14 @@ if(any(is.na(expDt[,UNC]))) {
 
 # safeguard against very small and very large variations
 # both may cause trouble in the GLS procedure
-expDt[, UNC := pmin(1000, pmax(UNC, 1))]
+
+# config parameters (values here corresponds to old hardcoded values)
+# absErrMin <- 1
+# absErrMax <- 1000
+# relErrMin <- 0
+# relErrMax <- 1000000
+
+expDt[, UNC := pmin(absErrMax, relErrMax * UNC, pmax(UNC, absErrMin, relErrMin * UNC))]
 
 
 # model predictions mapped to dense expgrid
