@@ -192,3 +192,10 @@ savePathTalys <- pathTalys
 
 # where to save plots produced by the scripts in eval-w184/script/visualization
 plotPath <- file.path(outdataPath, '/plots')
+
+# New error releated options
+pppcomp <- "no"
+absErrMin <- 0
+absErrMax <- 1000000
+relErrMin <- 0
+relErrMax <- 1000000
