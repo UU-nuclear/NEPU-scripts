@@ -1,0 +1,126 @@
+#==============================================================
+#
+#   NEPU PIPELINE INPUT FILE
+#
+#   Format:  KEY = VALUE
+#   Lines starting with '#' are comments and are ignored.
+#   Inline '#' inside a VALUE is kept (needed for R expressions
+#   with trailing comments, e.g. ENERGY_GRID_RANDOM_FILES).
+#
+#   Generate the R config with:
+#       Rscript make_config.R input.inp
+#   This produces config-<ELEMENT><MASS>.R
+#
+#==============================================================
+
+#--------------------------------------------------------------
+# TARGET NUCLIDE (required)
+#--------------------------------------------------------------
+
+ELEMENT = Zr         
+MASS = 90           
+Z = 40               # Atomic number
+PROJECTILE = n       # Projectile (usually n for neutrons)
+
+#--------------------------------------------------------------
+# ENERGY RANGE (required)
+#--------------------------------------------------------------
+# Minimum energy of experimental data to include [MeV]
+MIN_ENERGY = 1.0
+# Maximum energy of experimental data to include [MeV]
+MAX_ENERGY = 150
+
+#--------------------------------------------------------------
+# DIRECTORIES (required)
+#--------------------------------------------------------------
+# Pipeline working directory (absolute path)
+WORKDIR = path
+# Name of the output directory (created inside WORKDIR)
+OUTDATA_DIR = outdata-Zr90-hetGP_200
+# Where to store the TALYS random-file results (absolute path)
+PATH_TALYS = path_to_random_files_output
+
+#--------------------------------------------------------------
+# EXFOR DATABASE (MongoDB)
+#--------------------------------------------------------------
+MONGO_DBNAME = X4-2023-05-02
+MONGO_COLNAME = entries
+# Comma-separated EXFOR subentry IDs to exclude (empty = none)
+EXCLUDE_EXFOR_ENTRIES =
+
+#--------------------------------------------------------------
+# TALYS TEMPLATE INPUT (downloaded from TENDL if not in indata/)
+#--------------------------------------------------------------
+TENDL_YEAR = 2019
+TENDL_ELEMENT = Zr
+TENDL_MASS = 90
+TENDL_PROJECTILE = n
+# Finite difference used by TALYS to calculate the Jacobian
+TALYS_FINITE_DIFF = 0.01
+
+
+#--------------------------------------------------------------
+# ENERGY GRIDS
+#--------------------------------------------------------------
+# R expression for the energy grid of the final random files [MeV].
+# Must satisfy: first point < MIN_ENERGY and last point > MAX_ENERGY
+ENERGY_GRID_RANDOM_FILES = c(seq(0.1,1.,0.1),seq(1.2,8.0,0.2),seq(8.5,15.0,0.5),seq(16.,30,1),seq(32,60,2),seq(65,80,5),seq(90,200,10))#, seq(210,250,10))
+# Take every n-th point of the grid above for the energy-dependent
+# TALYS parameters
+PARAM_GRID_STRIDE = 3
+# Default threshold energy [MeV] if automatic determination fails
+DEFAULT_THRES_EN = 1
+
+#--------------------------------------------------------------
+# LEVENBERG-MARQUARDT OPTIMIZATION
+#--------------------------------------------------------------
+# Maximum number of iterations
+MAXIT_LM = 30
+# Relative tolerance for termination
+RELTOL_LM = 1e-5
+
+#--------------------------------------------------------------
+# EXPERIMENTAL UNCERTAINTY RULES 
+#--------------------------------------------------------------
+# Floor for auto-added relative systematic uncertainty
+# (replaces the hardcoded 10% fallback of exforUncertainty)
+AUTO_SYS_UNC_FLOOR = 0.05
+# Statistical uncertainty floor as fraction of DATA
+AUTO_STAT_UNC_FLOOR = 0.01
+# PPP compensation: yes / no
+PPP_COMP = no
+# Clipping of statistical uncertainties [mbarn]:
+
+ABS_ERR_MIN = 0
+ABS_ERR_MAX = 1000
+REL_ERR_MIN = 0
+REL_ERR_MAX = 1000000
+
+
+#--------------------------------------------------------------
+# ENERGY-DEPENDENT TALYS PARAMETERS (default)
+#--------------------------------------------------------------
+# Comma-separated TALYS parameter names ('adjust' is appended
+# automatically) and projectiles
+ENDEP_PARS = v1,d1,w1,vso1,wso1,rc,av,avd,avso,aw,awso,rv,rvd,rvso,rwd,rwso,awd
+ENDEP_PROJ = n,p,d,t,h,a
+
+
+#--------------------------------------------------------------
+# RANDOM SEEDS AND RANDOM FILES
+#--------------------------------------------------------------
+# Seed for optimization of experimental uncertainties (step 04)
+TUNE_EXP_UNC_SEED = 11
+# Seed for creation of TALYS random files (step 09)
+TALYS_FILES_SEED = 13
+# Number of TALYS random files to create
+NUM_TALYS_FILES = 2000
+
+
+#--------------------------------------------------------------
+# MISC
+#--------------------------------------------------------------
+# Run pipeline with very few adjustable parameters (testing): TRUE / FALSE
+FEW_PARAMETER_TEST = FALSE
+# Poll interval [s] to check for completed TALYS calculations
+POLL_TIME = 1
